@@ -1,4 +1,4 @@
-# demest
+# makefile_example
 
 Description of repository contents 
 
