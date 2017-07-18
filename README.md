@@ -1,4 +1,4 @@
-# makefile_example
+# repository_template
 
 Description of repository contents 
 
