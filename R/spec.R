@@ -1,0 +1,467 @@
+#' @keywords internal
+.spec <- list(arima = c("model", "title", "ar", "ma"),
+              automdl = c("maxorder", "maxdiff", "acceptdefault", "checkmu",
+                          "diff", "ljungboxlimit", "mixed", "print", "savelog",
+                          "arimalimit", "balanced", "exactdiff", "fcstlim",
+                          "hrinitial", "reducecv", "refectfcst", "urfinal"),
+              check = c("maxlag", "print", "qtype", "save", "savelog"),
+              composite = c("title", "name", "decimals", "modelspan",
+                            "appendfcst", "appendbcst", "type", "print", "save",
+                            "savelog", "indoutlier"),
+              estimate = c("tol", "maxiter", "exact", "outofsample", "print",
+                           "save", "savelog", "file", "fix"),
+              force = c("lambda", "mode", "rho", "round", "start", "target",
+                        "type", "usefcst", "print", "save", "indforce"),
+              forecast = c("maxlead", "maxback", "probability", "exclude",
+                           "lognormal", "print", "save"),
+              history = c("estimates", "sadjlags", "trendlags", "target",
+                          "start", "fstep", "fixmdl", "fixreg", "endtable",
+                          "print", "save", "savelog", "fixx11reg", "outlier",
+                          "outlierwin", "refresh", "transformfcst",
+                          "x11outlier"),
+              metadata = c("keys", "values"),
+              identify = c("diff", "sdiff", "maxlag", "print"),
+              outlier = c("types", "critical", "method", "span", "lsrun",
+                          "print", "save", "savelog", "almost", "tcrate"),
+              pickmdl = c("mode", "method", "file", "fcstlim", "bcstlim",
+                          "qlim", "overdiff", "identify", "outofsample",
+                          "print", "savelog"),
+              regression = c("variables", "print", "save", "savelog", "user",
+                             "usertype", "start", "data", "aictest", "aicdiff",
+                             "tlimit", "chi2test", "chi2testcv", "pvaictest",
+                             "b", "centeruser", "eastermeans", "noapply",
+                             "tcrate"),
+              seats = c("appendfcst", "finite", "hpcycle", "noadmiss", "qmax",
+                        "rmod", "statseas", "out", "print", "printphtrf",
+                        "save", "savelog", "tabtables", "bias", "epsiv",
+                        "epsphi", "hplan", "imean", "maxit", "rmod", "xl"),
+              series = c("title", "start", "period", "file", "format", "span",
+                         "modelspan", "name", "data", "decimals", "precision",
+                         "comptype", "compwt", "print", "save", "appendfcst",
+                         "appendbcst", "type", "divpower", "missingcode",
+                         "missingval", "saveprecision", "trimzero"),
+              slidingspans = c("start", "length", "numspans", "cutchng",
+                               "cutseas", "cuttd", "outlier", "fixmdl",
+                               "fixreg", "print", "save", "savelog",
+                               "additivesa", "fixx11reg", "x11outlier"),
+              spectrum = c("logqs", "print", "save", "savelog", "start",
+                           "tukey120", "axis", "decibel", "difference", "maxar",
+                           "peakwidth", "series", "siglevel", "type"),
+              transform = c("function", "adjust", "title", "start", "data",
+                            "name", "aicdiff", "mode", "type", "print", "save",
+                            "savelog", "file", "format", "power", "constant",
+                            "trimzero"),
+              x11 = c("mode", "seasonalma", "trendma", "sigmalim", "title",
+                      "appendfcst", "appendbcst", "final", "print", "save",
+                      "savelog", "type", "calendarsigma", "centerseasonal",
+                      "keepholiday", "print1stpass", "sfshort", "sigmavec",
+                      "trendic", "true7term"),
+              x11regression = c("variables", "user", "start", "data", "file",
+                                "format", "tdprior", "aictest", "aicdiff",
+                                "span", "sigma", "critical", "outliermethod",
+                                "outlierspan", "usertype", "prior", "print",
+                                "save", "savelog", "almost", "centeruser",
+                                "eastermeans", "forcecal", "noapply",
+                                "reweight", "umdata", "umfile", "umformat",
+                                "umname", "umprecision", "umstart",
+                                "umtrimzero"))
+
+#' @keywords internal
+.x11 <- structure(list(
+  structure(list(name = "series",
+                 args = list(save = "(b1)")),
+            class = "X13Spec"),
+  structure(list(name = "x11",
+                 args = list(mode = "mult",
+                             sigmalim = "(1.8,2.8)",
+                             save = "(d8 d10 d11 d12 d13 c17)")),
+            class = "X13Spec")), names = c("series", "x11"),
+  class = "X13SpecList")
+
+#' @keywords internal
+.seats <- structure(list(
+  structure(list(name = "series",
+                 args = list(save = "(b1)")),
+            class = "X13Spec"),
+  structure(list(name = "transform",
+                 args = list('function' = 'auto')),
+            class = "X13Spec"),
+  structure(list(name = "automdl",
+                 args = list()),
+            class = "X13Spec"),
+  structure(list(name = "seats",
+                 args = list(save = "(s10 s11 s12 s13 s14 s16 s18 cyc ltt)")),
+            class = "X13Spec")), names = c("series", "x11"),
+  class = "X13SpecList")
+
+#' X13-ARIMA-SEATS specification.
+#'
+#' List containing a single specification group, e.g. \code{series},
+#' \code{x11}, \code{outlier}, etc.
+#'
+#' @param name of specification, e.g. \code{series}, \code{x11}, \code{outlier},
+#' \code{composite}, etc.
+#' @param ... Variable number of name-value pairs, e.g. \code{mode = "mult"},
+#' \code{mode = "sigmalim"}, etc.
+#'
+#' @export
+#'
+#' @return A list of class \code{\link{X13Spec}}.  The first element,
+#' \code{name}, is the name of the specification.  The second element,
+#' \code{args}, is a list of name-value pairs.
+#'
+#' @examples
+#' spec <- X13Spec(specname = "x11",
+#'                 mode = "mult",
+#'                 sigmalim = "(1.8,2.8)",
+#'                 save = "(d8 d10 d11 d12 d13 c17)")
+#' spec
+X13Spec <- function(specname = "series", ...){
+  specname = tolower(specname)
+  if (!specname %in% names(.spec))
+    stop(sprintf("Unknown spec: '%s'.", specname))
+  args <- list(...)
+  if (identical(args, list(NULL)) | length(args) == 0){
+    o <- list(name = specname, args = NULL)
+    class(o) <- "X13Spec"
+    return(o)
+  }
+  if (is.null(names(args)))
+    stop("All spec parameters must be named (1).")
+  if (any(names(args)==""))
+    stop("All spec parameters must be named (2).")
+  names(args) <- tolower(names(args))
+  for (param in names(args))
+    if (!param %in% .spec[[specname]])
+      stop(sprintf("Unknown parameter for spec '%s': %s", specname, param))
+  o <- list(name = specname, args = args)
+  class(o) <- "X13Spec"
+  return(o)
+}
+
+#' X13-ARIMA SEATS specification.
+#'
+#' A list containing a set of specifications to apply when seasonally adjusting
+#' a time series.
+#'
+#' @param ... Variable number of name-value pairs.  The name is the name of the
+#' spec, and the value is a list containing additional name-value pairs where
+#' names are spec parameter names and values are the spec parameter values.
+#'
+#' @export
+#'
+#' @return A list of class \code{\link{X13SpecList}}, where each element in the
+#' list is of class \code{\link{X13Spec}}.
+#'
+#' @examples
+#' specl <- X13SpecList(series = list(start = "1949.1",
+#'                                    period = "12",
+#'                                    title = "AirPassengers",
+#'                                    file = "AirPassengers.dat",
+#'                                    format = "datevalue",
+#'                                    save = "(b1)"),
+#'                      x11 = list(mode = "mult",
+#'                                 sigmalim = "(1.8,2.8)",
+#'                                 save = "(d8 d10 d11 d12 d13 c17)"))
+#' specl
+X13SpecList <- function(...){
+  args <- list(...)
+  if (length(args)==0)
+    stop("No specs provided.")
+  if (is.null(names(args)))
+    stop("All parameters must be named.")
+  if (any(names(args)==""))
+    stop("All parameters must be named.")
+  names(args) <- tolower(names(args))
+  for (specname in names(args))
+    if (!specname %in% names(.spec))
+      stop(sprintf("Unknown spec: '%s'.", specname))
+  o <- list()
+  for (i in 1:length(args)){
+    spec <- c(list(specname = names(args)[i]), args[[i]])
+    spec <- do.call("X13Spec", spec)
+    o[[i]] <- spec
+  }
+  class(o) <- c("X13SpecList", "list")
+  names(o) <- sapply(o, function(x) x$name)
+  o
+}
+
+#' @export
+is.X13Spec <- function(x) inherits(x, "X13Spec")
+
+#' @export
+is.X13SpecList <- function(x) inherits(x, "X13SpecList")
+
+#' Get a spec.
+#'
+#' @param x Input object.
+#' @param name Parameter name.
+#' @param value Parameter value.
+#'
+#' @export
+getSpec.X13SpecList <- function(x, spec){
+  x[[spec]]
+}
+
+#' Get a spec parameter.
+#'
+#' Get the value of a spec parameter.
+#'
+#' @param x Input object.
+#' @param name Parameter name.
+#' @param value Parameter value.
+#'
+#' @export
+getSpecParameter.X13Spec <- function(x, spec, parameter){
+  x$args[[parameter]]
+}
+
+#' Get a spec parameter.
+#'
+#' Get the value of a spec parameter.
+#'
+#' @param x Input object.
+#' @param name Parameter name.
+#' @param value Parameter value.
+#'
+#' @export
+getSpecParameter.X13SpecList <- function(x, spec, parameter){
+  x[[spec]]$args[[parameter]]
+}
+
+#' Set a spec parameter.
+#'
+#' @param x Object to modify.
+#' @param name Parameter name.
+#' @param value Parameter value.
+#'
+#' @export
+#'
+#' @return An updated version of input \code{x}.
+#'
+#' @examples
+#' spec <- X13Spec(specname = "x11",
+#'                 mode = "mult",
+#'                 sigmalim = "(1.8,2.8)",
+#'                 save = "(d8 d10 d11 d12 d13 c17)")
+#' spec
+#' setSpecParameter(spec, "mode") <- "add"
+#' spec
+#' setSpecParameter(spec, "mode") <- NULL
+#' spec
+"setSpecParameter<-.X13Spec" <- function(x, name, value){
+  name <- tolower(name)
+  if (!name %in% .spec[[x$name]])
+    stop(sprintf("Unknown parameter for spec '%s': %s", x$name, name))
+  if (is.null(value))
+    x$args[[name]] <- NULL
+  else
+    x$args[[name]] <- ifelse(name %in% c("file", "title", "name"),
+                             sprintf("'%s'", value),
+                             value)
+  x
+}
+
+#' Set a spec parameter.
+#'
+#' @param x Object to modify.
+#' @param name Parameter name.
+#' @param value Parameter value.
+#'
+#' @export
+#'
+#' @return An updated version of input \code{x}.
+"setSpecParameter<-.X13SpecList" <- function(x, spec, name, value){
+  name <- tolower(name)
+  if (!spec %in% names(.spec))
+    stop(sprintf("Unkown spec: %s", spec))
+  if (!name %in% .spec[[spec]])
+    stop(sprintf("Unknown parameter for spec '%s': %s", spec, name))
+  if (!spec %in% names(x))
+    x %+% do.call("X13Spec", structure(list(spec, value), names = c("specname", name)))
+  else{
+    if (is.null(value))
+      x[[spec]]$args[[name]] <- NULL
+    else
+      x[[spec]]$args[[name]] <- ifelse(name %in% c("file", "title", "name"),
+                                       sprintf("'%s'", value),
+                                       value)
+  }
+  x
+}
+
+#' Set a spec.
+#'
+#' @param x Object to modify.
+#' @param name Parameter name.
+#' @param value Parameter value.
+#'
+#' @export
+#'
+#' @examples
+#' specl <- X13SpecList(series = list(start = "1949.1",
+#'                                    period = "12",
+#'                                    title = "AirPassengers",
+#'                                    file = "AirPassengers.dat",
+#'                                    format = "datevalue",
+#'                                    save = "(b1)"))
+#'
+#' setSpec(specl, "x11") <- list(mode = "mult",
+#'                               sigmalim = "(1.8,2.8)",
+#'                               save = "(d8 d10 d11 d12 d13 c17)")
+#'
+#' setSpec(specl) <- X13Spec(specname = "transform", `function`="log")
+#'
+#' specl
+"setSpec<-.X13SpecList" <- function(x, specname, value){
+  if (missing(specname) & inherits(value, "X13Spec")){
+    x[[value$name]] <- value
+    return(x)
+  }
+  specname <- tolower(specname)
+  if (is.null(value)) value <- list(NULL)
+  if (!specname %in% names(.spec))
+    stop(sprintf("Unknown spec: %s.", specname))
+  s <- do.call('X13Spec', c(specname = specname, value))
+  x[[specname]] <- s
+  x
+}
+
+#' Remove a spec.
+#'
+#' Remove a spec for objects that support it--currently only for objects of
+#' type \code{\link{X13SpecList}}.
+#'
+#' @param x Object to modify.
+#' @param name Parameter name.
+#'
+#' @export
+#'
+#' @return A copy of \code{x} with named spec removed.
+#'
+#' @examples
+#' specl <- X13SpecList(series = list(start = "1949.1",
+#'                                    period = "12",
+#'                                    title = "AirPassengers",
+#'                                    file = "AirPassengers.dat",
+#'                                    format = "datevalue",
+#'                                    save = "(b1)"),
+#'                      x11 = list(mode = "mult",
+#'                                 sigmalim = "(1.8,2.8)",
+#'                                 save = "(d8 d10 d11 d12 d13 c17)"),
+#'                      outlier = NULL)
+#' specl
+#' specl <- removeSpec(specl, "outlier")
+#' specl
+removeSpec.X13SpecList <- function(x, specname){
+  if (!specname %in% names(x))
+    stop(sprintf("Spec %s not found in %s.", specname, deparse(substitute(x))))
+  x[[specname]] <- NULL
+  x
+}
+
+#' @export
+toString.X13Spec <- function(x, ...){
+  if (length(x$args) == 0){
+    res <- sprintf("%s {}\n", x$name)
+    return(res)
+  }
+  res <- paste0(x$name, "{\n")
+  for (i in 1:length(x$args)){
+    if (names(x$args)[i]%in%c("file", "title", "name"))
+      res <- paste0(res, "  ", names(x$args)[i], "=\'", x$args[[i]], "\'\n")
+    else
+      res <- paste0(res, "  ", names(x$args)[i], "=", x$args[[i]], "\n")
+  }
+  res <- paste0(res, "}\n")
+  res
+}
+
+#' @export
+print.X13Spec <- function(x, ...){
+  cat(toString(x, ...))
+}
+
+#' @export
+toString.X13SpecList <- function(x, ...){
+  res <- ""
+  for (i in 1:length(x)){
+    res <- paste0(res, toString(x[[i]]))
+    if (i < length(x))
+      res <- paste0(res, "\n", sep="")
+  }
+  res
+}
+
+#' @export
+print.X13SpecList <- function(x, ...){
+  cat(toString(x, ...))
+}
+
+#' Combine \code{\link{X13Spec}} objects.
+#'
+#' @export
+#'
+#' @examples
+#' s1 <- X13Spec(specname = "x11",
+#'               mode = "mult")
+#'
+#' s2 <- X13Spec(specname = "x11",
+#'               sigmalim = "(1.8,2.8)",
+#'               save = "(d8 d10 d11 d12 d13 c17)")
+#'
+#' s1 %+% s2
+`%+%.X13Spec` <- function(e1, e2){
+  if (!inherits(e2, "X13Spec"))
+    stop("X13Spec objects can only be combined with other X13Spec objects.")
+  if (e1$name != e2$name)
+    stop(sprintf("Non-matching spec names: %s, %s.", e1$name, e2$name))
+  lhs <- names(e1$args)
+  rhs <- names(e2$args)
+  int <- intersect(lhs, rhs)
+  lhs <- lhs[!lhs %in% rhs]
+  if (length(lhs) == 0) return(rhs)
+  e1$args <- as.list(c(e1$args[lhs], e2$args))
+  e1
+}
+
+#' Combine \code{\link{X13SpecList}} objects, or add an \code{\link{X13Spec}}
+#' object to an existing X13SpecList object.
+#'
+#' @export
+#'
+#' @examples
+#' spec1 <- X13SpecList(series = list(start = "1949.1",
+#' period = "12",
+#' title = "AirPassengers",
+#' file = "AirPassengers.dat",
+#' format = "datevalue",
+#' save = "(b1)"))
+#'
+#' spec2 <- X13SpecList(x11 = list(mode = "mult",
+#'                                 sigmalim = "(1.8,2.8)",
+#'                                 save = "(d8 d10 d11 d12 d13 c17)"))
+#'
+#' spec1 %+% spec2
+#' spec1 %+% spec2 %+% X13Spec(specname = "transform", `function`="log")
+`%+%.X13SpecList` <- function(e1, e2){
+  if (inherits(e2, "X13Spec")){
+    if (e2$name %in% names(e1))
+      e2 <- getSpec(e1, e2$name) %+% e2
+    setSpec(e1) <- e2
+    return(e1)
+  }
+  else if(inherits(e2, "X13SpecList")){
+    lhs <- names(e1)
+    rhs <- names(e2)
+    int <- intersect(lhs, rhs)
+    for (s in int)
+      setSpec(e1) <- getSpec(e1, s) %+% getSpec(e2, s)
+    for (s in rhs[!lhs %in% int])
+      setSpec(e1) <- getSpec(e2, s)
+    return(e1)
+  }
+  else
+    stop(sprintf("Invalid operand type: %s.", class(e2)))
+}

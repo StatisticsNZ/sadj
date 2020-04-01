@@ -1,0 +1,55 @@
+---
+title: "Working with Goups of Series"
+author: "Chris Hansen"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Working with Groups of Series}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\usepackage[utf8]{inputenc}
+---
+
+<style type="text/css">
+  .section.level1 h1 {
+    font-size: 25px;
+    line-height: 30px;
+    margin-top: 20px;
+    border-bottom: 6px solid #f7f7f7;
+  }
+
+.figure img{
+  max-width: 80%;
+}
+
+.plotly.html-widget{
+  width: 700px !important;
+  padding-bottom: 10px;
+}
+</style>
+  
+```{r setup, include=FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE,
+                      message = FALSE, comment = NA, 
+                      fig.align = "center", 
+                      fig.height = 4, fig.width = 5)
+library(sadj)
+```
+
+## Overview
+
+It is possible to group a number of `X13Series` objects together into a single
+object, `X13SeriesGroup`, so that all series in the group can be adjusted at
+the same time with a single call. 
+
+This also makes it possible to use `X13-ARIMA-SEATS` `composite` specification
+so that a series can be indirectly adjusted.  This is easier than forming
+composites manually, but this way diagnostics are also provided for the
+indirectly adjusted series, and one can compare directly the relative merits of
+direct and indirect adjustments.
+
+
+
+
+
+
+

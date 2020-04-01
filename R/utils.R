@@ -1,0 +1,234 @@
+#' Trim whitespace on left of string.
+#'
+#' @keywords internal
+ltrim <- function(s){
+  t <- s
+  while(substr(t, 1, 1) == ' ' & nchar(t) > 1)
+    t <- substr(t, 2, nchar(t))
+  t
+}
+
+#' Trim whitespace on right of string.
+#'
+#' @keywords internal
+rtrim <- function(s){
+  t <- s
+  while(substr(t, nchar(t), nchar(t)) == ' ' & nchar(t) > 1)
+    t <- substr(t, 1, nchar(t) - 1)
+  t
+}
+
+#' Remove quotes from string.
+#'
+#' @keywords internal
+unquote <- function(s){
+  if (substr(s, 1, 1) %in% c("\'", "\"") & substr(s, nchar(s), nchar(s)) %in% c("\'", "\""))
+    s <- substr(s, 2, nchar(s) - 1)
+  s
+}
+
+#' Replace blocks adjacent matching characters with single character in string.
+#'
+#' @keywords internal
+rmdups <- function(s, c = ' '){
+  if (nchar(s) < 2) return(s)
+  t <- substr(s, 1, 1)
+  pos <- 1
+  for (i in 2:nchar(s)){
+    if (substr(s, i, i) != c || substr(t, pos, pos) != c){
+      t <- paste0(t, substr(s, i, i))
+      pos <- pos + 1
+    }
+  }
+  return(t)
+}
+
+
+#' Convert time series object to a suitable data frame.
+#'
+#' @param x Object of class \code{\link{ts}}.
+#'
+#' @export
+#'
+#' @examples
+#' ap <- tsdf(AirPassengers)
+#' ap
+tsdf <- function(x){
+  year <- floor(time(x))
+  pd   <- cycle(x)
+  data.frame(year = as.numeric(year),
+             period = as.numeric(pd),
+             value = as.numeric(x))
+}
+
+#' @keywords internal
+date <- function(x, y = "year", p = "period"){
+  pd <- unique(x[, p])
+  if (length(pd) == 4 & max(pd) == 4) x[, p] <- x[, p] * 3
+  as.Date(sprintf("%04d-%02d-01", data.frame(x)[, y], data.frame(x)[,p]), origin = "1970-01-01")
+}
+
+#' @keywords internal
+workdir <- function(){
+  res <- sprintf("%s/%s", tempdir(), "sadj")
+  if (!dir.exists(res))
+    if(!dir.create(res))
+      stop("Failed to create working directory.")
+  res
+}
+
+#' @keywords internal
+outpdir <- function(){
+  res <- sprintf("%s/o", workdir())
+  if (!dir.exists(res))
+    if(!dir.create(res))
+      stop("Failed to create output directory.")
+  res
+}
+
+#' Read DAT file.
+#'
+#' @keywords internal
+readDAT <- function(fname){
+  if (!file.exists(fname))
+    stop(sprintf("No such file: %s.", deparse(substitute(fname))))
+  res <- read.table(fname, col.names = c("year", "period", "value"))
+  res
+}
+
+#' Write DAT file.
+#'
+#' @keywords internal
+writeDAT <- function(x, fname){
+  if (inherits(x, "X13Series")){
+    sink(fname)
+    paste(paste(x$year, x$period, x$value, sep = "\t"), collapse = "\n")
+    sink()
+  }
+}
+
+#' Read SPC file.
+#'
+#' @keywords internal
+readSPC <- function(fname){
+  if (!file.exists(fname))
+    stop("File does not exist.")
+  if (!isOpen(f <- file(fname, "rt")))
+    stop("Unable to open file for reading.")
+  res <- list()
+  comment <- FALSE
+  block <- FALSE
+  innerblock <- FALSE
+  rhs <- FALSE
+  prev <- ""
+  spc <- ""
+  name <- ""
+  val <- ""
+  i <- 1
+  while (length(ch <- readChar(f, 1)) > 0){
+    if (ch == "#") comment <- TRUE
+    if (ch %in% c("\n", "\r")) comment <- FALSE
+    if (!comment){
+      if (ch == "="){
+        rhs <- TRUE
+      }
+      else if (ch == "{"){
+        block <- TRUE
+        res[[i]] <- structure(list(), class = "X13Spec")
+        res[[i]][["name"]] <- spc
+        res[[i]][["args"]] <- list()
+      }
+      else if (ch == "}"){
+        if (!prev %in% c("\n", "\r")){
+          val <- unquote(ltrim(rtrim(val)))
+          res[[i]][["args"]][[name]] <- val
+          rhs <- FALSE
+          name <- ""
+          val <- ""
+        }
+        block <- FALSE
+        i <- i + 1
+        spc <- ""
+      }
+      else if (ch %in% c("\n", "\r")){
+        if (!innerblock){
+          if (name != "" & val != ""){
+            val <- unquote(ltrim(rtrim(val)))
+            res[[i]][["args"]][[name]] <- val
+          }
+          rhs <- FALSE
+          name <- ""
+          val <- ""
+        }
+      }
+      else if (ch == " "){
+        if (!prev %in% c("\n", "\r") & prev != " " & rhs)
+          val <- paste(val, ch, sep = "")
+      }
+      else{
+        if (ch == "(") innerblock <- TRUE
+        if (ch == ")") innerblock <- FALSE
+        if (!block)
+          spc <- paste(spc, ch, sep = "")
+        else if (!rhs)
+          name <- paste(name, ch, sep = "")
+        else val <- paste(val, ch, sep = "")
+      }
+      prev <- ch
+    }
+  }
+  close(f)
+  for (i in 1:length(res))
+    names(res)[i] <- res[[i]][[1]]
+  structure(res, class = "X13SpecList")
+}
+
+#' Read output files.
+#'
+#' @keywords internal
+readOutput <- function(x, outpdir, ext="d11"){
+  if (!is.X13Series(x))
+    stop(sprintf("%s must be of class X13Series", deparse(substitute(x))))
+
+  fname <- sprintf("%s/%s.%s", outpdir, attr(x, "sname"), ext)
+
+  if (!file.exists(fname))
+    stop(sprintf("No such file: %s.", deparse(substitute(fname))))
+
+  infile <- file(fname, "r")
+
+  #burn the first 2 lines
+  readLines(infile, n=2)
+
+  aLine <- readLines(infile, n=1)
+  yr  <- c()
+  pd  <- c()
+  res <- c()
+
+  while (length(aLine) > 0){
+    tmp <- unlist(strsplit(aLine,"\t"))
+    yr  <- c(yr, floor(as.numeric(tmp[1]) / 100))
+    pd  <- c(pd, as.numeric(tmp[1]) - floor(as.numeric(tmp[1]) / 100) * 100)
+    res <- c(res, as.numeric(tmp[2]))
+    aLine <- readLines(infile, n=1)
+  }
+
+  close(infile)
+
+  return(structure(data.frame(yr, pd, res), names = c("year", "period", ext)))
+}
+
+#' Merge list of data frames.
+#'
+#' @keywords internal
+mergeList <- function(x, ...){
+  if(!all(sapply(x, is.data.frame)))
+    stop(sprintf("%s must be a list of data frames.", deparse(substitute(x))))
+  if (length(x) == 1) return(x[[1]])
+  res <- x[[1]]
+  for (i in 2:length(x))
+    res <- merge(res, x[[i]], ...)
+  res[order(res$year, res$period), ]
+}
+
+

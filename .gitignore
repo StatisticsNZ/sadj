@@ -1,0 +1,9 @@
+.RData
+.Rhistory
+inst/doc
+doc
+Meta
+**/*_cache
+.Rproj.user
+README.html
+work.R

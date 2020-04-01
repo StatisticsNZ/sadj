@@ -1,0 +1,174 @@
+---
+title: "`sadj`"
+author: "Chris Hansen"
+date: "`r Sys.Date()`"
+output:
+  md_document:
+    variant: gfm
+vignette: >
+  %\VignetteIndexEntry{Quick Start}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\usepackage[utf8]{inputenc}
+---
+  
+```{r setup, include=FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE,
+                      message = FALSE, comment = NA, 
+                      fig.align = "center", 
+                      fig.height = 4, fig.width = 5)
+library(sadj)
+```
+
+# `sadj`
+
+Conduct seasonal adjustment using X13-ARIMA-SEATS from R.  Almost all X13-ARIMA-SEATS functionality is supported, including the use of composite adjustments.
+
+# Installation
+
+If you have a public SSH key set up correctly with [GitLab](https://gitlabstats-prd):
+
+```r
+library(git2r)
+library(devtools)
+
+install_git(
+  "git@gitlabstats-prd:cxhansen/sadj.git",
+  credentials = cred_ssh_key()
+)
+```
+
+Using HTTPS:
+
+```r
+library(git2r)
+library(devtools)
+
+ssl_cert_locations(filename = "/etc/ssl/certs/ca-certificates.crt")
+install_git("https://gitlabstats-prd/cxhansen/sadj.git")
+```
+
+# Basic Usage
+
+The `sadj` package allows for relatively flexible use of the underlying
+`X13-ARIMA-SEATS` program.  But results can be produced quickly and easily by
+accepting default parameters.  Consider the following:
+
+```{r simpleex}
+ap <- X13Series(AirPassengers)
+```
+
+This produces an object, `ap`, of class `X13Series`.  This object is initialised
+with the built-in `AirPassengers` object--a time series holding the classic Box
+and Jenkins airline passengers data.  Once imported, the data is coerced into a
+`data.frame` which looks as follows:
+
+```r
+head(ap, 10)
+```
+```{r simpleextab, echo = FALSE}
+knitr::kable(head(ap, 10), row.names = FALSE, format = "markdown")
+```
+
+In fact, while we provide the ability to create an `X13Series` object directly
+from a `ts` object because it is a commonly used type in R, we can also
+create one from a `data.frame` like the one displayed above.
+
+An `X13Series` object has a number of attributes stored interally, such as the
+adjustment specifications required by the `X13-ARIMA-SEATS` program.  For
+example, the specifications are held in an attribute called `SpecList`, and can
+be retrieved via `getSpecList(ap)`:
+
+```{r simpleex.spec}
+getSpecList(ap)
+```
+
+The specification is actually an R list, but it has a print method that displays
+a familiar string representation.  In this case, a default, minimal
+specification was provided, but there are facilities for providing different
+specifications when creating `X13Series` objects, or modifying specifications
+for existing objects.  The details of working with specifications are outlined
+in a vignette, `vignette("specifications", package = "sadj")`.
+
+In this simple example, no adjustement specifications were explicitly provided.
+In actual fact, though, a default specification was provided, and the original
+call to `X13Series` could have been written in the following equivalent way:
+
+```r
+ap1 <- X13Series(AirPassengers, type = "x11")
+```
+
+If the SEATS adjustment method is preferred over X11, then a default SEATS
+adjustment is also readily available:
+
+```{r seats01}
+ap2 <- X13Series(AirPassengers, type = "seats")
+getSpecList(ap2)
+```
+
+Seasonal adjustment is carried out by calling `adjust` on an adjustable object:
+
+```{r simpleex.adjust}
+ap.res <- adjust(ap)
+```
+
+The result in this case is of class `X13SeriesResult`.  It is a data frame
+containing the raw series and `X13-ARIMA-SEATS` output tables such as `d10`,
+`d11`, and `d12` as columns:
+
+```r
+head(ap.res, 10)
+```
+```{r simpleex.res, echo = FALSE}
+knitr::kable(head(ap.res, 10), row.names = FALSE, format = "markdown")
+```
+
+In fact, any output produced by `X13-ARIMA-SEATS` that is a time series is added
+as a column to the output data frame.  The columns can vary depending on the
+adjustement specification and, besides, are somewhat esoteric.  For this reason,
+helper functions exist for extracting the more common components of an adjusted
+series in a more uniform way.  For example, the raw, seasonally adjusted and
+trend series can be accessed by calling `actual`, `seasadj`, and `trend`,
+respectively.
+
+```r
+head(trend(ap.res), 10)
+```
+```{r simpleex.trend, echo = FALSE}
+knitr::kable(head(trend(ap.res), 10), row.names = FALSE, format = "markdown")
+```
+
+Output that isn't a times series is stored as an attribute.  For example, the
+'`UDG`' file, if present, is a file containing a range of summary statistics and
+the like, and is read in as a list and stored as an attribute called `udg`.
+Many of these attributes aren't directly useful, and helper functions are
+instead provided which give the appropriate access.  For example, calling
+`summary` on an adjusted series will cause the HTML version of the output to
+display, or else it will cause a relatively pretty tabular version of the `udg`
+attribute to display:
+
+```r
+summary(ap.res, html = TRUE)
+```
+![`summary(ap.res)`](img/htmlout.png)
+
+or:
+
+```r
+summary(ap.res)
+```
+```{r simpleex.res.summary, echo = FALSE}
+knitr::kable(summary(ap.res), row.names = FALSE, format = "markdown")
+```
+
+There are a range of built-in plotting functions provided to visualise the
+results:
+
+```{r simpleex.res.plot1}
+plot(ap.res)
+```
+
+```{r simpleex.res.plot2}
+plot(ap.res, type = "seasonal")
+```
+
+

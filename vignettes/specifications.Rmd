@@ -1,0 +1,216 @@
+---
+title: "Working with Adjustment Specifications"
+author: "Chris Hansen"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Working with Adjustment Specifications}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\usepackage[utf8]{inputenc}
+---
+
+<style type="text/css">
+  .section.level1 h1 {
+    font-size: 25px;
+    line-height: 30px;
+    margin-top: 20px;
+    border-bottom: 6px solid #f7f7f7;
+  }
+
+.figure img{
+  max-width: 80%;
+}
+
+.plotly.html-widget{
+  width: 700px !important;
+  padding-bottom: 10px;
+}
+</style>
+  
+```{r setup, include=FALSE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE,
+                      message = FALSE, comment = NA, 
+                      fig.align = "center", 
+                      fig.height = 4, fig.width = 5)
+library(sadj)
+```
+
+<!--
+# `x13binary`
+
+The `sadj` package has several dependencies, the most significant being the
+[`x13binary`](https://cran.r-project.org/web/packages/x13binary/index.html)
+package which provides the `X13-ARIMA-SEATS` binary.  
+
+Ordinarily, installing the CRAN version of `x13binary` will cause a prebuilt
+binary to be downloaded, but the Stats NZ firewall prevents this happening.
+Instead, we have produced a modified vesion of the `x13binary` package which
+includes a version of the `X13-ARIMA-SEATS` binary built from sources found on
+the [U.S. Census Bureau website](https://www.census.gov/ts/x13as/unix/x13ashtmlsrc_V1.1_B39.tar.gz).
+Users can install this to their own personal library via the following command
+(assuming `svn` is working correctly):
+
+```r
+devtools::install_svn("https://WPRDSVN01.stats.govt.nz/svn/RSTUDIO/StatsMeth/packages/x13binary")
+```
+
+Ultimately, a properly functioning version of this package will be available in
+the usual shared libraries, and users will not be required to install it
+themselves.
+-->
+<!--
+# `seasonal`
+
+The first version of the `sadj` package was written a number of years ago and
+used for monitoring of the Household Labour Force Survey.  Since then, a package
+called [`seasonal`](https://cran.r-project.org/web/packages/seasonal/index.html) 
+has been released to CRAN which is somewhat similar.
+
+However, as run by Stats NZ, the `seasonal` package has some limitations.  The
+most significant is the inability to group series together in a single
+adjustment via an `mta` file, including the adjustment of composites.  
+
+The `seasonal` package is well constructed, though, and could still prove useful
+as a tool for analysing unadjusted time series data, series by series.  In
+particular, the package comes with a `shiny` interface, a demo of which is
+available [here](http://www.seasonal.website/).
+-->
+<!--
+# A Note on External Data Files
+
+Those uses who have used the `X13-ARIMA-SEATS` program directly will know that
+it is possible to provide the raw series to be adjusted via either a `data` or
+`file` parameter in the `series` specification.  The former is a delimited
+list of the input series values, while the latter is the name of a file which
+holds the raw data.  
+
+For the implementation provided here, the user is not required to provide
+either.  An `X13Series` object _is_ the raw data, and it is inserted into the
+specification via the `data` parameter mentioned at the time of adjustment.  In
+fact, if either of `data` or `series` (along with the related argument
+`format`, if present) parameters are found inside the `series` specification
+they are ignored.
+--> 
+
+There are two general methods for applying specifications for an adjustment:
+
+* provide a complete specification when creating an adjustable object
+* modify the specification of an existing adjustable object
+
+We will show examples of both in this document.
+
+
+## Background
+
+The `sadj` package provides a wrapper for the X13-ARIMA-SEATS program.  This is
+a command line program, the minimal input requirement of which is a so-called
+specification file.  A specification file is a text file with extension `spc`
+consisting of blocks of adjustement parameters as follows:
+
+```as.is
+specfication1{
+  parameter1=value1
+  parameter2=value2
+  ...
+}
+
+specification2{
+  parameter1=value1
+  parameter2=value2
+  ...
+}
+
+...
+```
+
+For example, a modified version of an example specification which is usually
+provided with the X13-ARIMA-SEATS program looks as follows:
+
+```as.is
+series{
+  start=1949.01
+  data=(
+	112 118 132 129 121 135 148 148 136 119 104 118
+	115 126 141 135 125 149 170 170 158 133 114 140
+	145 150 178 163 172 178 199 199 184 162 146 166
+	171 180 193 181 183 218 230 242 209 191 172 194
+	196 196 236 235 229 243 264 272 237 211 180 201
+	204 188 235 227 234 264 302 293 259 229 203 229
+	242 233 267 269 270 315 364 347 312 274 237 278
+	284 277 317 313 318 374 413 405 355 306 271 306
+	315 301 356 348 355 422 465 467 404 347 305 336
+	340 318 362 348 363 435 491 505 404 359 310 337
+	360 342 406 396 420 472 548 559 463 407 362 405
+	417 391 419 461 472 535 622 606 508 461 390 432)
+}
+
+x11{
+  save=(d10 d11 d12)
+}
+```
+
+Many required parameters have default values, so don't need to be speficied
+explicitly.  In this case, all that is supplied is a minimal `series` block, and
+a minimal `x11` block. The `series` block is used to provide the raw series;
+and the `x11` block means that the X11 algorithm will be used, rather than the
+SEATS method of adjustment, and series named `d10`, `d11`, and `d12` will be
+saved in external files (being the seasonal factors, the seasonally adjusted
+series, and the trend series, respectively).  Assuming the specification was
+saved as `airline.spc`, the adjustment would be run from the command line via
+something like:
+
+```bash
+x13ashtml airline
+```
+
+This is the same process used by the `sadj` package, though the details are
+hidden from users, and there are several minor modifications which will be
+noted in this document.  Importantly, specifications are held in R lists, and
+only briefly converted to physical specification files at the point of
+adjustment.  
+
+Convenience methods are provided for importing existing specification files into
+R, and will be covered below.  It will also be possible to work with
+specifications in JSON format, which might be a preferred format for some,
+particularly if the goal is to build a web service via OpenCPU, say.
+
+
+## Default specifications
+
+The simplest possible set of calls that yield an adjusted time series are as
+follows:
+
+```{r simple}
+ap <- X13Series(AirPassengers)
+ap.res <- adjust(ap)
+```
+
+In an earlier example, we saw a simple adjustment without any specifications
+being explicitly provided.  Actually, a default specification was provided,
+and the original call to `X13Series` could have been written in the following
+equivalent way:
+
+```r
+ap <- X13Series(AirPassengers, type = "x11")
+```
+
+If the SEATS method is preferred over X11, then a default SEATS adjustment is
+also readily available:
+
+```{r seats01}
+ap <- X13Series(AirPassengers, type = "seats")
+getSpecList(ap)
+```
+
+## Creating objects from scratch
+
+## Modifying existing objects
+
+An easy method is to decide whether one wants an X11 or SEATS adjustment,
+create an object with the appropriate default, and then modify the result.
+
+
+
+
+
+
