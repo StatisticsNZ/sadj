@@ -20,10 +20,11 @@ An updated version of input \code{x}.
 Set a spec parameter.
 }
 \examples{
-spec <- X13Spec(specname = "x11",
-                mode = "mult",
-                sigmalim = "(1.8,2.8)",
-                save = "(d8 d10 d11 d12 d13 c17)")
+spec <- X13Spec(
+  specname = "x11", mode = "mult", sigmalim = "(1.8,2.8)",
+  save = "(d8 d10 d11 d12 d13 c17)"
+)
+
 spec
 setSpecParameter(spec, "mode") <- "add"
 spec

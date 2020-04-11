@@ -4,7 +4,7 @@
 \alias{actual}
 \title{Get unadjusted data from \code{\link{X13SeriesResult}}.}
 \usage{
-actual(x)
+actual(x, as.vector = FALSE)
 }
 \description{
 Get unadjusted data from \code{\link{X13SeriesResult}}.

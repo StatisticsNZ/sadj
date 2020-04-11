@@ -10,12 +10,12 @@
 Combine \code{\link{X13Spec}} objects.
 }
 \examples{
-s1 <- X13Spec(specname = "x11",
-              mode = "mult")
+s1 <- X13Spec(specname = "x11", mode = "mult")
 
-s2 <- X13Spec(specname = "x11",
-              sigmalim = "(1.8,2.8)",
-              save = "(d8 d10 d11 d12 d13 c17)")
+s2 <- X13Spec(
+  specname = "x11", sigmalim = "(1.8,2.8)",
+  save = "(d8 d10 d11 d12 d13 c17)"
+)
 
 s1 \%+\% s2
 }
