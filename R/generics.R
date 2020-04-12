@@ -47,3 +47,8 @@ sname <- function(x, ...){
 lname <- function(x, ...){
   UseMethod("lname", x)
 }
+
+#' @export
+view <- function(x, ...){
+  UseMethod("view", x)
+}

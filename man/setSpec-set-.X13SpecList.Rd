@@ -17,16 +17,16 @@
 Set a spec.
 }
 \examples{
-specl <- X13SpecList(series = list(start = "1949.1",
-                                   period = "12",
-                                   title = "AirPassengers",
-                                   file = "AirPassengers.dat",
-                                   format = "datevalue",
-                                   save = "(b1)"))
+specl <- X13SpecList(
+  series = list(
+    start = "1949.1", period = "12", title = "AirPassengers",
+    file = "AirPassengers.dat", format = "datevalue", save = "(b1)"
+  )
+)
 
-setSpec(specl, "x11") <- list(mode = "mult",
-                              sigmalim = "(1.8,2.8)",
-                              save = "(d8 d10 d11 d12 d13 c17)")
+setSpec(specl, "x11") <- list(
+  mode = "mult", sigmalim = "(1.8,2.8)", save = "(d8 d10 d11 d12 d13 c17)"
+)
 
 setSpec(specl) <- X13Spec(specname = "transform", `function`="log")
 

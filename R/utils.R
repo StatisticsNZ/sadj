@@ -43,7 +43,6 @@ rmdups <- function(s, c = ' '){
   return(t)
 }
 
-
 #' Convert time series object to a suitable data frame.
 #'
 #' @param x Object of class \code{\link{ts}}.
@@ -109,11 +108,13 @@ writeDAT <- function(x, fname){
 
 #' Read SPC file.
 #'
-#' @keywords internal
+#' @param fname file name
+#'
+#' @export
 readSPC <- function(fname){
   if (!file.exists(fname))
     stop("File does not exist.")
-  if (!isOpen(f <- file(fname, "rt")))
+  if (!isOpen(f <- file(fname, "rb")))
     stop("Unable to open file for reading.")
   res <- list()
   comment <- FALSE
@@ -141,7 +142,7 @@ readSPC <- function(fname){
       else if (ch == "}"){
         if (!prev %in% c("\n", "\r")){
           val <- unquote(ltrim(rtrim(val)))
-          res[[i]][["args"]][[name]] <- val
+          if (name != "") res[[i]][["args"]][[name]] <- val
           rhs <- FALSE
           name <- ""
           val <- ""
@@ -195,12 +196,12 @@ readOutput <- function(x, outpdir, ext="d11"){
   if (!file.exists(fname))
     stop(sprintf("No such file: %s.", deparse(substitute(fname))))
 
-  infile <- file(fname, "r")
+  infile <- file(fname, "rb")
 
   #burn the first 2 lines
-  readLines(infile, n=2)
+  readLines(infile, n = 2)
 
-  aLine <- readLines(infile, n=1)
+  aLine <- readLines(infile, n = 1)
   yr  <- c()
   pd  <- c()
   res <- c()
@@ -230,5 +231,3 @@ mergeList <- function(x, ...){
     res <- merge(res, x[[i]], ...)
   res[order(res$year, res$period), ]
 }
-
-

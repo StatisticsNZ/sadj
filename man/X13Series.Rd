@@ -4,8 +4,15 @@
 \alias{X13Series}
 \title{Create an object to be adjusted by X13-ARIMA-SEATS.}
 \usage{
-X13Series(x, value = "value", sname = deparse(substitute(x)),
-  lname = sname, type = "x11", speclist, ...)
+X13Series(
+  x,
+  value = "value",
+  sname = deparse(substitute(x)),
+  lname = sname,
+  type = "x11",
+  speclist,
+  ...
+)
 }
 \arguments{
 \item{x}{A data frame containing a single time series--should have columns

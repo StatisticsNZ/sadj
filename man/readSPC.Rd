@@ -6,7 +6,9 @@
 \usage{
 readSPC(fname)
 }
+\arguments{
+\item{fname}{file name}
+}
 \description{
 Read SPC file.
 }
-\keyword{internal}

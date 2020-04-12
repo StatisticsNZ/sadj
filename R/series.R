@@ -29,13 +29,13 @@ X13Series <- function(x,
   attr(res, "sname") <- tolower(sname)
   attr(res, "lname") <- lname
   args <- list(...)
-  if (length(args) > 0){
+  if (length(args) > 0) {
     attr(res, "SpecList") <- do.call('X13SpecList', list(...))
     if (!missing(speclist))
       warn(sprintf("Specs provided as separate arguments.  Ignoring %s.",
                    deparse(substitute(speclist))))
   }
-  else{
+  else {
     if (missing(speclist) & tolower(type) == "x11") speclist <- .x11
     else if (missing(speclist) & tolower(type) == "seats") speclist <- .seats
     attr(res, "SpecList") <- speclist
@@ -142,7 +142,8 @@ writeSpecList <- function(x, ...){
   spec <- getSpecList(x)
   value <- x[, attr(x, "value")]
 
-  if (is.null(getSpecParameter(spec, "series", "file")) & is.null(getSpecParameter(spec, "series", "data"))){
+  if (is.null(getSpecParameter(spec, "series", "file")) &
+      is.null(getSpecParameter(spec, "series", "data"))) {
     f <- length(unique(x$period))
     d <- "("
     for (i in 1:length(value)){
@@ -231,6 +232,7 @@ adjust.X13Series <- function(x, purge = TRUE, ...){
   cmd <- sprintf("%s -m %s -s", binpath, specroot.X13Series(x))
   system(cmd, intern=TRUE)
   res <- importOutput(x)
+  attr(res, "input") <- x
   if (purge)
     clean(x)
   res

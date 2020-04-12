@@ -19,9 +19,11 @@ file = "AirPassengers.dat",
 format = "datevalue",
 save = "(b1)"))
 
-spec2 <- X13SpecList(x11 = list(mode = "mult",
-                                sigmalim = "(1.8,2.8)",
-                                save = "(d8 d10 d11 d12 d13 c17)"))
+spec2 <- X13SpecList(
+  x11 = list(
+    mode = "mult", sigmalim = "(1.8,2.8)", save = "(d8 d10 d11 d12 d13 c17)"
+  )
+)
 
 spec1 \%+\% spec2
 spec1 \%+\% spec2 \%+\% X13Spec(specname = "transform", `function`="log")

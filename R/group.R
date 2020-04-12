@@ -1,16 +1,8 @@
 #' Create an object to be adjusted by X13-ARIMA-SEATS.
 #'
-#' @param x A data frame containing a single time series--should have columns
-#' \code{year}, \code{period}, \code{value}.  If \code{x} is of class
-#' \code{\link{ts}}, then it will be converted to the required format.
 #' @param sname A short name for the series.
+#' @param ... a list of \code{X13Series} objects
 #' @param lname A long name for the series.
-#' @param type Either of \code{x11} or \code{seats}.  When \code{speclist} is
-#' left missing, a default is provided; and this determines whether the
-#' provided specification contains an \code{x11} or \code{seats} block.
-#' @param speclist A spec list created with \code{\link{X13SpecList}}.
-#' @param ... As an alternative to \code{SpecList}, a variable number of
-#' name-value pairs.
 #'
 #' @export
 X13SeriesGroup <- function(sname, ..., lname = sname){
@@ -65,7 +57,9 @@ adjust.X13SeriesGroup <- function(x, purge = TRUE, ...){
   system(cmd, intern=TRUE)
   res <- list()
   for(i in 1:length(x)){
-    res[[sname(x[[i]])]] <- importOutput(x[[i]])
+    res_ <- importOutput(x[[i]])
+    attr(res_, "input") <- x[[i]]
+    res[[sname(x[[i]])]] <- res_
     if (purge)
       clean(x[[i]])
   }

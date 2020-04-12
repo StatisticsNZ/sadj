@@ -105,7 +105,7 @@ We will show examples of both in this document.
 The `sadj` package provides a wrapper for the X13-ARIMA-SEATS program.  This is
 a command line program, the minimal input requirement of which is a so-called
 specification file.  A specification file is a text file with extension `spc`
-consisting of blocks of adjustement parameters as follows:
+consisting of blocks of adjustment parameters as follows:
 
 ```as.is
 specfication1{
@@ -204,13 +204,134 @@ getSpecList(ap)
 
 ## Creating objects from scratch
 
+By way of example, we re-create the default `.x11` spec described above from
+scratch.  We can create each individual specification separately:
+
+```{r spec01}
+series_spec <- X13Spec(
+  "series", save = "(b1)"
+)
+
+x11_spec <- X13Spec(
+  "x11",
+  mode = "mult", sigmalim = "(1.8,2.8)", save="(d8 d10 d11 d12 d13 c17)"
+)
+```
+
+Note that the parameters will be checked to see if they are valid for the spec
+they are being added to.  However, while the parameter name is checked, the
+value itself is not, and it is up to the user to ensure valid value are entered
+(this could be addressed in future updates, of course).  For example:
+
+```{r spec02}
+tryCatch(
+   X13Spec("series", foo = "bar"), 
+   error = function(e) e$message
+)
+```
+
+The full specification can then be created from the individual specs:
+
+```{r spec03}
+spec <- X13SpecList(
+  series = series_spec$args,
+  x11 = x11_spec$args
+)
+```
+
+This is not a very elegant interface and will likely be refined in future
+versions.  The same spec can be created all at once as follows (noting that the
+parameter names will still be checked):
+
+```{r spec04}
+spec <- X13SpecList(
+  series = list(
+    save = "(b1)"
+  ),
+  x11 = list(
+    mode = "mult", sigmalim="(1.8,2.8)", save = "(d8 d10 d11 d12 d13 c17)"
+  )
+)
+```
+
+As noted elsewhere, the intended used case is to create adjustable series within
+R using time series objects or data frames.  For example:
+
+```{r spec05}
+series <- X13Series(AirPassengers, speclist = spec)
+```
+
+In general, the `file` and `type` arguments to the `series` spec will be
+removed, and `data` and `start` parameters added that reflect the value of the
+series in the `X13Series` object.  For example, behind the scenes, what will
+actually be produced by the `series` object here is:
+
+```
+series{
+  save=(b1)
+  data=(
+    112  118  132  129
+    121  135  148  148
+    136  119  104  118
+    115  126  141  135
+    125  149  170  170
+    158  133  114  140
+    145  150  178  163
+    172  178  199  199
+    184  162  146  166
+    171  180  193  181
+    183  218  230  242
+    209  191  172  194
+    196  196  236  235
+    229  243  264  272
+    237  211  180  201
+    204  188  235  227
+    234  264  302  293
+    259  229  203  229
+    242  233  267  269
+    270  315  364  347
+    312  274  237  278
+    284  277  317  313
+    318  374  413  405
+    355  306  271  306
+    315  301  356  348
+    355  422  465  467
+    404  347  305  336
+    340  318  362  348
+    363  435  491  505
+    404  359  310  337
+    360  342  406  396
+    420  472  548  559
+    463  407  362  405
+    417  391  419  461
+    472  535  622  606
+    508  461  390  432)
+  start=1949.01
+  period=12
+}
+
+x11{
+  mode=mult
+  sigmalim=(1.8,2.8)
+  save=(d8 d10 d11 d12 d13 c17)
+}
+```
+
 ## Modifying existing objects
 
-An easy method is to decide whether one wants an X11 or SEATS adjustment,
-create an object with the appropriate default, and then modify the result.
+It is possible to modify the specification of an existing object.  In fact, this
+can be quite convenient&ndash;start with the default X11 or SEATS setup, and
+then modify it.  For example, to change the `mode` to `add` in the above example
+we could simply run:
 
+```{r spec06}
+setSpecParameter(spec, "x11", "mode") <- "add"
+spec
+```
 
+We can even add an entire spec.  For example:
 
-
-
-
+```{r spec07}
+setSpec(spec, "outlier") <- list()
+spec
+```

@@ -89,7 +89,7 @@ specifications when creating `X13Series` objects, or modifying specifications
 for existing objects.  The details of working with specifications are outlined
 in a vignette, `vignette("specifications", package = "sadj")`.
 
-In this simple example, no adjustement specifications were explicitly provided.
+In this simple example, no adjustment specifications were explicitly provided.
 In actual fact, though, a default specification was provided, and the original
 call to `X13Series` could have been written in the following equivalent way:
 

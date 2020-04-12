@@ -1,70 +1,94 @@
 #' @keywords internal
-.spec <- list(arima = c("model", "title", "ar", "ma"),
-              automdl = c("maxorder", "maxdiff", "acceptdefault", "checkmu",
-                          "diff", "ljungboxlimit", "mixed", "print", "savelog",
-                          "arimalimit", "balanced", "exactdiff", "fcstlim",
-                          "hrinitial", "reducecv", "refectfcst", "urfinal"),
-              check = c("maxlag", "print", "qtype", "save", "savelog"),
-              composite = c("title", "name", "decimals", "modelspan",
-                            "appendfcst", "appendbcst", "type", "print", "save",
-                            "savelog", "indoutlier"),
-              estimate = c("tol", "maxiter", "exact", "outofsample", "print",
-                           "save", "savelog", "file", "fix"),
-              force = c("lambda", "mode", "rho", "round", "start", "target",
-                        "type", "usefcst", "print", "save", "indforce"),
-              forecast = c("maxlead", "maxback", "probability", "exclude",
-                           "lognormal", "print", "save"),
-              history = c("estimates", "sadjlags", "trendlags", "target",
-                          "start", "fstep", "fixmdl", "fixreg", "endtable",
-                          "print", "save", "savelog", "fixx11reg", "outlier",
-                          "outlierwin", "refresh", "transformfcst",
-                          "x11outlier"),
-              metadata = c("keys", "values"),
-              identify = c("diff", "sdiff", "maxlag", "print"),
-              outlier = c("types", "critical", "method", "span", "lsrun",
-                          "print", "save", "savelog", "almost", "tcrate"),
-              pickmdl = c("mode", "method", "file", "fcstlim", "bcstlim",
-                          "qlim", "overdiff", "identify", "outofsample",
-                          "print", "savelog"),
-              regression = c("variables", "print", "save", "savelog", "user",
-                             "usertype", "start", "data", "aictest", "aicdiff",
-                             "tlimit", "chi2test", "chi2testcv", "pvaictest",
-                             "b", "centeruser", "eastermeans", "noapply",
-                             "tcrate"),
-              seats = c("appendfcst", "finite", "hpcycle", "noadmiss", "qmax",
-                        "rmod", "statseas", "out", "print", "printphtrf",
-                        "save", "savelog", "tabtables", "bias", "epsiv",
-                        "epsphi", "hplan", "imean", "maxit", "rmod", "xl"),
-              series = c("title", "start", "period", "file", "format", "span",
-                         "modelspan", "name", "data", "decimals", "precision",
-                         "comptype", "compwt", "print", "save", "appendfcst",
-                         "appendbcst", "type", "divpower", "missingcode",
-                         "missingval", "saveprecision", "trimzero"),
-              slidingspans = c("start", "length", "numspans", "cutchng",
-                               "cutseas", "cuttd", "outlier", "fixmdl",
-                               "fixreg", "print", "save", "savelog",
-                               "additivesa", "fixx11reg", "x11outlier"),
-              spectrum = c("logqs", "print", "save", "savelog", "start",
-                           "tukey120", "axis", "decibel", "difference", "maxar",
-                           "peakwidth", "series", "siglevel", "type"),
-              transform = c("function", "adjust", "title", "start", "data",
-                            "name", "aicdiff", "mode", "type", "print", "save",
-                            "savelog", "file", "format", "power", "constant",
-                            "trimzero"),
-              x11 = c("mode", "seasonalma", "trendma", "sigmalim", "title",
-                      "appendfcst", "appendbcst", "final", "print", "save",
-                      "savelog", "type", "calendarsigma", "centerseasonal",
-                      "keepholiday", "print1stpass", "sfshort", "sigmavec",
-                      "trendic", "true7term"),
-              x11regression = c("variables", "user", "start", "data", "file",
-                                "format", "tdprior", "aictest", "aicdiff",
-                                "span", "sigma", "critical", "outliermethod",
-                                "outlierspan", "usertype", "prior", "print",
-                                "save", "savelog", "almost", "centeruser",
-                                "eastermeans", "forcecal", "noapply",
-                                "reweight", "umdata", "umfile", "umformat",
-                                "umname", "umprecision", "umstart",
-                                "umtrimzero"))
+.spec <- list(
+  arima = c(
+    "model", "title", "ar", "ma"
+  ),
+  automdl = c(
+    "maxorder", "maxdiff", "acceptdefault", "checkmu", "diff", "ljungboxlimit",
+    "mixed", "print", "savelog", "arimalimit", "balanced", "exactdiff",
+    "fcstlim", "hrinitial", "reducecv", "refectfcst", "urfinal"
+  ),
+  check = c(
+    "maxlag", "print", "qtype", "save", "savelog"
+  ),
+  composite = c(
+    "title", "name", "decimals", "modelspan", "appendfcst", "appendbcst",
+    "type", "print", "save", "savelog", "indoutlier"
+  ),
+  estimate = c(
+    "tol", "maxiter", "exact", "outofsample", "print", "save", "savelog",
+    "file", "fix"
+  ),
+  force = c(
+    "lambda", "mode", "rho", "round", "start", "target", "type", "usefcst",
+    "print", "save", "indforce"
+  ),
+  forecast = c(
+    "maxlead", "maxback", "probability", "exclude", "lognormal", "print", "save"
+  ),
+  history = c(
+    "estimates", "sadjlags", "trendlags", "target", "start", "fstep", "fixmdl",
+    "fixreg", "endtable", "print", "save", "savelog", "fixx11reg", "outlier",
+    "outlierwin", "refresh", "transformfcst", "x11outlier"
+  ),
+  metadata = c(
+    "keys", "values"
+  ),
+  identify = c(
+    "diff", "sdiff", "maxlag", "print"
+  ),
+  outlier = c(
+    "types", "critical", "method", "span", "lsrun", "print", "save", "savelog",
+    "almost", "tcrate"
+  ),
+  pickmdl = c(
+    "mode", "method", "file", "fcstlim", "bcstlim", "qlim", "overdiff",
+    "identify", "outofsample", "print", "savelog"
+  ),
+  regression = c(
+    "variables", "print", "save", "savelog", "user", "usertype", "start",
+    "data", "aictest", "aicdiff", "tlimit", "chi2test", "chi2testcv",
+    "pvaictest", "b", "centeruser", "eastermeans", "noapply", "tcrate"
+  ),
+  seats = c(
+    "appendfcst", "finite", "hpcycle", "noadmiss", "qmax", "rmod", "statseas",
+    "out", "print", "printphtrf", "save", "savelog", "tabtables", "bias",
+    "epsiv", "epsphi", "hplan", "imean", "maxit", "rmod", "xl"
+  ),
+  series = c(
+    "title", "start", "period", "file", "format", "span", "modelspan", "name",
+    "data", "decimals", "precision", "comptype", "compwt", "print", "save",
+    "appendfcst", "appendbcst", "type", "divpower", "missingcode", "missingval",
+    "saveprecision", "trimzero"
+  ),
+  slidingspans = c(
+    "start", "length", "numspans", "cutchng", "cutseas", "cuttd", "outlier",
+    "fixmdl", "fixreg", "print", "save", "savelog", "additivesa", "fixx11reg",
+    "x11outlier"
+  ),
+  spectrum = c(
+    "logqs", "print", "save", "savelog", "start", "tukey120", "axis", "decibel",
+    "difference", "maxar", "peakwidth", "series", "siglevel", "type"
+  ),
+  transform = c(
+    "function", "adjust", "title", "start", "data", "name", "aicdiff", "mode",
+    "type", "print", "save", "savelog", "file", "format", "power", "constant",
+    "trimzero"
+  ),
+  x11 = c(
+    "mode", "seasonalma", "trendma", "sigmalim", "title", "appendfcst",
+    "appendbcst", "final", "print", "save", "savelog", "type", "calendarsigma",
+    "centerseasonal", "keepholiday", "print1stpass", "sfshort", "sigmavec",
+    "trendic", "true7term"
+  ),
+  x11regression = c(
+    "variables", "user", "start", "data", "file", "format", "tdprior",
+    "aictest", "aicdiff", "span", "sigma", "critical", "outliermethod",
+    "outlierspan", "usertype", "prior", "print", "save", "savelog", "almost",
+    "centeruser", "eastermeans", "forcecal", "noapply", "reweight", "umdata",
+    "umfile", "umformat", "umname", "umprecision", "umstart", "umtrimzero"
+  )
+)
 
 #' @keywords internal
 .x11 <- structure(list(
@@ -111,10 +135,11 @@
 #' \code{args}, is a list of name-value pairs.
 #'
 #' @examples
-#' spec <- X13Spec(specname = "x11",
-#'                 mode = "mult",
-#'                 sigmalim = "(1.8,2.8)",
-#'                 save = "(d8 d10 d11 d12 d13 c17)")
+#' spec <- X13Spec(
+#'   specname = "x11", mode = "mult", sigmalim = "(1.8,2.8)",
+#'   save = "(d8 d10 d11 d12 d13 c17)"
+#' )
+#'
 #' spec
 X13Spec <- function(specname = "series", ...){
   specname = tolower(specname)
@@ -154,15 +179,16 @@ X13Spec <- function(specname = "series", ...){
 #' list is of class \code{\link{X13Spec}}.
 #'
 #' @examples
-#' specl <- X13SpecList(series = list(start = "1949.1",
-#'                                    period = "12",
-#'                                    title = "AirPassengers",
-#'                                    file = "AirPassengers.dat",
-#'                                    format = "datevalue",
-#'                                    save = "(b1)"),
-#'                      x11 = list(mode = "mult",
-#'                                 sigmalim = "(1.8,2.8)",
-#'                                 save = "(d8 d10 d11 d12 d13 c17)"))
+#' specl <- X13SpecList(
+#'   series = list(
+#'     start = "1949.1", period = "12", title = "AirPassengers",
+#'     file = "AirPassengers.dat", format = "datevalue", save = "(b1)"
+#'   ),
+#'   x11 = list(
+#'     mode = "mult", sigmalim = "(1.8,2.8)",
+#'     save = "(d8 d10 d11 d12 d13 c17)"
+#'   )
+#' )
 #' specl
 X13SpecList <- function(...){
   args <- list(...)
@@ -241,10 +267,11 @@ getSpecParameter.X13SpecList <- function(x, spec, parameter){
 #' @return An updated version of input \code{x}.
 #'
 #' @examples
-#' spec <- X13Spec(specname = "x11",
-#'                 mode = "mult",
-#'                 sigmalim = "(1.8,2.8)",
-#'                 save = "(d8 d10 d11 d12 d13 c17)")
+#' spec <- X13Spec(
+#'   specname = "x11", mode = "mult", sigmalim = "(1.8,2.8)",
+#'   save = "(d8 d10 d11 d12 d13 c17)"
+#' )
+#'
 #' spec
 #' setSpecParameter(spec, "mode") <- "add"
 #' spec
@@ -300,16 +327,16 @@ getSpecParameter.X13SpecList <- function(x, spec, parameter){
 #' @export
 #'
 #' @examples
-#' specl <- X13SpecList(series = list(start = "1949.1",
-#'                                    period = "12",
-#'                                    title = "AirPassengers",
-#'                                    file = "AirPassengers.dat",
-#'                                    format = "datevalue",
-#'                                    save = "(b1)"))
+#' specl <- X13SpecList(
+#'   series = list(
+#'     start = "1949.1", period = "12", title = "AirPassengers",
+#'     file = "AirPassengers.dat", format = "datevalue", save = "(b1)"
+#'   )
+#' )
 #'
-#' setSpec(specl, "x11") <- list(mode = "mult",
-#'                               sigmalim = "(1.8,2.8)",
-#'                               save = "(d8 d10 d11 d12 d13 c17)")
+#' setSpec(specl, "x11") <- list(
+#'   mode = "mult", sigmalim = "(1.8,2.8)", save = "(d8 d10 d11 d12 d13 c17)"
+#' )
 #'
 #' setSpec(specl) <- X13Spec(specname = "transform", `function`="log")
 #'
@@ -341,16 +368,16 @@ getSpecParameter.X13SpecList <- function(x, spec, parameter){
 #' @return A copy of \code{x} with named spec removed.
 #'
 #' @examples
-#' specl <- X13SpecList(series = list(start = "1949.1",
-#'                                    period = "12",
-#'                                    title = "AirPassengers",
-#'                                    file = "AirPassengers.dat",
-#'                                    format = "datevalue",
-#'                                    save = "(b1)"),
-#'                      x11 = list(mode = "mult",
-#'                                 sigmalim = "(1.8,2.8)",
-#'                                 save = "(d8 d10 d11 d12 d13 c17)"),
-#'                      outlier = NULL)
+#' specl <- X13SpecList(
+#'   series = list(
+#'     start = "1949.1", period = "12", title = "AirPassengers",
+#'     file = "AirPassengers.dat",  format = "datevalue", save = "(b1)"
+#'   ),
+#'   x11 = list(
+#'     mode = "mult", sigmalim = "(1.8,2.8)", save = "(d8 d10 d11 d12 d13 c17)"
+#'   ),
+#'   outlier = NULL
+#' )
 #' specl
 #' specl <- removeSpec(specl, "outlier")
 #' specl
@@ -404,12 +431,12 @@ print.X13SpecList <- function(x, ...){
 #' @export
 #'
 #' @examples
-#' s1 <- X13Spec(specname = "x11",
-#'               mode = "mult")
+#' s1 <- X13Spec(specname = "x11", mode = "mult")
 #'
-#' s2 <- X13Spec(specname = "x11",
-#'               sigmalim = "(1.8,2.8)",
-#'               save = "(d8 d10 d11 d12 d13 c17)")
+#' s2 <- X13Spec(
+#'   specname = "x11", sigmalim = "(1.8,2.8)",
+#'   save = "(d8 d10 d11 d12 d13 c17)"
+#' )
 #'
 #' s1 %+% s2
 `%+%.X13Spec` <- function(e1, e2){
@@ -439,9 +466,11 @@ print.X13SpecList <- function(x, ...){
 #' format = "datevalue",
 #' save = "(b1)"))
 #'
-#' spec2 <- X13SpecList(x11 = list(mode = "mult",
-#'                                 sigmalim = "(1.8,2.8)",
-#'                                 save = "(d8 d10 d11 d12 d13 c17)"))
+#' spec2 <- X13SpecList(
+#'   x11 = list(
+#'     mode = "mult", sigmalim = "(1.8,2.8)", save = "(d8 d10 d11 d12 d13 c17)"
+#'   )
+#' )
 #'
 #' spec1 %+% spec2
 #' spec1 %+% spec2 %+% X13Spec(specname = "transform", `function`="log")

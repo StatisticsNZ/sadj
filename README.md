@@ -93,7 +93,7 @@ modifying specifications for existing objects. The details of working
 with specifications are outlined in a vignette,
 `vignette("specifications", package = "sadj")`.
 
-In this simple example, no adjustement specifications were explicitly
+In this simple example, no adjustment specifications were explicitly
 provided. In actual fact, though, a default specification was provided,
 and the original call to `X13Series` could have been written in the
 following equivalent way:
@@ -133,8 +133,7 @@ ap.res <- adjust(ap)
 
 The result in this case is of class `X13SeriesResult`. It is a data
 frame containing the raw series and `X13-ARIMA-SEATS` output tables such
-as `d10`, `d11`, and `d12` as
-columns:
+as `d10`, `d11`, and `d12` as columns:
 
 ``` r
 head(ap.res, 10)
@@ -220,8 +219,7 @@ summary(ap.res)
 | f3.qm2 | 0.29       |
 
 There are a range of built-in plotting functions provided to visualise
-the
-results:
+the results:
 
 ``` r
 plot(ap.res)
