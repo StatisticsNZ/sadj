@@ -14,7 +14,11 @@ Depends:
     ggplot2,
     reshape2
 VignetteBuilder: knitr
+<<<<<<< HEAD
 RoxygenNote: 7.0.2
+=======
+RoxygenNote: 7.1.0
+>>>>>>> 3b41c4c589dbf56c43b32db268afb1238fda4229
 Suggests: 
     testthat,
     plotly,
