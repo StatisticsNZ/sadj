@@ -33,7 +33,8 @@ library(devtools)
 
 install_git(
   "git@gitlabstats-prd:cxhansen/sadj.git",
-  credentials = cred_ssh_key()
+  credentials = cred_ssh_key(),
+  build_vignettes = TRUE
 )
 ```
 
@@ -44,7 +45,7 @@ library(git2r)
 library(devtools)
 
 ssl_cert_locations(filename = "/etc/ssl/certs/ca-certificates.crt")
-install_git("https://gitlabstats-prd/cxhansen/sadj.git")
+install_git("https://gitlabstats-prd/cxhansen/sadj.git", build_vignettes = TRUE)
 ```
 
 # Basic Usage

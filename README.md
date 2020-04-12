@@ -15,7 +15,8 @@ library(devtools)
 
 install_git(
   "git@gitlabstats-prd:cxhansen/sadj.git",
-  credentials = cred_ssh_key()
+  credentials = cred_ssh_key(),
+  build_vignettes = TRUE
 )
 ```
 
@@ -26,7 +27,7 @@ library(git2r)
 library(devtools)
 
 ssl_cert_locations(filename = "/etc/ssl/certs/ca-certificates.crt")
-install_git("https://gitlabstats-prd/cxhansen/sadj.git")
+install_git("https://gitlabstats-prd/cxhansen/sadj.git", build_vignettes = TRUE)
 ```
 
 # Basic Usage
@@ -133,7 +134,8 @@ ap.res <- adjust(ap)
 
 The result in this case is of class `X13SeriesResult`. It is a data
 frame containing the raw series and `X13-ARIMA-SEATS` output tables such
-as `d10`, `d11`, and `d12` as columns:
+as `d10`, `d11`, and `d12` as
+columns:
 
 ``` r
 head(ap.res, 10)
@@ -219,7 +221,8 @@ summary(ap.res)
 | f3.qm2 | 0.29       |
 
 There are a range of built-in plotting functions provided to visualise
-the results:
+the
+results:
 
 ``` r
 plot(ap.res)
