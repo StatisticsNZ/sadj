@@ -67,36 +67,34 @@ view.X13SeriesGroupResult <- function(x) {
   }
   else {
     shiny::shinyApp(
-      ui = shiny::fluidPage(
-        shiny::titlePanel(deparse(substitute(x))),
-        shiny::sidebarLayout(
-          shiny::sidebarPanel(width = 3,
-            shiny::selectizeInput(
-              "series", "select series:",
-              choices = setNames(
-                as.list(names(x)),
-                sapply(empgrp.res, function(x) attr(attr(x, "input"), "lname"))
-              )
+      ui = shiny::basicPage(
+        shiny::h1(deparse(substitute(x))),
+        shiny::div(
+          shiny::selectizeInput(
+            "series", "select series:",
+            choices = setNames(
+              as.list(names(x)),
+              sapply(empgrp.res, function(x) attr(attr(x, "input"), "lname"))
             )
-          ),
-          shiny::mainPanel(width = 9,
-            shiny::tabsetPanel(
-              shiny::tabPanel(
-                "Original, SA, Trend",
-                plotly::plotlyOutput(
-                  "allseries", height = "700px"
-                )
-              ),
-              shiny::tabPanel(
-                "Seasonal Factors",
-                plotly::plotlyOutput(
-                  "factors", height = "700px"
-                )
-              ),
-              shiny::tabPanel(
-                "Diagnostics",
-                shiny::div(shiny::tableOutput("summary"), style = "padding: 10px;")
+          )
+        ),
+        shiny::div(
+          shiny::tabsetPanel(
+            shiny::tabPanel(
+              "Original, SA, Trend",
+              plotly::plotlyOutput(
+                "allseries", height = "600px"
               )
+            ),
+            shiny::tabPanel(
+              "Seasonal Factors",
+              plotly::plotlyOutput(
+                "factors", height = "600px"
+              )
+            ),
+            shiny::tabPanel(
+              "Diagnostics",
+              shiny::div(shiny::tableOutput("summary"), style = "padding: 10px;")
             )
           )
         )
