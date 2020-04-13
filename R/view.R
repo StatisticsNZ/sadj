@@ -74,7 +74,7 @@ view.X13SeriesGroupResult <- function(x) {
             "series", "select series:",
             choices = setNames(
               as.list(names(x)),
-              sapply(empgrp.res, function(x) attr(attr(x, "input"), "lname"))
+              sapply(x, function(x) attr(attr(x, "input"), "lname"))
             )
           )
         ),
