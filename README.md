@@ -235,3 +235,21 @@ plot(ap.res, type = "seasonal")
 ```
 
 <img src="README_files/figure-gfm/simpleex.res.plot2-1.png" style="display: block; margin: auto;" />
+
+A simple result viewer is also provided as a Shiny app. For example, to
+view the `ap.res` object above, simply run:
+
+``` r
+view(ap.res)
+```
+
+(Note the lower case ‘v’.) This will yield:
+
+\[img/viewer01.png\]
+
+It will also work with grouped adjustments, for example:
+
+\[img/viewer02.png\]
+
+Again, these are very simple interfaces, but they serve as a reasonable
+proof of concept which could easily be extended.
