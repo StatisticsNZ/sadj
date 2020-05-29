@@ -180,10 +180,10 @@ view(ap.res)
 
 (Note the lower case 'v'.)  This will yield:
 
-![img/viewer01.png]
+!()[img/viewer01.png]
 
 It will also work with grouped adjustments, for example:
 
-![img/viewer02.png]
+!()[img/viewer02.png]
 
 Again, these are very simple interfaces, but they serve as a reasonable proof of concept which could easily be extended.
