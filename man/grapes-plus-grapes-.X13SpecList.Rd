@@ -5,7 +5,7 @@
 \title{Combine \code{\link{X13SpecList}} objects, or add an \code{\link{X13Spec}}
 object to an existing X13SpecList object.}
 \usage{
-\method{\%+\%}{X13SpecList}(e1, e2)
+`\%+\%.X13SpecList`(e1, e2)
 }
 \description{
 Combine \code{\link{X13SpecList}} objects, or add an \code{\link{X13Spec}}

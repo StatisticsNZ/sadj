@@ -18,13 +18,20 @@ rtrim <- function(s){
   t
 }
 
+#' Trim whitespace
+#'
+#' @keywords internal
+trim <- function(s) ltrim(rtrim(s))
+
 #' Remove quotes from string.
 #'
 #' @keywords internal
-unquote <- function(s){
-  if (substr(s, 1, 1) %in% c("\'", "\"") & substr(s, nchar(s), nchar(s)) %in% c("\'", "\""))
-    s <- substr(s, 2, nchar(s) - 1)
-  s
+unquote <- function(s) {
+  # if (grepl(" ", s)) return(s)
+  if (substr(s, 1, 1) %in% c("\'", "\"") &
+      substr(s, nchar(s), nchar(s)) %in% c("\'", "\""))
+    substr(s, 2, nchar(s) - 1)
+  else s
 }
 
 #' Replace blocks adjacent matching characters with single character in string.
@@ -41,6 +48,84 @@ rmdups <- function(s, c = ' '){
     }
   }
   return(t)
+}
+
+#' String concatenation that eats unnecessary whitespace.
+#'
+#' @keywords internal
+`%+%` <- function(a, b) {
+  lr <- substr(a, nchar(a), nchar(a)) == " "
+  rl <- substr(b, 1, 1) == " "
+  rr <- substr(b, nchar(b), nchar(b)) == " "
+  if (a == "") ltrim(b)
+  else if (b == "") paste0(ltrim(a), if (lr) " ")
+  if (a == " " & b == " ") ""
+  else if (a == " ") ltrim(b)
+  else if (b == " ") paste0(trim(a), " ")
+  else paste0(trim(a), if (lr | rl) " ", trim(b), if (rr) " ")
+}
+
+#' Parse a string into individual values.
+#'
+#' @keywords internal
+split <-function(str) {
+  squote <- 0
+  dquote <- 0
+  buff <- ""
+  accum <- c()
+  for (i in 1:nchar(str)) {
+    ch <- substr(str, i, i)
+    quote <- (squote + dquote) %% 2 != 0
+    if (ch == "'") {
+      squote <- squote + 1
+      if (quote) {
+        accum <- c(accum, trim(paste0(buff, ch)))
+        buff <- ""
+      } else {
+        buff <- paste0(buff, ch)
+      }
+    } else if (ch == '"') {
+      if (ch == "'") {
+        dquote <- dquote + 1
+        if (quote) {
+          accum <- c(accum, trim(paste0(buff, ch)))
+          buff <- ""
+        } else {
+          buff <- paste0(buff, ch)
+        }
+      }
+    } else if (ch == " " & !quote) {
+      if (buff != "") {
+        accum <- c(accum, trim(buff))
+        buff <- ""
+      }
+    } else {
+      buff <- paste0(buff, ch)
+    }
+  }
+  if (nchar(trim(buff)) != 0) c(accum, buff)
+  else accum
+}
+
+#' Gather a list of values into a string, with linebreaks where required.
+#'
+#' @keywords internal
+gather <- function(xs, max = 132, indent = 4) {
+  buff <- ""
+  accum <- ""
+  for (x in xs) {
+    if (nchar(sprintf("%s %s", buff, x)) > (max - indent)) {
+      accum <- sprintf(
+        "%s\n%s%s", accum, paste(rep(' ', indent), collapse = ""), buff
+      )
+      buff <- x
+    } else
+      buff <- sprintf("%s%s%s", buff, if (nchar(buff) == 0) "" else " ", x)
+  }
+  if (nchar(buff) != 0)
+    sprintf("%s\n%s%s", accum, paste(rep(' ', indent), collapse = ""), buff)
+  else
+    accum
 }
 
 #' Convert time series object to a suitable data frame.
@@ -112,6 +197,121 @@ writeDAT <- function(x, fname){
 #'
 #' @export
 readSPC <- function(fname){
+  if (!file.exists(fname))
+    stop("File does not exist.")
+  if (!isOpen(f <- file(fname, "rb")))
+    stop("Unable to open file for reading.")
+  res <- list()
+  comment <- FALSE        # after '#' until end of line
+  block <- FALSE          # inside { ... }
+  innerblock <- FALSE     # inside ( ... )
+  rhs <- FALSE            # after = until } or newling if !block
+  quote <- FALSE          # inside a quoted string
+  numsquote <- 0          # number of single quotes
+  numdquote <- 0          # number of double quotes
+  spc <- ""               # name of spec, e.g. x11, series, outlier, etc.
+  name <- ""              # name of parameter, e.g. title, sigmalim, etc.
+  val <- ""               # value of paramter
+  i <- 1                  # index of spec
+  while (length(ch <- readChar(f, 1)) > 0){
+    quote <- (numdquote %% 2 != 0) | (numsquote %% 2 != 0)
+
+    '
+    cat(sprintf(
+      "ch: % 2s, spc: %s, name: %s, val: %s, dquote: %d, squote: %d, quote: %s\n",
+      if (ch == "\n") "\\n" else if (ch == "\r") "\\r" else ch,
+      spc, name, val,
+      numdquote, numsquote, quote
+    ))
+    '
+
+    if (ch == "#" & !quote) comment <- TRUE
+    if (ch %in% c("\n", "\r")) comment <- FALSE
+    if (comment) next
+
+    # _should_ only encounter parenthesis on the RHS of parameters values.
+    if (ch == '"') {
+      numdquote <- numdquote + 1
+      if (innerblock) val <- if (trim(val) == "(") "(" %+% ch else val %+% ch
+      else if (rhs) {
+        val <- trim(val) %+% ch
+        if (quote) {
+          res[[i]][["args"]][[name]] <- unquote(val)
+          rhs <- FALSE
+          name <- ""
+          val <- ""
+        }
+      }
+    }
+    else if (ch == "'") {
+      numsquote <- numsquote + 1
+      if (innerblock) val <- if (trim(val) == "(") "(" %+% ch else val %+% ch
+      else if (rhs) {
+        val <- trim(val) %+% ch
+        if (quote) {
+          res[[i]][["args"]][[name]] <- unquote(val)
+          rhs <- FALSE
+          name <- ""
+          val <- ""
+        }
+      }
+    }
+    else if (quote) val <- val %+% ch
+    else if (ch %in% c("\n", "\r")) {
+      if (innerblock)
+        val <- trim(val) %+% " "
+      else if (rhs) {
+        res[[i]][["args"]][[name]] <- trim(val)
+        name = ""
+        val = ""
+        rhs = FALSE
+      }
+    }
+    else if (ch == "=")  rhs <- TRUE
+    else if (ch == "{") {
+      block <- TRUE
+      res[[i]] <- structure(list(), class = "X13Spec")
+      res[[i]][["name"]] <- spc
+      res[[i]][["args"]] <- list()
+    }
+    else if (ch == "}"){
+      if (name != "" & val != "") res[[i]][["args"]][[name]] <- trim(val)
+      rhs <- FALSE
+      name <- ""
+      val <- ""
+      block <- FALSE
+      i <- i + 1
+      spc <- ""
+    }
+    else if (ch == "(") {
+      val <- val %+% ch
+      innerblock <- TRUE
+    }
+    else if (ch == ")") {
+      val <- paste0(trim(val), ch)
+      innerblock <- FALSE
+    }
+    else {
+      if (rhs) val <- if (trim(val) == "(") "(" %+% ch else val %+% ch
+      else if (block) name <- tolower(trim(name %+% ch))
+      else spc <- tolower(trim(spc %+% ch))
+    }
+  }
+  close(f)
+  for (i in 1:length(res))
+    names(res)[i] <- res[[i]][[1]]
+  structure(res, class = "X13SpecList")
+}
+
+#' Read SPC file.
+#'
+#' This is the original version, containing bugs.
+#' It will be removed after readSPC has been tested fully.
+#'
+#' @param fname file name
+#'
+#' @keywords internal
+readSPC0 <- function(fname){
   if (!file.exists(fname))
     stop("File does not exist.")
   if (!isOpen(f <- file(fname, "rb")))

@@ -48,7 +48,7 @@
   regression = c(
     "variables", "print", "save", "savelog", "user", "usertype", "start",
     "data", "aictest", "aicdiff", "tlimit", "chi2test", "chi2testcv",
-    "pvaictest", "b", "centeruser", "eastermeans", "noapply", "tcrate"
+    "pvaictest", "b", "centeruser", "eastermeans", "noapply", "tcrate", "file"
   ),
   seats = c(
     "appendfcst", "finite", "hpcycle", "noadmiss", "qmax", "rmod", "statseas",
@@ -396,13 +396,27 @@ toString.X13Spec <- function(x, ...){
   }
   res <- paste0(x$name, "{\n")
   for (i in 1:length(x$args)){
-    if (names(x$args)[i]%in%c("file", "title", "name"))
-      res <- paste0(res, "  ", names(x$args)[i], "=\'", x$args[[i]], "\'\n")
-    else
-      res <- paste0(res, "  ", names(x$args)[i], "=", x$args[[i]], "\n")
+    val <- x$args[[i]]
+    isarray <- substr(val, 1, 1) == "(" & substr(val, nchar(val), nchar(val)) == ")"
+    if (names(x$args)[i]%in%c("file", "title", "name")) {
+      res <-
+        if (isarray)
+          paste0(res, "  ", names(x$args)[i], "=", val, "\n")
+        else paste0(res, "  ", names(x$args)[i], "=\'", val, "\'\n")
+    }
+    else {
+      if (isarray) {
+        if (nchar(val) > (132 - 4 - nchar(names(x$args)[i]))) {
+          newval = gather(split(substr(val, 2, nchar(val) - 1)))
+          res <- paste0(res, "  ", names(x$args)[i], "=(", newval, "\n  )\n")
+        } else {
+          res <- paste0(res, "  ", names(x$args)[i], "=", val, "\n")
+        }
+      }
+      else res <- paste0(res, "  ", names(x$args)[i], "=", val, "\n")
+    }
   }
-  res <- paste0(res, "}\n")
-  res
+  paste0(res, "}\n")
 }
 
 #' @export
