@@ -344,7 +344,7 @@ plot.X13SeriesResult <- function(x, interactive = FALSE, type = "default", ...){
   x$seasfact <- x$original / x$seasadj
   x$irregular <- x$seasadj / x$trend
   x$date <- date(x)
-  x$year <- substr(x$year, 3, 4)
+  # x$year <- substr(x$year, 3, 4)
 
   X <- melt(x[, c("year", "period", "date", "original", "seasadj", "trend")],
             id.vars = c("year", "period", "date"))
