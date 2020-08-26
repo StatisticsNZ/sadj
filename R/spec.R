@@ -285,7 +285,8 @@ getSpecParameter.X13SpecList <- function(x, spec, parameter){
     x$args[[name]] <- NULL
   else
     x$args[[name]] <- ifelse(name %in% c("file", "title", "name"),
-                             sprintf("'%s'", value),
+                             # sprintf("'%s'", value),
+                             value,
                              value)
   x
 }
@@ -312,7 +313,8 @@ getSpecParameter.X13SpecList <- function(x, spec, parameter){
       x[[spec]]$args[[name]] <- NULL
     else
       x[[spec]]$args[[name]] <- ifelse(name %in% c("file", "title", "name"),
-                                       sprintf("'%s'", value),
+                                       # sprintf("'%s'", value),
+                                       value,
                                        value)
   }
   x
