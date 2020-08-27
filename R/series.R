@@ -25,6 +25,7 @@ X13Series <- function(x,
                       ...){
   if (inherits(x, "ts")) res <- tsdf(x)
   else res <- data.frame(x)[, c("year", "period", value)]
+  res <- cbind(date=date(res),res)
   attr(res, "value") <- value
   attr(res, "sname") <- tolower(sname)
   attr(res, "lname") <- lname
@@ -114,7 +115,7 @@ removeSpec.X13Series <- function(x, specname){
 #'
 #' @export
 plot.X13Series <- function(x, interactive = FALSE, ...){
-  x$date <- date(x)
+  # x$date <- date(x)
   p <- ggplot(data = x, aes_string("date", attr(x, "value"))) +
     geom_line() +
     xlab("") +
@@ -207,7 +208,8 @@ importOutput <- function(x, ...){
   }
 
   res <- mergeList(df, by = c("year", "period"))
-  res <- merge(x, res, by = c("year", "period"), sort = FALSE)
+  res <- cbind(date=date(res), res)
+  res <- merge(x, res, by = c("date","year", "period"), sort = FALSE)
   class(res) <- c("X13SeriesResult", class(res))
   attr(res, "value") <- attr(x, "value")
   for (a in names(nondf))
@@ -343,7 +345,7 @@ plot.X13SeriesResult <- function(x, interactive = FALSE, type = "default", ...){
   colnames(x)[colnames(x)%in%c("d10", "s10")] <- "sf"
   x$seasfact <- x$original / x$seasadj
   x$irregular <- x$seasadj / x$trend
-  x$date <- date(x)
+  # x$date <- date(x)
   # x$year <- substr(x$year, 3, 4)
 
   X <- melt(x[, c("year", "period", "date", "original", "seasadj", "trend")],
