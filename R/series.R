@@ -338,11 +338,22 @@ summary.X13SeriesResult <- function(x, html = FALSE, ...){
 #' @import ggplot2
 #'
 #' @export
-plot.X13SeriesResult <- function(x, interactive = FALSE, type = "default", ...){
+plot.X13SeriesResult <- function(x, interactive = FALSE, type = "default", comp_indirect = FALSE, ...){
+
   colnames(x)[colnames(x)%in%c(attr(x, "value"))] <- "original"
-  colnames(x)[colnames(x)%in%c("d11", "s11")] <- "seasadj"
-  colnames(x)[colnames(x)%in%c("d12", "s12")] <- "trend"
-  colnames(x)[colnames(x)%in%c("d10", "s10")] <- "sf"
+
+  if (comp_indirect) {
+    colnames(x)[colnames(x)%in%c("isa")] <- "seasadj"
+    colnames(x)[colnames(x)%in%c("itn")] <- "trend"
+    colnames(x)[colnames(x)%in%c("isf")] <- "sf"
+
+  } else {
+
+    colnames(x)[colnames(x)%in%c("d11", "s11")] <- "seasadj"
+    colnames(x)[colnames(x)%in%c("d12", "s12")] <- "trend"
+    colnames(x)[colnames(x)%in%c("d10", "s10")] <- "sf"
+  }
+
   x$seasfact <- x$original / x$seasadj
   x$irregular <- x$seasadj / x$trend
   # x$date <- date(x)

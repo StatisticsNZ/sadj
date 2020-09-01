@@ -14,12 +14,14 @@ readUDG <- function(x, outpdir, ext = "udg"){
   if (!isOpen(f, "r"))
     stop(sprintf("Failed to open UDG file for reading:\n  %s.", fname))
 
-  l <- readLines(f)
+  # l <- readLines(f)
+  l <- readLines(f, skipNul = TRUE)
   o <- structure(list(), class = "X13Diagnostics")
   pos <- 1
 
   for (i in 1:length(l)){
-    s <- strsplit(rmdups(ltrim(rtrim(l[i]))), ':')[[1]]
+    f_line <- iconv(l[i], "latin1", "ASCII", sub="")
+    s <- strsplit(rmdups(ltrim(rtrim(f_line))), ':')[[1]]
     for (j in 1:length(s))
       s[j] <- rmdups(ltrim(rtrim(s[j])))
     n <- s[1]
