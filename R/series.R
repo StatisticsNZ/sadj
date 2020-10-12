@@ -27,6 +27,10 @@ X13Series <- function(x,
   else res <- data.frame(x)[, c("year", "period", value)]
   res <- cbind(date=date(res),res)
   attr(res, "value") <- value
+
+  # Try to handle snames derived from list element
+  if(missing(sname) && grepl("\\[\\[\"\\w+\"\\]\\]",sname)) sname <- str_extract_all(sname, "\\w+")[[1]][[2]]
+
   attr(res, "sname") <- tolower(sname)
   attr(res, "lname") <- lname
   args <- list(...)
