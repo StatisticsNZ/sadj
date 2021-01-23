@@ -202,10 +202,11 @@ readSPC <- function(fname){
   if (!isOpen(f <- file(fname, "rb")))
     stop("Unable to open file for reading.")
   res <- list()
-  comment <- FALSE        # after '#' until end of line
+  comments <- vector(mode="character")
+  is_comment <- FALSE        # after '#' until end of line
   block <- FALSE          # inside { ... }
   innerblock <- FALSE     # inside ( ... )
-  rhs <- FALSE            # after = until } or newling if !block
+  rhs <- FALSE            # after = until } or newline if !block
   quote <- FALSE          # inside a quoted string
   numsquote <- 0          # number of single quotes
   numdquote <- 0          # number of double quotes
@@ -214,7 +215,6 @@ readSPC <- function(fname){
   val <- ""               # value of paramter
   i <- 1                  # index of spec
   while (length(ch <- readChar(f, 1)) > 0){
-    quote <- (numdquote %% 2 != 0) | (numsquote %% 2 != 0)
 
     '
     cat(sprintf(
@@ -225,9 +225,20 @@ readSPC <- function(fname){
     ))
     '
 
-    if (ch == "#" & !quote) comment <- TRUE
-    if (ch %in% c("\n", "\r")) comment <- FALSE
-    if (comment) next
+    if (ch == "#" & !quote) is_comment <- TRUE
+    if (ch %in% c("\n", "\r")) {
+      if(is_comment) {
+        comments <- c(comments, val)
+        val <- ""
+      }
+      is_comment <- FALSE
+    }
+    if (is_comment) {
+      val <- val %+% ch
+      next
+    }
+
+    quote <- (numdquote %% 2 != 0) | (numsquote %% 2 != 0)
 
     # _should_ only encounter parenthesis on the RHS of parameters values.
     if (ch == '"') {
@@ -288,8 +299,18 @@ readSPC <- function(fname){
       innerblock <- TRUE
     }
     else if (ch == ")") {
+      # arima model can have multiple close parentheses.
+      #Should try to handle this as a special case with regex
+      # transform format also has multiple close parentheses but they are in quotes
       val <- paste0(trim(val), ch)
       innerblock <- FALSE
+      if(!(spc=="arima" && name=="model")) {
+        res[[i]][["args"]][[name]] <- trim(val)
+        rhs <- FALSE
+        name <- ""
+        val <- ""
+      }
+
     }
     else {
       if (rhs) val <- if (trim(val) == "(") "(" %+% ch else val %+% ch
@@ -300,7 +321,10 @@ readSPC <- function(fname){
   close(f)
   for (i in 1:length(res))
     names(res)[i] <- res[[i]][[1]]
+  comments <- X13SpecComments(comments)
+  attr(res, "comments") <- comments
   structure(res, class = "X13SpecList")
+
 }
 
 #' Read SPC file.
@@ -362,8 +386,11 @@ readSPC0 <- function(fname){
           val <- ""
         }
       }
+      # if space
       else if (ch == " "){
+        # if previous character was not newline or carriage return or space AND it is on RH of equation
         if (!prev %in% c("\n", "\r") & prev != " " & rhs)
+          # append to value
           val <- paste(val, ch, sep = "")
       }
       else{
@@ -428,6 +455,7 @@ mergeList <- function(x, ...){
   if (length(x) == 1) return(x[[1]])
   res <- x[[1]]
   for (i in 2:length(x))
-    res <- merge(res, x[[i]], ...)
+    # added all=TRUE.  Some output files like e6 were missing some dates
+    res <- merge(res, x[[i]], all=TRUE,...)
   res[order(res$year, res$period), ]
 }
