@@ -213,11 +213,23 @@ X13SpecList <- function(...){
   o
 }
 
+#' @keywords internal
+X13SpecComments <- function(comments, ...){
+  args <- list(...)
+  # o <- list(comments=comments)
+  o <- comments
+  class(o) <- "X13SpecComments"
+  return(o)
+}
+
 #' @export
 is.X13Spec <- function(x) inherits(x, "X13Spec")
 
 #' @export
 is.X13SpecList <- function(x) inherits(x, "X13SpecList")
+
+#' @export
+is.X13SpecComments <- function(x) inherits(x, "X13SpecComments")
 
 #' Get a spec.
 #'
@@ -254,6 +266,11 @@ getSpecParameter.X13Spec <- function(x, spec, parameter){
 #' @export
 getSpecParameter.X13SpecList <- function(x, spec, parameter){
   x[[spec]]$args[[parameter]]
+}
+
+#' @export
+getSpecComments.X13SpecList <- function(x){
+  attr(x,"comments")
 }
 
 #' Set a spec parameter.
@@ -357,6 +374,34 @@ getSpecParameter.X13SpecList <- function(x, spec, parameter){
   x
 }
 
+#' @export
+"setSpecComments<-.X13SpecList" <- function(x, value){
+  res <- X13SpecComments(value)
+  attr(x,"comments") <- res
+  # res <- do.call('X13SpecComments', c(comments = comments))
+  x
+
+}
+
+#' @export
+"appendSpecComments<-.X13SpecList" <- function(x, value){
+  res <- getSpecComments(x)
+  res <- X13SpecComments(c(res,value))
+  attr(x,"comments") <- res
+  # res <- do.call('X13SpecComments', c(comments = comments))
+  x
+
+}
+
+#' @export
+writeSpecToFile.X13SpecList <- function(x, fname) {
+  # if(!inherits(x,"X13SpecList"))
+    # stop(sprintf("Object is not of class X13SpecList."))
+  sink(file = fname)
+  print(x)
+  sink()
+}
+
 #' Remove a spec.
 #'
 #' Remove a spec for objects that support it--currently only for objects of
@@ -427,6 +472,26 @@ print.X13Spec <- function(x, ...){
 }
 
 #' @export
+toString.X13SpecComments <- function(x, ...){
+  # comments <- x$comments
+  res <- ""
+    if(!is_empty(x)) {
+    for (i in 1:length(x)){
+      res <- paste0(res, toString(x[[i]]))
+      # if (i < length(x))
+      res <- paste0(res, "\n", sep="")
+    }
+    res <- paste0(res, "\n", sep="")
+  }
+  res
+}
+
+#' @export
+print.X13SpecComments <- function(x, ...){
+  cat(toString(x, ...))
+}
+
+#' @export
 toString.X13SpecList <- function(x, ...){
   res <- ""
   for (i in 1:length(x)){
@@ -438,7 +503,8 @@ toString.X13SpecList <- function(x, ...){
 }
 
 #' @export
-print.X13SpecList <- function(x, ...){
+print.X13SpecList <- function(x, print_comments=TRUE,...){
+  if(print_comments) print(attr(x,"comments"))
   cat(toString(x, ...))
 }
 

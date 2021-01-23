@@ -14,6 +14,11 @@ getSpecList <- function(x, ...){
 }
 
 #' @export
+getSpecComments <- function(x, ...){
+  UseMethod("getSpecComments", x)
+}
+
+#' @export
 "setSpecParameter<-" <- function(x, ...){
   UseMethod("setSpecParameter<-", x)
 }
@@ -21,6 +26,22 @@ getSpecList <- function(x, ...){
 #' @export
 "setSpec<-" <- function(x, ...){
   UseMethod("setSpec<-", x)
+}
+
+
+#' @export
+"setSpecComments<-" <- function(x, ...){
+  UseMethod("setSpecComments<-", x)
+}
+
+#' @export
+"appendSpecComments<-" <- function(x, ...){
+  UseMethod("appendSpecComments<-", x)
+}
+
+#' @export
+writeSpecToFile <- function(x, ...){
+  UseMethod("writeSpecToFile", x)
 }
 
 #' @export
