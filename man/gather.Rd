@@ -4,7 +4,7 @@
 \alias{gather}
 \title{Gather a list of values into a string, with linebreaks where required.}
 \usage{
-gather(x, max = 132, indent = 4)
+gather(xs, max = 132, indent = 4)
 }
 \description{
 Gather a list of values into a string, with linebreaks where required.
