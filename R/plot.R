@@ -1,3 +1,17 @@
+#' @import ggplot2
+#'
+#' @export
+plot.X13Series <- function(x, interactive = FALSE, ...){
+  # x$date <- date(x)
+  p <- ggplot(data = x, aes_string("date", attr(x, "value"))) +
+    geom_line() +
+    xlab("") +
+    ylab("")
+
+  if (interactive & require(plotly)) ggplotly(p, ...)
+  else p
+}
+
 #' @import reshape2
 #' @import ggplot2
 #'

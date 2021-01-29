@@ -115,20 +115,6 @@ removeSpec.X13Series <- function(x, specname){
   x
 }
 
-#' @import ggplot2
-#'
-#' @export
-plot.X13Series <- function(x, interactive = FALSE, ...){
-  # x$date <- date(x)
-  p <- ggplot(data = x, aes_string("date", attr(x, "value"))) +
-    geom_line() +
-    xlab("") +
-    ylab("")
-
-  if (interactive & require(plotly)) ggplotly(p, ...)
-  else p
-}
-
 #' @keywords internal
 clean <- function(x){
   if (inherits(x, "X13Series")){
