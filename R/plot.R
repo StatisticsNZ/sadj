@@ -127,11 +127,18 @@ plot.X13SeriesResult.decomp <- function(x, interactive = FALSE, ...) {
 }
 
 plot.X13SeriesResult.D10 <- function(x, interactive = FALSE, ...) {
+  args <- list(...)
+
+  ncol <-
+    if ("ncol" %in% names(args)) {
+      args[["ncol"]]
+    } else {
+      if (length(unique(x$period)) == 12) 4 else 2
+    }
+
   sf <- if ("d10" %in% colnames(x)) "d10" else "s10"
   d <- x %>% dplyr::select(date, period, !!rlang::sym(sf)) %>%
     dplyr::rename(y = !!rlang::sym(sf))
-
-  ncol = if (length(unique(x$period)) == 12) 4 else 2
 
   p <- ggplot2::ggplot(data = d) +
     ggplot2::facet_wrap(~period, ncol = ncol) +
