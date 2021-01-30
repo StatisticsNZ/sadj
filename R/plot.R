@@ -137,7 +137,7 @@ plot.X13SeriesResult.D10 <- function(x, interactive = FALSE, ...) {
 
   sf <- if ("d10" %in% colnames(x)) "d10" else "s10"
 
-  d <- x %>% dplyr::select(date, period, !!rlang::sym(sf)) %>%
+  d <- x %>% dplyr::select(year, period, !!rlang::sym(sf)) %>%
     dplyr::rename(y = !!rlang::sym(sf)) %>%
     dplyr::inner_join(
       y = {.} %>% group_by(period) %>% summarise(ystart = mean(y)),
@@ -146,7 +146,7 @@ plot.X13SeriesResult.D10 <- function(x, interactive = FALSE, ...) {
 
   p <- ggplot2::ggplot(data = d) +
     ggplot2::facet_wrap(~period, ncol = ncol) +
-    geom_segment(aes(x = year, xend = date, y = ystart, yend = y)) +
+    geom_segment(aes(x = year, xend = year, y = ystart, yend = y)) +
     geom_hline(aes(yintercept =  ystart), color = "red") +
     ggplot2::labs(title = lname(attr(x, "input"))) +
     ggplot2::ylab("seasonal factor") +
