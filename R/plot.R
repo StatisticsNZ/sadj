@@ -61,7 +61,6 @@ plot.X13SeriesResult.B1D11D12 <- function(x, interactive = FALSE, ...) {
       name = "series"
     ) +
     ggplot2::theme(
-      # legend.title=element_blank(),
       legend.position = "bottom",
       plot.title = element_text(hjust = 0.5)
     )
@@ -137,12 +136,18 @@ plot.X13SeriesResult.D10 <- function(x, interactive = FALSE, ...) {
     }
 
   sf <- if ("d10" %in% colnames(x)) "d10" else "s10"
+
   d <- x %>% dplyr::select(date, period, !!rlang::sym(sf)) %>%
-    dplyr::rename(y = !!rlang::sym(sf))
+    dplyr::rename(y = !!rlang::sym(sf)) %>%
+    dplyr::inner_join(
+      y = {.} %>% group_by(period) %>% summarise(ystart = mean(y)),
+      by = c("period")
+    )
 
   p <- ggplot2::ggplot(data = d) +
     ggplot2::facet_wrap(~period, ncol = ncol) +
-    ggplot2::geom_segment(aes(x = date, xend = date, y = 1, yend = y)) +
+    geom_segment(aes(x = date, xend = date, y = ystart, yend = y)) +
+    geom_hline(aes(yintercept =  ystart), color = "red") +
     ggplot2::labs(title = lname(attr(x, "input"))) +
     ggplot2::ylab("seasonal factor") +
     ggplot2::xlab("") +
