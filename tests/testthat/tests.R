@@ -1,4 +1,5 @@
-context("sadj")
+# no longer recommended to use context()
+# context("sadj")
 
 library(sadj)
 

@@ -19,3 +19,7 @@ Suggests:
     testthat,
     plotly,
     shiny
+Imports: 
+    magrittr,
+    stringr,
+    purrr
