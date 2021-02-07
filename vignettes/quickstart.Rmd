@@ -154,7 +154,7 @@ plot(ap.res)
 ```
 
 ```{r simpleex.res.plot2}
-plot(ap.res, type = "seasonal")
+plot(ap.res, type = "d10")
 ```
 
 
