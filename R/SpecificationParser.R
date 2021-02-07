@@ -7,6 +7,7 @@
 #' @keywords internal
 SpecificationParser <- function() {
 
+
   # utility functions to imitate ones in scala -------------
 
   #' @keywords internal
@@ -205,17 +206,22 @@ SpecificationParser <- function() {
     expr_last <- sprintf("(?: ?$)")
 
     # Could remove the possible space match at the beginning
-    expr_lh_rh <- sprintf("^ ?(%s) ?= ?(%s)(?:%s|%s)",name,anyrhs,expr_notlast, expr_last)
+    expr_lh_rh <- sprintf("^?(%s) ?= ?(%s)(?:%s|%s)",name,anyrhs,expr_notlast, expr_last)
 
     parse <- function(str,accum) {
+      str %<>% str_trim
       if(str=="") accum
       # We replace with nothing and then parse again
       # Ideally anyrhs is made smart enough to match all parameters in one go with str_match_all
       parsed_args <- str_match(str,expr_lh_rh)
+      whole_match <- parsed_args[[1]]
       lhs <- parsed_args[[2]] %>% str_trim()
       rhs <- parsed_args[[3]] %>% str_trim()
 
-      expr_parsed <- sprintf("^ ?%s ?= ?%s ?",lhs,re_escape(rhs))
+      # expr_parsed <- sprintf("^ ?%s ?= ?%s ?",lhs,re_escape(rhs))
+      expr_parsed <- sprintf("^%s ?= ?%s",lhs,re_escape(rhs))
+      # browser()
+
       rest <- str_replace(str,expr_parsed,"") %>% str_trim()
       if(rest=="") append_by_name(accum,lhs,rhs)
       else
@@ -248,7 +254,6 @@ SpecificationParser <- function() {
     # param (s: String, numLeft: Int, numRight: Int, accum: String)
     # return list()
     complete <- function(s, numLeft, numRight, accum) {
-      # browser()
       if (s == "") sprintf("Invalid specification value: \"%s\"",str) %>% abort()
       else if (take(s,1) == "(") complete(drop(s,1), numLeft + 1, numRight, accum %+% "(")
       else if (take(s,1) == ")") {
@@ -274,7 +279,7 @@ SpecificationParser <- function() {
           dropped <- str_replace_all(right,partextpar,"") # sub with nothing. trim it
           parse(dropped, value %>% append_by_name(accum,left,.))
 
-          # browser()
+
           # rv <- complete(right, 0, 0, "")
           # parse(rv$rest, append_by_name(accum, left, unquote(rv$value)))
         } else {
@@ -293,7 +298,7 @@ SpecificationParser <- function() {
 
   parseSPC <- function(file) {
     readLines(file) %>% preprocess() %>% parseSpecs() %>%
-      parseSpecNameAndBody() %>% map(~ parser$parseArgs(.x))
+      parseSpecNameAndBody() %>% map(~ parseArgs(.x))
 
   }
 
@@ -303,4 +308,4 @@ SpecificationParser <- function() {
 }
 
 # emulate a singleton object
-SpecificationParser <- SpecificationParser()
+SPCparser <- SpecificationParser()
