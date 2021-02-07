@@ -78,7 +78,7 @@ SpecificationParser <- function() {
   anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9\\(\\)\"\'\\.,=\\\\/ -]*)"
 
   # anything permitted on the rhs of a spec parameter
-  # simialranytext but first character can be open parentheses as well
+  # similar to anytext but first character can be open parentheses as well
   # Also does not match =
   # anyrhs <-  "(?:[a-zA-Z\\(]+[a-zA-Z0-9\r\n\\(\\)\"\'\\.,\\\\/ -]*)"
   anyrhs <-  "(?:[a-zA-Z0-9\\(\\.\\\\/-]+[a-zA-Z0-9\\(\\)\"\'\\.,\\\\/ -]*)"
@@ -303,4 +303,4 @@ SpecificationParser <- function() {
 }
 
 # emulate a singleton object
-# SpecificationParser <- SpecificationParser()
+SpecificationParser <- SpecificationParser()

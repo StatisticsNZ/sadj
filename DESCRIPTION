@@ -12,15 +12,14 @@ Depends:
     R (>= 3.6.1),
     x13binary,
     ggplot2,
-    reshape2, 
-    dplyr
+    reshape2,
+    dplyr,
+    purrr,
+    magrittr,
+    stringr
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1
 Suggests: 
     testthat,
     plotly,
     shiny
-Imports: 
-    magrittr,
-    stringr,
-    purrr
