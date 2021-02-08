@@ -97,7 +97,6 @@
                        ,sigmalim = "(1.8,2.8)"
                        ,save = "(d8 d10 d11 d12 d13 c17)")
                   ,class = "X13Spec", name="x11"))
-  , names = c("series", "x11")
   , class = "X13SpecList")
 
 
@@ -108,8 +107,7 @@
   , automdl = structure(list(), class = "X13Spec", name ="automdl")
   , seats = structure(list(save = "(s10 s11 s12 s13 s14 s16 s18 cyc ltt)")
                       , class = "X13Spec", name = "seats"))
-  , names = c("series", "transform","automdml","seats"),
-  class = "X13SpecList"
+  , class = "X13SpecList"
 )
 
 #' X13-ARIMA-SEATS specification.
