@@ -195,6 +195,12 @@ SpecificationParser <- function() {
       strings
     }
 
+    # trim whitespace inside parentheses
+    expr_paren <- "\\(([^()]+)\\)"
+    trim_parens <- function(x){
+      inside_paren <- x %>% str_match(expr_paren)
+      inside_paren[,2] %>% str_trim() %>% sprintf("(%s)",.)
+    }
 
     append_by_name <- function(x, name, y){
       x[[name]] <- y
@@ -210,7 +216,7 @@ SpecificationParser <- function() {
 
     parse <- function(str,accum) {
       str %<>% str_trim
-      if(str=="") accum
+      if(str=="") return(accum)
       # We replace with nothing and then parse again
       # Ideally anyrhs is made smart enough to match all parameters in one go with str_match_all
       parsed_args <- str_match(str,expr_lh_rh)
@@ -218,11 +224,13 @@ SpecificationParser <- function() {
       lhs <- parsed_args[[2]] %>% str_trim()
       rhs <- parsed_args[[3]] %>% str_trim()
 
-      # expr_parsed <- sprintf("^ ?%s ?= ?%s ?",lhs,re_escape(rhs))
+      # this should be whole match minus name =$ or minus just $
       expr_parsed <- sprintf("^%s ?= ?%s",lhs,re_escape(rhs))
-      # browser()
-
       rest <- str_replace(str,expr_parsed,"") %>% str_trim()
+
+      # trim whitespace in parentheses
+      rhs <- str_replace_all(rhs, expr_paren, trim_parens)
+
       if(rest=="") append_by_name(accum,lhs,rhs)
       else
         parse(rest, append_by_name(accum,lhs,rhs))
@@ -307,5 +315,18 @@ SpecificationParser <- function() {
 
 }
 
-# emulate a singleton object
+#' emulate a singleton object
+#' @keywords internal
 SPCparser <- SpecificationParser()
+
+#' @keywords internal
+parsedSpecToX13SpecList <- function(parsed_spec){
+  res <- parsed_spec %>% map2(names(parsed_spec), function(x,y){
+    class(x) <- "X13Spec"
+    attr(x,"name") <- y
+    x
+  })
+
+  class(res) <- "X13SpecList"
+  res
+}

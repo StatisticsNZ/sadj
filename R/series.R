@@ -88,7 +88,7 @@ getSpec.X13Series <- function(x, spec){
 #'
 #' @export
 getSpecParameter.X13Series <- function(x, spec, parameter){
-  attr(x, "SpecList")[[spec]]$args[[parameter]]
+  attr(x, "SpecList")[[spec]][[parameter]]
 }
 
 #' @export

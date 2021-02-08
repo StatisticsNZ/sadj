@@ -201,6 +201,20 @@ readSPC <- function(fname){
     stop("File does not exist.")
   if (!isOpen(f <- file(fname, "rb")))
     stop("Unable to open file for reading.")
+  res <- SPCparser$parseSPC(fname) %>% parsedSpecToX13SpecList()
+}
+
+
+#' Read SPC file.
+#'
+#' @param fname file name
+#'
+#' @keywords internal
+readSPC1 <- function(fname){
+  if (!file.exists(fname))
+    stop("File does not exist.")
+  if (!isOpen(f <- file(fname, "rb")))
+    stop("Unable to open file for reading.")
   res <- list()
   comments <- vector(mode="character")
   is_comment <- FALSE        # after '#' until end of line
