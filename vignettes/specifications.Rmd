@@ -234,8 +234,8 @@ The full specification can then be created from the individual specs:
 
 ```{r spec03}
 spec <- X13SpecList(
-  series = series_spec$args,
-  x11 = x11_spec$args
+  series = series_spec,
+  x11 = x11_spec
 )
 ```
 

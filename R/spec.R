@@ -92,31 +92,25 @@
 
 #' @keywords internal
 .x11 <- structure(list(
-  structure(list(name = "series",
-                 args = list(save = "(b1)")),
-            class = "X13Spec"),
-  structure(list(name = "x11",
-                 args = list(mode = "mult",
-                             sigmalim = "(1.8,2.8)",
-                             save = "(d8 d10 d11 d12 d13 c17)")),
-            class = "X13Spec")), names = c("series", "x11"),
-  class = "X13SpecList")
+  series=structure(list(save = "(b1)"),class = "X13Spec", name = "series"),
+  x11 = structure(list(mode = "mult"
+                       ,sigmalim = "(1.8,2.8)"
+                       ,save = "(d8 d10 d11 d12 d13 c17)")
+                  ,class = "X13Spec", name="x11"))
+  , names = c("series", "x11")
+  , class = "X13SpecList")
+
 
 #' @keywords internal
 .seats <- structure(list(
-  structure(list(name = "series",
-                 args = list(save = "(b1)")),
-            class = "X13Spec"),
-  structure(list(name = "transform",
-                 args = list('function' = 'auto')),
-            class = "X13Spec"),
-  structure(list(name = "automdl",
-                 args = list()),
-            class = "X13Spec"),
-  structure(list(name = "seats",
-                 args = list(save = "(s10 s11 s12 s13 s14 s16 s18 cyc ltt)")),
-            class = "X13Spec")), names = c("series", "x11"),
-  class = "X13SpecList")
+  series = structure(list(save = "(b1)"), class = "X13Spec", name="series")
+  , transform = structure(list('function' = 'auto'), class = "X13Spec", name="transform")
+  , automdl = structure(list(), class = "X13Spec", name ="automdl")
+  , seats = structure(list(save = "(s10 s11 s12 s13 s14 s16 s18 cyc ltt)")
+                      , class = "X13Spec", name = "seats"))
+  , names = c("series", "transform","automdml","seats"),
+  class = "X13SpecList"
+)
 
 #' X13-ARIMA-SEATS specification.
 #'
@@ -147,7 +141,8 @@ X13Spec <- function(specname = "series", ...){
     stop(sprintf("Unknown spec: '%s'.", specname))
   args <- list(...)
   if (identical(args, list(NULL)) | length(args) == 0){
-    o <- list(name = specname, args = NULL)
+    o <- list()
+    attr(o,"name") <- specname
     class(o) <- "X13Spec"
     return(o)
   }
@@ -159,7 +154,8 @@ X13Spec <- function(specname = "series", ...){
   for (param in names(args))
     if (!param %in% .spec[[specname]])
       stop(sprintf("Unknown parameter for spec '%s': %s", specname, param))
-  o <- list(name = specname, args = args)
+  o <- args
+  attr(o,"name") <- specname
   class(o) <- "X13Spec"
   return(o)
 }
@@ -209,7 +205,7 @@ X13SpecList <- function(...){
     o[[i]] <- spec
   }
   class(o) <- c("X13SpecList", "list")
-  names(o) <- sapply(o, function(x) x$name)
+  names(o) <- sapply(o, function(x) attr(x,"name"))
   o
 }
 
@@ -252,7 +248,7 @@ getSpec.X13SpecList <- function(x, spec){
 #'
 #' @export
 getSpecParameter.X13Spec <- function(x, spec, parameter){
-  x$args[[parameter]]
+  x[[parameter]]
 }
 
 #' Get a spec parameter.
@@ -265,7 +261,7 @@ getSpecParameter.X13Spec <- function(x, spec, parameter){
 #'
 #' @export
 getSpecParameter.X13SpecList <- function(x, spec, parameter){
-  x[[spec]]$args[[parameter]]
+  x[[spec]][[parameter]]
 }
 
 #' @export
@@ -296,12 +292,12 @@ getSpecComments.X13SpecList <- function(x){
 #' spec
 "setSpecParameter<-.X13Spec" <- function(x, name, value){
   name <- tolower(name)
-  if (!name %in% .spec[[x$name]])
-    stop(sprintf("Unknown parameter for spec '%s': %s", x$name, name))
+  if (!name %in% .spec[[attr(x,"name")]])
+    stop(sprintf("Unknown parameter for spec '%s': %s", attr(x,"name"), name))
   if (is.null(value))
-    x$args[[name]] <- NULL
+    x[[name]] <- NULL
   else
-    x$args[[name]] <- ifelse(name %in% c("file", "title", "name"),
+    x[[name]] <- ifelse(name %in% c("file", "title", "name"),
                              # sprintf("'%s'", value),
                              value,
                              value)
@@ -327,9 +323,9 @@ getSpecComments.X13SpecList <- function(x){
     x %+% do.call("X13Spec", structure(list(spec, value), names = c("specname", name)))
   else{
     if (is.null(value))
-      x[[spec]]$args[[name]] <- NULL
+      x[[spec]][[name]] <- NULL
     else
-      x[[spec]]$args[[name]] <- ifelse(name %in% c("file", "title", "name"),
+      x[[spec]][[name]] <- ifelse(name %in% c("file", "title", "name"),
                                        # sprintf("'%s'", value),
                                        value,
                                        value)
@@ -362,7 +358,7 @@ getSpecComments.X13SpecList <- function(x){
 #' specl
 "setSpec<-.X13SpecList" <- function(x, specname, value){
   if (missing(specname) & inherits(value, "X13Spec")){
-    x[[value$name]] <- value
+    x[[attr(value,"name")]] <- value
     return(x)
   }
   specname <- tolower(specname)
@@ -437,30 +433,30 @@ removeSpec.X13SpecList <- function(x, specname){
 
 #' @export
 toString.X13Spec <- function(x, ...){
-  if (length(x$args) == 0){
-    res <- sprintf("%s {}\n", x$name)
+  if (length(x) == 0){
+    res <- sprintf("%s {}\n", attr(x,"name"))
     return(res)
   }
-  res <- paste0(x$name, "{\n")
-  for (i in 1:length(x$args)){
-    val <- x$args[[i]]
+  res <- paste0(attr(x,"name"), "{\n")
+  for (i in 1:length(x)){
+    val <- x[[i]]
     isarray <- substr(val, 1, 1) == "(" & substr(val, nchar(val), nchar(val)) == ")"
-    if (names(x$args)[i]%in%c("file", "title", "name")) {
+    if (names(x)[i]%in%c("file", "title", "name")) {
       res <-
         if (isarray)
-          paste0(res, "  ", names(x$args)[i], "=", val, "\n")
-        else paste0(res, "  ", names(x$args)[i], "=\'", val, "\'\n")
+          paste0(res, "  ", names(x)[i], "=", val, "\n")
+        else paste0(res, "  ", names(x)[i], "=\'", val, "\'\n")
     }
     else {
       if (isarray) {
-        if (nchar(val) > (132 - 4 - nchar(names(x$args)[i]))) {
+        if (nchar(val) > (132 - 4 - nchar(names(x)[i]))) {
           newval = gather(split(substr(val, 2, nchar(val) - 1)))
-          res <- paste0(res, "  ", names(x$args)[i], "=(", newval, "\n  )\n")
+          res <- paste0(res, "  ", names(x)[i], "=(", newval, "\n  )\n")
         } else {
-          res <- paste0(res, "  ", names(x$args)[i], "=", val, "\n")
+          res <- paste0(res, "  ", names(x)[i], "=", val, "\n")
         }
       }
-      else res <- paste0(res, "  ", names(x$args)[i], "=", val, "\n")
+      else res <- paste0(res, "  ", names(x)[i], "=", val, "\n")
     }
   }
   paste0(res, "}\n")
@@ -503,7 +499,7 @@ toString.X13SpecList <- function(x, ...){
 }
 
 #' @export
-print.X13SpecList <- function(x, print_comments=TRUE,...){
+print.X13SpecList <- function(x, print_comments=FALSE,...){
   if(print_comments) print(attr(x,"comments"))
   cat(toString(x, ...))
 }
@@ -524,14 +520,15 @@ print.X13SpecList <- function(x, print_comments=TRUE,...){
 `%+%.X13Spec` <- function(e1, e2){
   if (!inherits(e2, "X13Spec"))
     stop("X13Spec objects can only be combined with other X13Spec objects.")
-  if (e1$name != e2$name)
-    stop(sprintf("Non-matching spec names: %s, %s.", e1$name, e2$name))
-  lhs <- names(e1$args)
-  rhs <- names(e2$args)
+  if (attr(e1,"name") != attr(e2,"name"))
+    stop(sprintf("Non-matching spec names: %s, %s.", attr(e1,"name"), attr(e2,"name")))
+  lhs <- names(e1)
+  rhs <- names(e2)
   int <- intersect(lhs, rhs)
   lhs <- lhs[!lhs %in% rhs]
   if (length(lhs) == 0) return(rhs)
-  e1$args <- as.list(c(e1$args[lhs], e2$args))
+  e1 <- as.list(c(e1[lhs], e2))
+  class(e1) <- "X13Spec"
   e1
 }
 
@@ -558,8 +555,8 @@ print.X13SpecList <- function(x, print_comments=TRUE,...){
 #' spec1 %+% spec2 %+% X13Spec(specname = "transform", `function`="log")
 `%+%.X13SpecList` <- function(e1, e2){
   if (inherits(e2, "X13Spec")){
-    if (e2$name %in% names(e1))
-      e2 <- getSpec(e1, e2$name) %+% e2
+    if (attr(e2,"name") %in% names(e1))
+      e2 <- getSpec(e1, attr(e2,"name")) %+% e2
     setSpec(e1) <- e2
     return(e1)
   }

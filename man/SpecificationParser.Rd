@@ -11,9 +11,25 @@ SpecificationParser()
 }
 \arguments{
 \item{rs}{list of regular expression strings}
+
+\item{char}{named spec character}
+
+\item{str}{input text, e.g. "sigmalim=(1.8,2.8)"}
 }
 \value{
 A regular expression string
+
+the body of a SPC file with comments removed.
+
+tidier version of the body of a SPC file
+
+#'
+
+named characters
+
+named list of named parameters
+
+[[Try[Map[String, String]]]]
 }
 \description{
 A closure of Functions to parse an X13 .spc file
@@ -21,21 +37,107 @@ parseSPC is the main function and its output
 gets passed to parsedSpectoX13Spec which creates X13 classes
 or alternatively converted to some other type like a JSON file
 }
+\keyword{"(1.8,}
+\keyword{#}
+\keyword{#,}
+\keyword{#.}
 \keyword{'any}
+\keyword{1-element}
+\keyword{2.8)")}}}
+\keyword{Arguments.}
+\keyword{Comments}
+\keyword{Extract}
+\keyword{For}
+\keyword{Given}
 \keyword{Make}
+\keyword{Map}
+\keyword{Parse}
+\keyword{Remove}
+\keyword{SPC}
+\keyword{Split}
+\keyword{Standardise}
+\keyword{`spec}
+\keyword{`stuff`}
 \keyword{a}
+\keyword{after}
+\keyword{and}
+\keyword{any}
+\keyword{appears}
+\keyword{are}
+\keyword{body}
+\keyword{by}
+\keyword{character}
 \keyword{characters}
+\keyword{comments}
+\keyword{comments,}
 \keyword{concatenate}
+\keyword{content}
+\keyword{convert}
+\keyword{denoted}
 \keyword{drop}
+\keyword{etc.}
+\keyword{example,}
+\keyword{extract}
+\keyword{extracted}
+\keyword{file.}
+\keyword{files}
 \keyword{first}
+\keyword{for}
+\keyword{from}
+\keyword{here}
+\keyword{if}
+\keyword{individual}
+\keyword{instances}
 \keyword{internal}
+\keyword{into}
+\keyword{is,}
+\keyword{it}
+\keyword{line.}
+\keyword{lines}
 \keyword{matches}
+\keyword{name-value}
+\keyword{named}
+\keyword{newlines,}
 \keyword{of}
 \keyword{of'}
+\keyword{or}
 \keyword{others.}
+\keyword{output}
+\keyword{pairs.}
+\keyword{parameters}
+\keyword{parseSpecNameAndBody}
+\keyword{part-way}
+\keyword{pattern}
 \keyword{regex}
+\keyword{remove}
 \keyword{several}
 \keyword{single}
+\keyword{some}
+\keyword{spec}
+\keyword{specification.}
+\keyword{specifications}
+\keyword{specs.}
+\keyword{start}
+\keyword{stuff}
+\keyword{stuff)}}.}
+\keyword{text}
+\keyword{that}
+\keyword{the}
+\keyword{through}
+\keyword{to}
+\keyword{trim}
+\keyword{value)}}.}
 \keyword{vector}
+\keyword{vector,}
+\keyword{where}
 \keyword{which}
+\keyword{whitespace}
+\keyword{with}
 \keyword{x}
+\keyword{{}
+\keyword{{{("sigamlim",}
+\keyword{{{(key,}
+\keyword{{{(spec,}
+\keyword{{{series}},}
+\keyword{{{x11}},}
+\keyword{}`,}
