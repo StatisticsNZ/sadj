@@ -82,3 +82,16 @@ test_that("adjust air passengers with default seats spec", {
   ap.res <- adjust(ap)
   expect_true((nrow(ap) == nrow(sa(ap.res))) & (nrow(ap) == nrow(trend(ap.res))))
 })
+
+test_that("concrete.spc is parsed correctly", {
+  concrete <- readSPC("../test_spec/concrete.spc")
+  expect_equal(
+    getSpecParameter(concrete, "regression", "variables")
+    , "(td1nolpyear ao2020.2)"
+  )
+
+  expect_equal(
+    getSpecParameter(concrete, "regression", "save")
+    , "ao"
+  )
+})
