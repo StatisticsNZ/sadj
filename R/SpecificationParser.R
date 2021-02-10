@@ -304,10 +304,12 @@ SpecificationParser <- function() {
     parse(str, vector(mode="list"))
   }
 
-  parseSPC <- function(file) {
-    readLines(file) %>% preprocess() %>% parseSpecs() %>%
+  parseSPC <- function(fname) {
+    con <- file(fname)
+    res <- con %>% readLines() %>% preprocess() %>% parseSpecs() %>%
       parseSpecNameAndBody() %>% map(~ parseArgs(.x))
-
+    close(con)
+    res
   }
 
   list(stripComment=stripComment, preprocess=preprocess, parseSpecs=parseSpecs
