@@ -202,6 +202,7 @@ readSPC <- function(fname){
   if (!isOpen(f <- file(fname, "rb")))
     stop("Unable to open file for reading.")
   res <- SPCparser$parseSPC(fname) %>% parsedSpecToX13SpecList()
+  return(res)
 }
 
 
