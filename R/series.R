@@ -25,7 +25,12 @@ X13Series <- function(x,
                       ...){
   if (inherits(x, "ts")) res <- tsdf(x)
   else res <- data.frame(x)[, c("year", "period", value)]
+  res <- cbind(date=date(res),res)
   attr(res, "value") <- value
+
+  # Try to handle snames derived from list element
+  if(missing(sname) && grepl("\\[\\[\"\\w+\"\\]\\]",sname)) sname <- str_extract_all(sname, "\\w+")[[1]][[2]]
+
   attr(res, "sname") <- tolower(sname)
   attr(res, "lname") <- lname
   args <- list(...)
@@ -83,7 +88,7 @@ getSpec.X13Series <- function(x, spec){
 #'
 #' @export
 getSpecParameter.X13Series <- function(x, spec, parameter){
-  attr(x, "SpecList")[[spec]]$args[[parameter]]
+  attr(x, "SpecList")[[spec]][[parameter]]
 }
 
 #' @export
@@ -108,20 +113,6 @@ removeSpec.X13Series <- function(x, specname){
   s <- removeSpec(s)
   attr(x, "SpecList") <- s
   x
-}
-
-#' @import ggplot2
-#'
-#' @export
-plot.X13Series <- function(x, interactive = FALSE, ...){
-  x$date <- date(x)
-  p <- ggplot(data = x, aes_string("date", attr(x, "value"))) +
-    geom_line() +
-    xlab("") +
-    ylab("")
-
-  if (interactive & require(plotly)) ggplotly(p, ...)
-  else p
 }
 
 #' @keywords internal
@@ -207,7 +198,8 @@ importOutput <- function(x, ...){
   }
 
   res <- mergeList(df, by = c("year", "period"))
-  res <- merge(x, res, by = c("year", "period"), sort = FALSE)
+  res <- cbind(date=date(res), res)
+  res <- merge(x, res, by = c("date","year", "period"), sort = FALSE)
   class(res) <- c("X13SeriesResult", class(res))
   attr(res, "value") <- attr(x, "value")
   for (a in names(nondf))
@@ -329,46 +321,4 @@ summary.X13SeriesResult <- function(x, html = FALSE, ...){
     d <- as.data.frame(attr(x, "xdg"))
 
   return(d)
-}
-
-#'
-#' @import reshape2
-#' @import ggplot2
-#'
-#' @export
-plot.X13SeriesResult <- function(x, interactive = FALSE, type = "default", ...){
-  colnames(x)[colnames(x)%in%c(attr(x, "value"))] <- "original"
-  colnames(x)[colnames(x)%in%c("d11", "s11")] <- "seasadj"
-  colnames(x)[colnames(x)%in%c("d12", "s12")] <- "trend"
-  colnames(x)[colnames(x)%in%c("d10", "s10")] <- "sf"
-  x$seasfact <- x$original / x$seasadj
-  x$irregular <- x$seasadj / x$trend
-  x$date <- date(x)
-  x$year <- substr(x$year, 3, 4)
-
-  X <- melt(x[, c("year", "period", "date", "original", "seasadj", "trend")],
-            id.vars = c("year", "period", "date"))
-
-  if (type == "default")
-    p <- ggplot(data = X, aes(x = date, y = value, col = variable)) +
-      geom_line() +
-      xlab("") +
-      ylab("") +
-      theme(legend.title=element_blank()) #, legend.position = "bottom")
-  else if (type == "seasonal"){
-    if (min(x$sf) < 0 & max(x$sf) > 0) intercept <- 0
-    else intercept <- 1
-    p <- ggplot(data = x, aes(x = year, y = sf, group = period)) +
-      facet_wrap(~ period, nrow = 1) +
-      geom_hline(aes(yintercept = intercept, col = "red")) +
-      geom_line() +
-      geom_point() +
-      xlab("") +
-      ylab("") +
-      theme(legend.position="none", axis.text.x = element_blank())
-  }
-  else return()
-
-  if (interactive & require(plotly)) ggplotly(p, ...)
-  else p
 }

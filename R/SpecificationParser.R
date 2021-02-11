@@ -1,0 +1,334 @@
+# Still need to handle empty specs.  Currently returns NA char
+
+#' A closure of Functions to parse an X13 .spc file
+#' parseSPC is the main function and its output
+#' gets passed to parsedSpectoX13Spec which creates X13 classes
+#' or alternatively converted to some other type like a JSON file
+#' @keywords internal
+SpecificationParser <- function() {
+
+
+  # utility functions to imitate ones in scala -------------
+
+  #' @keywords internal
+  startsWith <- function(s, pattern) {
+    grepl(sprintf('^%s',pattern), s, fixed = TRUE)
+  }
+
+  #' @keywords internal
+  contains <- function(s, pattern) {
+    grepl(pattern, s, fixed = TRUE)
+  }
+
+  #' @keywords internal
+  indexOf <- function(s, pattern) {
+    regexpr(pattern=pattern,s, fixed = TRUE)[[1]]
+  }
+
+  #' @keywords internal
+  take <- function(s, stop) {
+    substr(s, start = 1, stop = stop)
+  }
+
+
+  #' @keywords internal
+  takeRight <- function(s, n) {
+    substr(s, nchar(s)-n+1, nchar(s))
+  }
+
+  #' drop first x characters
+  #'
+  #' @keywords internal
+  drop <- function(s, x) {
+    substr(s,start = x + 1, stop=nchar(s))
+  }
+
+  #' drop first x characters
+  #'
+  #' @keywords internal
+  dropRight <- function(s, x) {
+    substr(s,start = 1, stop=nchar(s) - x)
+  }
+
+  #' concatenate vector of characters
+  #'
+  #' @keywords internal
+  mkString <- function(s,sep=""){
+    paste(s, collapse=sep)
+
+  }
+
+  #' concatenate characters
+  #' @keywords internal
+  `%+%` <- function(a, b) paste0(a, b)
+
+  # sprintf used as string interpolator
+  # linebreak - match carriage return followed by newline or just newline. (?: means do not remember groups
+  linebreak <- "(?:(?:\r\n)|\n)"
+  # whitespace - match zero to many number of spaces carriage returns or newlines.  \\s should do the same job
+  ws <- "[ \r\n\t]*"
+  # left brace with surrounding whitespace / linebreaks
+  lbrace <- sprintf(" *%s? *\\{ *%s? *", linebreak, linebreak)
+  # right brace with surrounding whitespace / linebreaks
+  rbrace <- sprintf(" *%s? *\\} *%s? *", linebreak, linebreak)
+  # anything that could be a specificaton or parameter name
+  name <- "(?:[a-zA-Z]+[a-zA-Z0-9]*)"
+
+  # anything permitted inside a spec value
+  # anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9\r\n\\(\\)\"\'\\.,=\\\\/ -]*)"
+  anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9\\(\\)\"\'\\.,=\\\\/ -]*)"
+
+  # anything permitted on the rhs of a spec parameter
+  # similar to anytext but first character can be open parentheses as well
+  # Also does not match =
+  # anyrhs <-  "(?:[a-zA-Z\\(]+[a-zA-Z0-9\r\n\\(\\)\"\'\\.,\\\\/ -]*)"
+  anyrhs <-  "(?:[a-zA-Z0-9\\(\\.\\\\/-]+[a-zA-Z0-9\\(\\)\"\'\\.,\\\\/ -]*)"
+
+
+  # high-level match for entire spec, i.e. spec { specname}
+  # match the name, the lbrace.
+  # Match any amount of whitespace (or none) or any amount of text (at least one character)
+  specification <- sprintf("%s ?\\{ ?%s? ?\\}"
+                          , name, anytext)
+
+  # high-level match for entire spec 'file', i.e. name { param = value} name { param = value}...
+  # this group will get remembered.
+  specifications <- sprintf("^( ?%s ?)+$", specification)
+
+
+
+  #' Make a single regex which matches 'any of' several others.
+  #' @param rs list of regular expression strings
+  #' @return A regular expression string
+  #'
+  #' @keywords internal
+  anyOf <- function(rs){
+    "(" %+%
+      (purrr::map_chr(rs, function(r){sprintf("(?:%s)",r)}) %>%
+         paste(., collapse="|")) %+%
+      ")"
+  }
+
+
+  #' Remove comments from a specification.
+  #' Comments are denoted by #.  Remove any lines that start with #, or remove
+  #' content after # if it appears part-way through a line.
+  #' @param str the body of a SPC file
+  #' @return the body of a SPC file with comments removed.
+  #'
+  #' @keywords internal
+  stripComment <- function(str){
+    if (startsWith(str,"#")) ""
+    else if (contains(str,"#")) take(str,(indexOf(str,"#")- 1))
+    else str
+  }
+
+
+  #' Standardise newlines, remove comments, and trim some whitespace from the content of a SPC file.
+  #' @param str the body of a SPC file
+  #' @return tidier version of the body of a SPC file
+  #'
+  #' @keywords internal
+  preprocess <-function(str){
+
+    #str_split("\\R") %>% unlist() %>% # split into character vector of lines. Matches any newline char
+    res <- str %>%
+      map_chr(stripComment) %>% # strip out comments from each line
+      map_chr(str_squish) %>% map_chr(~ str_replace_all(.x,"[\"\']",""))  # squish whitespace
+    res[res != ""] %>% # throw away blank lines.  How can I turn this into pipe?
+      mkString(" ") # recombine lines with newline character
+  }
+
+
+  #' Split body of SPC files into individual specs.
+  #' Extract instances of the pattern `spec { stuff }`, where spec is, for example, {{series}}, {{x11}}, etc.
+  #'@param str
+  #'@return
+  #'#'
+  #' @keywords internal
+  parseSpecs <- function(processed){
+      # processed <- preprocess(str)
+      if (!grepl(specifications, processed)) {
+        abort("Specification is not formatted correctly.")
+      }
+      str_extract_all(processed, specification) %>% unlist()
+      # specification.r.findAllIn(processed).toList
+
+  }
+
+
+  #' Split the body of specifications into name-value pairs.
+  #' Given text with pattern `spec { stuff }`, convert to {{(spec, stuff)}}.
+  #' @param str 1-element character with specification
+  #' @return named characters
+  #'
+  #' @keywords internal
+
+  parseSpecNameAndBody <- function(str){
+    # be sure to deal with case of empty brackets
+      spec_expr <- sprintf("^(%s) ?\\{ ?(%s?) ?\\}$"
+                           , name, anytext)
+      res <- str_match(str, spec_expr)
+      # chec res.  We expect 1 x 3 matrix
+      # check case when nothing matches and case with partial match
+
+      res[,3] %>% setNames(res[,2]) %>% return()
+
+  }
+
+  #' Parse Arguments.  Map the output of parseSpecNameAndBody here
+  #' Given a 1-element named spec character vector, extract parameters
+  #' @param char named spec character
+  #' @return named list of named parameters
+  #'
+  #' @keywords internal
+  parseArgs <- function(str) {
+
+    re_escape <- function(strings){
+      vals <- c("\\\\", "\\[", "\\]", "\\(", "\\)",
+                "\\{", "\\}", "\\^", "\\$","\\*",
+                "\\+", "\\?", "\\.", "\\|")
+      replace.vals <- paste0("\\\\", vals)
+      for(i in seq_along(vals)){
+        strings <- gsub(vals[i], replace.vals[i], strings)
+      }
+      strings
+    }
+
+    # trim whitespace inside parentheses
+    expr_paren <- "\\(([^()]+)\\)"
+    trim_parens <- function(x){
+      inside_paren <- x %>% str_match(expr_paren)
+      inside_paren[,2] %>% str_trim() %>% sprintf("(%s)",.)
+    }
+
+    append_by_name <- function(x, name, y){
+      x[[name]] <- y
+      return(x)
+    }
+    # expr to match groups: lhs and rhs
+    # we also want to match from start or from middle
+    expr_notlast <- sprintf("(?: %s ?=)",name)
+    expr_last <- sprintf("(?: ?$)")
+
+    # Could remove the possible space match at the beginning
+    expr_lh_rh <- sprintf("^?(%s) ?= ?(%s)(?:%s|%s)",name,anyrhs,expr_notlast, expr_last)
+
+    parse <- function(str,accum) {
+      str %<>% str_trim
+      if(str=="") return(accum)
+      # We replace with nothing and then parse again
+      # Ideally anyrhs is made smart enough to match all parameters in one go with str_match_all
+      parsed_args <- str_match(str,expr_lh_rh)
+      whole_match <- parsed_args[[1]]
+      lhs <- parsed_args[[2]] %>% str_trim()
+      rhs <- parsed_args[[3]] %>% str_trim()
+
+      # this should be whole match minus name =$ or minus just $
+      expr_parsed <- sprintf("^%s ?= ?%s",lhs,re_escape(rhs))
+      rest <- str_replace(str,expr_parsed,"") %>% str_trim()
+
+      # trim whitespace in parentheses
+      rhs <- str_replace_all(rhs, expr_paren, trim_parens)
+
+      if(rest=="") append_by_name(accum,lhs,rhs)
+      else
+        parse(rest, append_by_name(accum,lhs,rhs))
+    }
+
+    #Strip out NA's
+    parse(str, vector(mode="list"))
+
+  }
+
+
+
+  #' Split body of spec into name-value pairs.
+  #' Given `stuff` extracted from `spec { stuff }`, convert `stuff` to
+  #' {{(key, value)}}.  For example, {{("sigamlim", "(1.8, 2.8)")}}
+  #' @param str input text, e.g. "sigmalim=(1.8,2.8)"
+  #' @return [[Try[Map[String, String]]]]
+  #'
+  #' @keywords internal
+  parseArgs0 <- function(str) {
+    partextpar <- "(?:\\([\\d\\w\\s]*\\))"
+
+    append_by_name <- function(x, name, y){
+      x[[name]] <- y
+      return(x)
+    }
+    # when '(' is detected, find the remaining sequence up to ')'
+    # Stuff like data()
+    # param (s: String, numLeft: Int, numRight: Int, accum: String)
+    # return list()
+    complete <- function(s, numLeft, numRight, accum) {
+      if (s == "") sprintf("Invalid specification value: \"%s\"",str) %>% abort()
+      else if (take(s,1) == "(") complete(drop(s,1), numLeft + 1, numRight, accum %+% "(")
+      else if (take(s,1) == ")") {
+        if (numLeft == (numRight + 1)) {
+          rest <- drop(s,1) #%>% str_trim()
+          if(take(str_trim(rest),1)=="(") complete(rest, numLeft, numRight + 1, accum %+% ")")
+          else list(rest, value = accum %+% ")")
+        } else complete(s.drop(1), numLeft, numRight + 1, accum %+% ")")
+      }
+      else complete(drop(s,1), numLeft, numRight, accum %+% take(s,1))
+    }
+
+    # s: String, accum: Seq[(String, String)]
+    # returns Seq[(String, String)]
+    parse <- function(s, accum) {
+      if (s == "") accum
+      else if (contains(s,"=")) {
+        i <- indexOf(s,"=")
+        left <- take(s,i -1) %>% str_trim() #str_squish()
+        right <- drop(s, i) %>% str_trim() #str_squish()
+        if (take(right,1) == "(") {
+          value <- str_match_all(right,partextpar)[[1]][,1]
+          dropped <- str_replace_all(right,partextpar,"") # sub with nothing. trim it
+          parse(dropped, value %>% append_by_name(accum,left,.))
+
+
+          # rv <- complete(right, 0, 0, "")
+          # parse(rv$rest, append_by_name(accum, left, unquote(rv$value)))
+        } else {
+            j <- indexOf(right,"\n")
+            if (j == -1) append_by_name(accum,left,right)
+            else {
+              parse(drop(right,j), (unquote(take(right, j - 1)) %>% append_by_name(accum,left,.)))
+          }
+
+        }
+      } else sprintf("Could not parse parameters from \"%s\"",s) %>% abort()
+    }
+
+    parse(str, vector(mode="list"))
+  }
+
+  parseSPC <- function(fname) {
+    con <- file(fname)
+    res <- con %>% readLines() %>% preprocess() %>% parseSpecs() %>%
+      parseSpecNameAndBody() %>% map(~ parseArgs(.x))
+    close(con)
+    res
+  }
+
+  list(stripComment=stripComment, preprocess=preprocess, parseSpecs=parseSpecs
+       , parseSpecNameAndBody=parseSpecNameAndBody, parseArgs=parseArgs, parseSPC=parseSPC)
+
+}
+
+#' emulate a singleton object
+#' @keywords internal
+SPCparser <- SpecificationParser()
+
+#' @keywords internal
+parsedSpecToX13SpecList <- function(parsed_spec){
+  res <- parsed_spec %>% map2(names(parsed_spec), function(x,y){
+    class(x) <- "X13Spec"
+    attr(x,"name") <- y
+    x
+  })
+
+  class(res) <- "X13SpecList"
+  res
+}

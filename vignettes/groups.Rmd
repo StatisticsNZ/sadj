@@ -70,7 +70,7 @@ also create a simple composite for overall employment:
 
 ```{R ex02}
 emp  <- X13Series(
-  data.frame(memp[,1:2], value = memp[,3] + femp[,3]),
+  data.frame(memp[,c("year","period")], value = memp[,"value"] + femp[,"value"]),
   sname = "emp",
   composite = list(title = "emp", save = "(isf isa itn b1 id8 iir)"),
   x11 = list(mode = "add", sigmalim = "(1.8,2.8)", save = "(e1 c17 d8 d9 d10 d11 d12 d13)")
@@ -93,7 +93,7 @@ The individual results can be extracted by name.  For example, to plot the
 seasonal factors for the employed series (the composite):
 
 ```{R ex05}
-plot(empgrp.res[["emp"]], type = "seasonal")
+plot(empgrp.res[["emp"]], type = "d10")
 ```
 
 

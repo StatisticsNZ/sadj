@@ -4,7 +4,7 @@
 \alias{\%+\%.X13Spec}
 \title{Combine \code{\link{X13Spec}} objects.}
 \usage{
-\method{\%+\%}{X13Spec}(e1, e2)
+`\%+\%.X13Spec`(e1, e2)
 }
 \description{
 Combine \code{\link{X13Spec}} objects.

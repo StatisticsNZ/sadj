@@ -1,7 +1,7 @@
 Package: sadj
 Type: Package
 Title: Seasonal adjustment with X13-ARIMA-SEATS.
-Version: 0.1.0
+Version: 0.2.1
 Author: Chris Hansen
 Maintainer: Chris Hansen <chris.hansen@stats.govt.nz>
 Description: Seasonal adjustment with X13-ARIMA-SEATS.
@@ -9,14 +9,19 @@ License: GPL
 Encoding: UTF-8
 LazyData: true
 Depends:
-    R (>= 3.5.0),
+    R (>= 3.6.1),
     x13binary,
     ggplot2,
-    reshape2
+    reshape2,
+    dplyr,
+    purrr,
+    magrittr,
+    stringr
 VignetteBuilder: knitr
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Suggests: 
     testthat,
     plotly,
     shiny
-    
+Imports: 
+    knitr

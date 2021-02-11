@@ -14,16 +14,18 @@ readUDG <- function(x, outpdir, ext = "udg"){
   if (!isOpen(f, "r"))
     stop(sprintf("Failed to open UDG file for reading:\n  %s.", fname))
 
-  l <- readLines(f)
+  # l <- readLines(f)
+  l <- readLines(f, skipNul = TRUE)
   o <- structure(list(), class = "X13Diagnostics")
   pos <- 1
 
   for (i in 1:length(l)){
-    s <- strsplit(rmdups(ltrim(rtrim(l[i]))), ':')[[1]]
+    f_line <- iconv(l[i], "latin1", "ASCII", sub="")
+    s <- strsplit(rmdups(ltrim(rtrim(f_line))), ':')[[1]]
     for (j in 1:length(s))
       s[j] <- rmdups(ltrim(rtrim(s[j])))
     n <- s[1]
-    if (!n%in%c("date", "time", "version", "build", "span", "startspec")){
+    if (!n%in%c("date", "time", "version", "build", "span", "startspec", "srstit")){
       v <- s[2:length(s)]
       o[[pos]] <- v
       names(o)[[pos]] <- n
@@ -41,7 +43,7 @@ readUDG <- function(x, outpdir, ext = "udg"){
 as.data.frame.X13Diagnostics <- function(
   x,
   statfilter = c(
-    "f2.mcd", "f2.ic", "f2.is", "f2.msf",
+    "f2.mcd", "f2.ic", "f2.is", "f2.fsd8","f2.msf",
     sprintf("f3.m%02d", 1:11), "f3.q", "f3.qm2"
   ),
   colfilter = c("stat", "value")
