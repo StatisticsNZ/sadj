@@ -311,10 +311,11 @@ SpecificationParser <- function() {
     if (!isOpen(con <- file(fname, "rb")))
       stop("Unable to open file for reading.")
 
-    res <- con %>% readLines() %>% preprocess() %>% parseSpecs() %>%
+    on.exit(close(con), add = TRUE)
+
+    con %>% readLines() %>% preprocess() %>% parseSpecs() %>%
       parseSpecNameAndBody() %>% map(~ parseArgs(.x))
-    close(con)
-    res
+
   }
 
   list(stripComment=stripComment, preprocess=preprocess, parseSpecs=parseSpecs
