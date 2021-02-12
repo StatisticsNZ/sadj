@@ -197,10 +197,7 @@ writeDAT <- function(x, fname){
 #'
 #' @export
 readSPC <- function(fname){
-  if (!file.exists(fname))
-    stop("File does not exist.")
-  if (!isOpen(f <- file(fname, "rb")))
-    stop("Unable to open file for reading.")
+
   res <- SPCparser$parseSPC(fname) %>% parsedSpecToX13SpecList()
   return(res)
 }

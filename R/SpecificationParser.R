@@ -305,7 +305,12 @@ SpecificationParser <- function() {
   }
 
   parseSPC <- function(fname) {
-    con <- file(fname)
+    if (!file.exists(fname))
+      stop("File does not exist.")
+
+    if (!isOpen(con <- file(fname, "rb")))
+      stop("Unable to open file for reading.")
+
     res <- con %>% readLines() %>% preprocess() %>% parseSpecs() %>%
       parseSpecNameAndBody() %>% map(~ parseArgs(.x))
     close(con)
