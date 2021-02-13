@@ -304,6 +304,19 @@ SpecificationParser <- function() {
     parse(str, vector(mode="list"))
   }
 
+  readSPCLines <- function(con, ...) {
+    withCallingHandlers(
+      warning = function(cnd) {
+        if(str_detect(cnd$message,"^incomplete final line found on")) rlang::cnd_muffle(cnd)
+      },
+      message = function(cnd) {
+        # code to run when message is signalled
+      },
+      base::readLines(con, ...)
+    )
+
+  }
+
   parseSPC <- function(fname) {
     if (!file.exists(fname))
       stop("File does not exist.")
@@ -313,7 +326,7 @@ SpecificationParser <- function() {
 
     on.exit(close(con), add = TRUE)
 
-    con %>% readLines() %>% preprocess() %>% parseSpecs() %>%
+    con %>% readSPCLines() %>% preprocess() %>% parseSpecs() %>%
       parseSpecNameAndBody() %>% map(~ parseArgs(.x))
 
   }
