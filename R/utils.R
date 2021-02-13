@@ -202,6 +202,27 @@ readSPC <- function(fname){
   return(res)
 }
 
+#' Read all SPC's in path.
+#'
+#' @param fname file name
+#'
+#' @keywords internal
+readAllSPCs <- function(path){
+  if (!dir.exists(path))
+    stop("Directory does not exist.")
+
+  # path %<>% str_replace("[^////]$",function(x){
+  #   paste0(x,"/")
+  # })
+
+  path %<>% str_remove("[////]$")
+
+  all_spcs <- list.files(path, full.names = TRUE, pattern = "\\.spc$")
+  names(all_spcs) <- list.files(path, pattern = "\\.spc$") %>% str_remove("\\.spc$")
+  all_spcs %>% map(readSPC)
+
+}
+
 
 #' Read SPC file.
 #'
