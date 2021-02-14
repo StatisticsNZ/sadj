@@ -2,142 +2,77 @@
 % Please edit documentation in R/SpecificationParser.R
 \name{SpecificationParser}
 \alias{SpecificationParser}
-\title{A closure of Functions to parse an X13 .spc file
-parseSPC is the main function and its output
-gets passed to parsedSpectoX13Spec which creates X13 classes
-or alternatively converted to some other type like a JSON file}
+\title{A closure of functions used to parse an X13 .spc file.}
 \usage{
 SpecificationParser()
 }
-\arguments{
-\item{rs}{list of regular expression strings}
-
-\item{char}{named spec character}
-
-\item{str}{input text, e.g. "sigmalim=(1.8,2.8)"}
-}
 \value{
-A regular expression string
-
-the body of a SPC file with comments removed.
-
-tidier version of the body of a SPC file
-
-#'
-
-named characters
-
-named list of named parameters
-
-[[Try[Map[String, String]]]]
+A list of functions useful for parsing spec files.
 }
 \description{
-A closure of Functions to parse an X13 .spc file
-parseSPC is the main function and its output
-gets passed to parsedSpectoX13Spec which creates X13 classes
-or alternatively converted to some other type like a JSON file
+\code{parseSPC} pipes the child functions together. Its output
+  gets passed to parsedSpectoX13Spec which creates X13 classes.
 }
-\keyword{"(1.8,}
-\keyword{#}
-\keyword{#,}
-\keyword{#.}
-\keyword{'any}
-\keyword{1-element}
-\keyword{2.8)")}}}
-\keyword{Arguments.}
-\keyword{Comments}
-\keyword{Extract}
-\keyword{For}
-\keyword{Given}
-\keyword{Make}
-\keyword{Map}
-\keyword{Parse}
-\keyword{Remove}
-\keyword{SPC}
-\keyword{Split}
-\keyword{Standardise}
-\keyword{`spec}
-\keyword{`stuff`}
-\keyword{a}
-\keyword{after}
-\keyword{and}
-\keyword{any}
-\keyword{appears}
-\keyword{are}
-\keyword{body}
-\keyword{by}
-\keyword{character}
-\keyword{characters}
-\keyword{comments}
-\keyword{comments,}
-\keyword{concatenate}
-\keyword{content}
-\keyword{convert}
-\keyword{denoted}
-\keyword{drop}
-\keyword{etc.}
-\keyword{example,}
-\keyword{extract}
-\keyword{extracted}
-\keyword{file.}
-\keyword{files}
-\keyword{first}
-\keyword{for}
-\keyword{from}
-\keyword{here}
-\keyword{if}
-\keyword{individual}
-\keyword{instances}
+\section{stripComment}{
+
+
+Remove comments from a specification. Takes mapped output from readLines
+Comments are denoted by #.  Remove any lines that start with #, or remove
+content after # if it appears part-way through a line.
+\subsection{Arguments}{
+\describe{
+  \item{str}{The body of a SPC file.}
+}}
+\subsection{Value}{A 1-element character: a SPC file line with comments removed.}
+}
+
+\section{preprocess}{
+
+Remove newlines, remove comments, and squish whitespace from the content
+  of a SPC file.
+\subsection{Arguments}{
+\describe{
+  \item{str}{multiple-length chatacter: The body of a SPC file.}
+}}
+\subsection{Value}{A character vector of length 1 containing a tidier
+  , squished version of the body of a SPC file.}
+}
+
+\section{parseSpecs}{
+
+Split body of SPC files into individual specs:
+
+Extract instances of the pattern spec \{ stuff \}, where spec is
+  , for example, \code{series}, \code{x11}, etc.
+
+\subsection{Arguments}{
+\describe{
+  \item{str}{The output of preprocess: a character vector of length 1.}
+}}
+\subsection{Value}{A character vector with length equal to the number of specs.}
+}
+
+\section{parseSpecNameAndBody}{
+
+Convert a list of specifications a named list of values.
+
+\subsection{Arguments}{
+\describe{
+  \item{str}{The output of parseSpecs:
+    A character vector with length equal to the number of specs.}
+}}
+\subsection{Value}{A named list of values.}
+}
+
+\section{parseArgs}{
+
+Parse Arguments:
+  The output of parseSpecNameAndBody maps to this function.
+\subsection{Arguments}{
+\describe{
+  \item{str}{A 1-element character containing raw spec values.}
+}}
+\subsection{Value}{A named list of named parameters.}
+}
+
 \keyword{internal}
-\keyword{into}
-\keyword{is,}
-\keyword{it}
-\keyword{line.}
-\keyword{lines}
-\keyword{matches}
-\keyword{name-value}
-\keyword{named}
-\keyword{newlines,}
-\keyword{of}
-\keyword{of'}
-\keyword{or}
-\keyword{others.}
-\keyword{output}
-\keyword{pairs.}
-\keyword{parameters}
-\keyword{parseSpecNameAndBody}
-\keyword{part-way}
-\keyword{pattern}
-\keyword{regex}
-\keyword{remove}
-\keyword{several}
-\keyword{single}
-\keyword{some}
-\keyword{spec}
-\keyword{specification.}
-\keyword{specifications}
-\keyword{specs.}
-\keyword{start}
-\keyword{stuff}
-\keyword{stuff)}}.}
-\keyword{text}
-\keyword{that}
-\keyword{the}
-\keyword{through}
-\keyword{to}
-\keyword{trim}
-\keyword{value)}}.}
-\keyword{vector}
-\keyword{vector,}
-\keyword{where}
-\keyword{which}
-\keyword{whitespace}
-\keyword{with}
-\keyword{x}
-\keyword{{}
-\keyword{{{("sigamlim",}
-\keyword{{{(key,}
-\keyword{{{(spec,}
-\keyword{{{series}},}
-\keyword{{{x11}},}
-\keyword{}`,}

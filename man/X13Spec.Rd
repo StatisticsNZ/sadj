@@ -14,9 +14,8 @@ X13Spec(specname = "series", ...)
 \code{composite}, etc.}
 }
 \value{
-A list of class \code{\link{X13Spec}}.  The first element,
-\code{name}, is the name of the specification.  The second element,
-\code{args}, is a list of name-value pairs.
+A list of name-value pairs that is of class \code{\link{X13Spec}}.  It has a
+\code{name} attribute which is the name of the specification.
 }
 \description{
 List containing a single specification group, e.g. \code{series},
