@@ -1,71 +1,115 @@
-# Still need to handle empty specs.  Currently returns NA char
 
-#' A closure of Functions to parse an X13 .spc file
-#' parseSPC is the main function and its output
-#' gets passed to parsedSpectoX13Spec which creates X13 classes
-#' or alternatively converted to some other type like a JSON file
+#' A closure of functions used to parse an X13 .spc file.
+#'
+#' @description
+#' \code{parseSPC} pipes the child functions together. Its output
+#'   gets passed to parsedSpectoX13Spec which creates X13 classes.
+#'
+#' @return A list of functions useful for parsing spec files.
+#'
+#' @section stripComment:
+#'
+#' Remove comments from a specification. Takes mapped output from readLines
+#' Comments are denoted by #.  Remove any lines that start with #, or remove
+#' content after # if it appears part-way through a line.
+#' \subsection{Arguments}{
+#' \describe{
+#'   \item{str}{The body of a SPC file.}
+#' }}
+#' \subsection{Value}{A 1-element character: a SPC file line with comments removed.}
+#'
+#' @section preprocess:
+#' Remove newlines, remove comments, and squish whitespace from the content
+#'   of a SPC file.
+#' \subsection{Arguments}{
+#' \describe{
+#'   \item{str}{multiple-length chatacter: The body of a SPC file.}
+#' }}
+#' \subsection{Value}{A character vector of length 1 containing a tidier
+#'   , squished version of the body of a SPC file.}
+#'
+#' @section parseSpecs:
+#' Split body of SPC files into individual specs:
+#'
+#' Extract instances of the pattern spec \{ stuff \}, where spec is
+#'   , for example, \code{series}, \code{x11}, etc.
+#'
+#' \subsection{Arguments}{
+#' \describe{
+#'   \item{str}{The output of preprocess: a character vector of length 1.}
+#' }}
+#' \subsection{Value}{A character vector with length equal to the number of specs.}
+#'
+#' @section parseSpecNameAndBody:
+#' Convert a list of specifications a named list of values.
+#'
+#' \subsection{Arguments}{
+#' \describe{
+#'   \item{str}{The output of parseSpecs:
+#'     A character vector with length equal to the number of specs.}
+#' }}
+#' \subsection{Value}{A named list of values.}
+#'
+#'
+#' @section parseArgs:
+#' Parse Arguments:
+#'   The output of parseSpecNameAndBody maps to this function.
+#' \subsection{Arguments}{
+#' \describe{
+#'   \item{str}{A 1-element character containing raw spec values.}
+#' }}
+#' \subsection{Value}{A named list of named parameters.}
+#'
+#'
 #' @keywords internal
 SpecificationParser <- function() {
 
 
   # utility functions to imitate ones in scala -------------
 
-  #' @keywords internal
   startsWith <- function(s, pattern) {
     grepl(sprintf('^%s',pattern), s, fixed = TRUE)
   }
 
-  #' @keywords internal
   contains <- function(s, pattern) {
     grepl(pattern, s, fixed = TRUE)
   }
 
-  #' @keywords internal
   indexOf <- function(s, pattern) {
     regexpr(pattern=pattern,s, fixed = TRUE)[[1]]
   }
 
-  #' @keywords internal
   take <- function(s, stop) {
     substr(s, start = 1, stop = stop)
   }
 
-
-  #' @keywords internal
   takeRight <- function(s, n) {
     substr(s, nchar(s)-n+1, nchar(s))
   }
 
-  #' drop first x characters
-  #'
-  #' @keywords internal
   drop <- function(s, x) {
     substr(s,start = x + 1, stop=nchar(s))
   }
 
-  #' drop first x characters
-  #'
-  #' @keywords internal
   dropRight <- function(s, x) {
     substr(s,start = 1, stop=nchar(s) - x)
   }
 
-  #' concatenate vector of characters
-  #'
-  #' @keywords internal
+  # concatenate vector of characters
   mkString <- function(s,sep=""){
     paste(s, collapse=sep)
 
   }
 
-  #' concatenate characters
-  #' @keywords internal
+  # concatenate characters
   `%+%` <- function(a, b) paste0(a, b)
 
   # sprintf used as string interpolator
-  # linebreak - match carriage return followed by newline or just newline. (?: means do not remember groups
+  # linebreak - match carriage return followed by newline or just newline.
+  # (?: means do not remember groups
   linebreak <- "(?:(?:\r\n)|\n)"
-  # whitespace - match zero to many number of spaces carriage returns or newlines.  \\s should do the same job
+  # whitespace - match zero to many number of spaces carriage returns or newlines.
+  # \\s should do the same job
   ws <- "[ \r\n\t]*"
   # left brace with surrounding whitespace / linebreaks
   lbrace <- sprintf(" *%s? *\\{ *%s? *", linebreak, linebreak)
@@ -97,11 +141,9 @@ SpecificationParser <- function() {
 
 
 
-  #' Make a single regex which matches 'any of' several others.
-  #' @param rs list of regular expression strings
-  #' @return A regular expression string
-  #'
-  #' @keywords internal
+  # Make a single regex which matches 'any of' several others.
+  # argument: rs - A list of regular expression strings.
+  # return - A regular expression string
   anyOf <- function(rs){
     "(" %+%
       (purrr::map_chr(rs, function(r){sprintf("(?:%s)",r)}) %>%
@@ -110,13 +152,7 @@ SpecificationParser <- function() {
   }
 
 
-  #' Remove comments from a specification.
-  #' Comments are denoted by #.  Remove any lines that start with #, or remove
-  #' content after # if it appears part-way through a line.
-  #' @param str the body of a SPC file
-  #' @return the body of a SPC file with comments removed.
-  #'
-  #' @keywords internal
+  # see roxygen documentation above
   stripComment <- function(str){
     if (startsWith(str,"#")) ""
     else if (contains(str,"#")) take(str,(indexOf(str,"#")- 1))
@@ -124,11 +160,7 @@ SpecificationParser <- function() {
   }
 
 
-  #' Standardise newlines, remove comments, and trim some whitespace from the content of a SPC file.
-  #' @param str the body of a SPC file
-  #' @return tidier version of the body of a SPC file
-  #'
-  #' @keywords internal
+  # see roxygen documentation above
   preprocess <-function(str){
 
     #str_split("\\R") %>% unlist() %>% # split into character vector of lines. Matches any newline char
@@ -136,34 +168,21 @@ SpecificationParser <- function() {
       map_chr(stripComment) %>% # strip out comments from each line
       map_chr(str_squish) %>% map_chr(~ str_replace_all(.x,"[\"\']",""))  # squish whitespace
     res[res != ""] %>% # throw away blank lines.  How can I turn this into pipe?
-      mkString(" ") # recombine lines with newline character
+      mkString(" ") # recombine lines with a space character
   }
 
-
-  #' Split body of SPC files into individual specs.
-  #' Extract instances of the pattern `spec { stuff }`, where spec is, for example, {{series}}, {{x11}}, etc.
-  #'@param str
-  #'@return
-  #'#'
-  #' @keywords internal
+  # see roxygen documentation above
   parseSpecs <- function(processed){
-      # processed <- preprocess(str)
       if (!grepl(specifications, processed)) {
         abort("Specification is not formatted correctly.")
       }
       str_extract_all(processed, specification) %>% unlist()
-      # specification.r.findAllIn(processed).toList
 
   }
 
 
-  #' Split the body of specifications into name-value pairs.
-  #' Given text with pattern `spec { stuff }`, convert to {{(spec, stuff)}}.
-  #' @param str 1-element character with specification
-  #' @return named characters
-  #'
-  #' @keywords internal
 
+  # see roxygen documentation above
   parseSpecNameAndBody <- function(str){
     # be sure to deal with case of empty brackets
       spec_expr <- sprintf("^(%s) ?\\{ ?(%s?) ?\\}$"
@@ -176,12 +195,7 @@ SpecificationParser <- function() {
 
   }
 
-  #' Parse Arguments.  Map the output of parseSpecNameAndBody here
-  #' Given a 1-element named spec character vector, extract parameters
-  #' @param char named spec character
-  #' @return named list of named parameters
-  #'
-  #' @keywords internal
+  # see roxygen documentation above
   parseArgs <- function(str) {
 
     re_escape <- function(strings){
@@ -243,13 +257,7 @@ SpecificationParser <- function() {
 
 
 
-  #' Split body of spec into name-value pairs.
-  #' Given `stuff` extracted from `spec { stuff }`, convert `stuff` to
-  #' {{(key, value)}}.  For example, {{("sigamlim", "(1.8, 2.8)")}}
-  #' @param str input text, e.g. "sigmalim=(1.8,2.8)"
-  #' @return [[Try[Map[String, String]]]]
-  #'
-  #' @keywords internal
+  # Split body of spec into name-value pairs. Not currently used
   parseArgs0 <- function(str) {
     partextpar <- "(?:\\([\\d\\w\\s]*\\))"
 
@@ -331,8 +339,10 @@ SpecificationParser <- function() {
 
   }
 
-  list(stripComment=stripComment, preprocess=preprocess, parseSpecs=parseSpecs
-       , parseSpecNameAndBody=parseSpecNameAndBody, parseArgs=parseArgs, parseSPC=parseSPC)
+  list(stripComment=stripComment, readSPCLines=readSPCLines
+       , preprocess=preprocess, parseSpecs=parseSpecs
+       , parseSpecNameAndBody=parseSpecNameAndBody
+       , parseArgs=parseArgs, parseSPC=parseSPC)
 
 }
 

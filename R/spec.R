@@ -122,9 +122,8 @@
 #'
 #' @export
 #'
-#' @return A list of class \code{\link{X13Spec}}.  The first element,
-#' \code{name}, is the name of the specification.  The second element,
-#' \code{args}, is a list of name-value pairs.
+#' @return A list of name-value pairs that is of class \code{\link{X13Spec}}.  It has a
+#' \code{name} attribute which is the name of the specification.
 #'
 #' @examples
 #' spec <- X13Spec(
@@ -133,6 +132,7 @@
 #' )
 #'
 #' spec
+
 X13Spec <- function(specname = "series", ...){
   specname = tolower(specname)
   if (!specname %in% names(.spec))
