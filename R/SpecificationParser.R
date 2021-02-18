@@ -120,13 +120,13 @@ SpecificationParser <- function() {
 
   # anything permitted inside a spec value
   # anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9\r\n\\(\\)\"\'\\.,=\\\\/ -]*)"
-  anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9\\(\\)\"\'\\.,=\\\\/ -]*)"
+  anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9_\\(\\)\"\'\\.,=\\\\/ -]*)"
 
   # anything permitted on the rhs of a spec parameter
   # similar to anytext but first character can be open parentheses as well
   # Also does not match =
   # anyrhs <-  "(?:[a-zA-Z\\(]+[a-zA-Z0-9\r\n\\(\\)\"\'\\.,\\\\/ -]*)"
-  anyrhs <-  "(?:[a-zA-Z0-9\\(\\.\\\\/-]+[a-zA-Z0-9\\(\\)\"\'\\.,\\\\/ -]*)"
+  anyrhs <-  "(?:[a-zA-Z0-9_\\(\\.\\\\/-]+[a-zA-Z0-9\\(\\)\"\'\\.,\\\\/ -]*)"
 
 
   # high-level match for entire spec, i.e. spec { specname}
@@ -174,7 +174,7 @@ SpecificationParser <- function() {
   # see roxygen documentation above
   parseSpecs <- function(processed){
       if (!grepl(specifications, processed)) {
-        abort("Specification is not formatted correctly.")
+        rlang::abort("Specification is not formatted correctly.")
       }
       str_extract_all(processed, specification) %>% unlist()
 
@@ -226,7 +226,7 @@ SpecificationParser <- function() {
     expr_last <- sprintf("(?: ?$)")
 
     # Could remove the possible space match at the beginning
-    expr_lh_rh <- sprintf("^?(%s) ?= ?(%s)(?:%s|%s)",name,anyrhs,expr_notlast, expr_last)
+    expr_lh_rh <- sprintf("^(%s) ?= ?(%s)(?:%s|%s)",name,anyrhs,expr_notlast, expr_last)
 
     parse <- function(str,accum) {
       str %<>% str_trim
@@ -270,7 +270,7 @@ SpecificationParser <- function() {
     # param (s: String, numLeft: Int, numRight: Int, accum: String)
     # return list()
     complete <- function(s, numLeft, numRight, accum) {
-      if (s == "") sprintf("Invalid specification value: \"%s\"",str) %>% abort()
+      if (s == "") sprintf("Invalid specification value: \"%s\"",str) %>% rlang::abort()
       else if (take(s,1) == "(") complete(drop(s,1), numLeft + 1, numRight, accum %+% "(")
       else if (take(s,1) == ")") {
         if (numLeft == (numRight + 1)) {
@@ -306,7 +306,7 @@ SpecificationParser <- function() {
           }
 
         }
-      } else sprintf("Could not parse parameters from \"%s\"",s) %>% abort()
+      } else sprintf("Could not parse parameters from \"%s\"",s) %>% rlang::abort()
     }
 
     parse(str, vector(mode="list"))
