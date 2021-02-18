@@ -166,6 +166,7 @@ X13Spec <- function(specname = "series", ...){
 #' @param ... Variable number of name-value pairs.  The name is the name of the
 #' spec, and the value is a list containing additional name-value pairs where
 #' names are spec parameter names and values are the spec parameter values.
+#' @param fac_name The name of a factor files as a string.
 #'
 #' @export
 #'
@@ -184,7 +185,7 @@ X13Spec <- function(specname = "series", ...){
 #'   )
 #' )
 #' specl
-X13SpecList <- function(...){
+X13SpecList <- function(..., fac_name){
   args <- list(...)
   if (length(args)==0)
     stop("No specs provided.")
@@ -202,6 +203,9 @@ X13SpecList <- function(...){
     spec <- do.call("X13Spec", spec)
     o[[i]] <- spec
   }
+  if(!missing(fac_name)){
+    attr(o, "fac_name") <- fac_name
+  } else attr(o, "fac_name") <- character()
   class(o) <- c("X13SpecList", "list")
   names(o) <- sapply(o, function(x) attr(x,"name"))
   o

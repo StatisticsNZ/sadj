@@ -199,6 +199,15 @@ writeDAT <- function(x, fname){
 readSPC <- function(fname){
 
   res <- SPCparser$parseSPC(fname) %>% parsedSpecToX13SpecList()
+
+  # add a fac_name if a `file` argument exists in the `transform` specification
+  fac_name <- getSpecParameter(res,"transform","file")
+  expr_facname <- "([a-zA-Z]+[a-zA-Z0-9]*)[\\.]fac$"
+
+  if(!is_empty(fac_name) && str_detect(fac_name,expr_facname)) {
+    attr(res, "fac_name") <- str_match(fac_name,expr_facname)[,2]
+  } else attr(res, "fac_name") <- character()
+
   return(res)
 }
 
@@ -207,7 +216,7 @@ readSPC <- function(fname){
 #' @param fname file name
 #'
 #' @keywords internal
-readAllSPCs <- function(path){
+readSPCsFromDir <- function(path){
   if (!dir.exists(path))
     stop("Directory does not exist.")
 
@@ -219,7 +228,9 @@ readAllSPCs <- function(path){
 
   all_spcs <- list.files(path, full.names = TRUE, pattern = "\\.spc$")
   names(all_spcs) <- list.files(path, pattern = "\\.spc$") %>% str_remove("\\.spc$")
-  all_spcs %>% map(readSPC)
+  res <- all_spcs %>% map(readSPC)
+  class(res) <- "X13specCol"
+  return(res)
 
 }
 
