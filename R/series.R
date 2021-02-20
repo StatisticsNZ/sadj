@@ -226,7 +226,7 @@ adjust.X13Series <- function(x, purge = TRUE, ...){
   writeSpecList(x)
   writeMTA.X13Series(x)
   binpath <- sprintf("%s/x13ashtml", paste0(x13binary::x13path()))
-  cmd <- sprintf("%s -m %s -s", binpath, specroot.X13Series(x))
+  cmd <- sprintf("cd %s && %s -m %s -s", workdir(), binpath, specroot.X13Series(x))
   system(cmd, intern=TRUE)
   res <- importOutput(x)
   attr(res, "input") <- x
