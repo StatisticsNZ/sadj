@@ -120,13 +120,13 @@ SpecificationParser <- function() {
 
   # anything permitted inside a spec value
   # anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9\r\n\\(\\)\"\'\\.,=\\\\/ -]*)"
-  anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9_\\(\\)\"\'\\.,=\\\\/ -]*)"
+  anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9_\\(\\)\"\'\\.,=\\\\/ :;\\<\\>\\$-]*)"
 
   # anything permitted on the rhs of a spec parameter
   # similar to anytext but first character can be open parentheses as well
   # Also does not match =
   # anyrhs <-  "(?:[a-zA-Z\\(]+[a-zA-Z0-9\r\n\\(\\)\"\'\\.,\\\\/ -]*)"
-  anyrhs <-  "(?:[a-zA-Z0-9\\(\\.\\\\/-]+[a-zA-Z0-9_\\(\\)\"\'\\.,\\\\/ -]*)"
+  anyrhs <-  "(?:[a-zA-Z0-9\\(\\.\\\\/-]+[a-zA-Z0-9_\\(\\)\"\'\\.,\\\\/ :;\\<\\>\\$-]*)"
 
 
   # high-level match for entire spec, i.e. spec { specname}
