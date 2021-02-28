@@ -130,7 +130,7 @@ SpecificationParser <- function() {
   # anyrhs <-  "(?:[a-zA-Z\\(]+[a-zA-Z0-9\r\n\\(\\)\"\'\\.,\\\\/ -]*)"
   # anyrhs <-  "(?:[a-zA-Z0-9\\(\\.\\\\/-]+[a-zA-Z0-9_\\(\\)\"\'\\.,\\\\/ :;\\<\\>\\$-]*)"
   # strictrhs <- "(?:[a-zA-Z0-9\\(\\.\\\\/+-]+[a-zA-Z0-9_\\(\\)\\.,\\\\/ :;\\<\\>+-]*)"
-  strictrhs <- "(?:[a-zA-Z0-9\\.,\\\\/+-]+[a-zA-Z0-9_\\.,\\\\/:;\\<\\>+-]*)"
+  strictrhs <- "(?:[a-zA-Z0-9\\.,\\\\/+-]+[a-zA-Z0-9_\\.,\\\\/:;\\<\\>+-]*?)"
   qrhs <- "(?:\".*?\"|\'.*?\')"
   singlerhs <- sprintf("(?:%s|%s)",strictrhs,qrhs)
   multrhs <- sprintf("(?: ?%s ?)+", singlerhs)
