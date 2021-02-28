@@ -120,20 +120,36 @@ SpecificationParser <- function() {
 
   # anything permitted inside a spec value
   # anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9\r\n\\(\\)\"\'\\.,=\\\\/ -]*)"
-  anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9_\\(\\)\"\'\\.,=\\\\/ :;\\<\\>\\$-]*)"
+  # anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9_\\(\\)\"\'\\.,=\\\\/ :;\\<\\>\\$-]*)"
+  anyspecbody <- "(?:[a-zA-Z]+[^\\{\\}]*)"
+  anytext <- "(?:.*)"
 
   # anything permitted on the rhs of a spec parameter
   # similar to anytext but first character can be open parentheses as well
   # Also does not match =
   # anyrhs <-  "(?:[a-zA-Z\\(]+[a-zA-Z0-9\r\n\\(\\)\"\'\\.,\\\\/ -]*)"
-  anyrhs <-  "(?:[a-zA-Z0-9\\(\\.\\\\/-]+[a-zA-Z0-9_\\(\\)\"\'\\.,\\\\/ :;\\<\\>\\$-]*)"
+  # anyrhs <-  "(?:[a-zA-Z0-9\\(\\.\\\\/-]+[a-zA-Z0-9_\\(\\)\"\'\\.,\\\\/ :;\\<\\>\\$-]*)"
+  # strictrhs <- "(?:[a-zA-Z0-9\\(\\.\\\\/+-]+[a-zA-Z0-9_\\(\\)\\.,\\\\/ :;\\<\\>+-]*)"
+  strictrhs <- "(?:[a-zA-Z0-9\\.,\\\\/+-]+[a-zA-Z0-9_\\.,\\\\/:;\\<\\>+-]*)"
+  qrhs <- "(?:\".*?\"|\'.*?\')"
+  singlerhs <- sprintf("(?:%s|%s)",strictrhs,qrhs)
+  multrhs <- sprintf("(?: ?%s ?)+", singlerhs)
+  grouprhs <- sprintf("(?:%s|\\(%s\\))", singlerhs,multrhs)
+  anyrhs <- sprintf("(?: ?%s ?)+", grouprhs)
+
+  # anyrhs includes anytext in quotes
+  # anyrhs <-  sprintf("(?:%s|\" ?%s ?\"|\' ?%s ?\')", strictrhs,anytext,anytext)
+  # openparen <- "(?:\\( ?)"
+  # closeparen <- "(?: ?\\))"
+  # anyrhs <-  sprintf("(?:%s|\".*?\"|\'.*?\'|%s\".*?\"%s|%s\'.*?\'%s)", strictrhs,openparen,closeparen,openparen,closeparen)
+
 
 
   # high-level match for entire spec, i.e. spec { specname}
   # match the name, the lbrace.
   # Match any amount of whitespace (or none) or any amount of text (at least one character)
   specification <- sprintf("%s ?\\{ ?%s? ?\\}"
-                          , name, anytext)
+                          , name, anyspecbody)
 
   # high-level match for entire spec 'file', i.e. name { param = value} name { param = value}...
   # this group will get remembered.
@@ -166,7 +182,7 @@ SpecificationParser <- function() {
     #str_split("\\R") %>% unlist() %>% # split into character vector of lines. Matches any newline char
     res <- str %>%
       map_chr(stripComment) %>% # strip out comments from each line
-      map_chr(str_squish) %>% map_chr(~ str_replace_all(.x,"[\"\']",""))  # squish whitespace
+      map_chr(str_squish) #%>% map_chr(~ str_replace_all(.x,"[\"\']",""))  # squish whitespace
     res[res != ""] %>% # throw away blank lines.  How can I turn this into pipe?
       mkString(" ") # recombine lines with a space character
   }
@@ -186,7 +202,7 @@ SpecificationParser <- function() {
   parseSpecNameAndBody <- function(str){
     # be sure to deal with case of empty brackets
       spec_expr <- sprintf("^(%s) ?\\{ ?(%s?) ?\\}$"
-                           , name, anytext)
+                           , name, anyspecbody)
       res <- str_match(str, spec_expr)
       # chec res.  We expect 1 x 3 matrix
       # check case when nothing matches and case with partial match
@@ -225,7 +241,6 @@ SpecificationParser <- function() {
     expr_notlast <- sprintf("(?: %s ?=)",name)
     expr_last <- sprintf("(?: ?$)")
 
-    # Could remove the possible space match at the beginning
     expr_lh_rh <- sprintf("^(%s) ?= ?(%s)(?:%s|%s)",name,anyrhs,expr_notlast, expr_last)
 
     parse <- function(str,accum) {
@@ -234,6 +249,7 @@ SpecificationParser <- function() {
       # We replace with nothing and then parse again
       # Ideally anyrhs is made smart enough to match all parameters in one go with str_match_all
       parsed_args <- str_match(str,expr_lh_rh)
+      # browser(expr = is.na(parsed_args[[1]]))
       whole_match <- parsed_args[[1]]
       lhs <- parsed_args[[2]] %>% str_trim()
       rhs <- parsed_args[[3]] %>% str_trim()
@@ -242,11 +258,11 @@ SpecificationParser <- function() {
       expr_parsed <- sprintf("^%s ?= ?%s",lhs,re_escape(rhs))
       rest <- str_replace(str,expr_parsed,"") %>% str_trim()
 
-      # trim whitespace in parentheses
-      rhs <- str_replace_all(rhs, expr_paren, trim_parens)
+      # if whole rhs is quoted then unquote, else trim whitespace in parentheses
+      # if(str_detect(rhs,"^\" ?(.*) ?\"$|^\' ?(.*) ?\'$")) rhs <- unquote(rhs) else
+      #   rhs <- str_replace_all(rhs, expr_paren, trim_parens)
 
-      if(rest=="") append_by_name(accum,lhs,rhs)
-      else
+      if(rest=="") append_by_name(accum,lhs,rhs) else
         parse(rest, append_by_name(accum,lhs,rhs))
     }
 
@@ -339,7 +355,7 @@ SpecificationParser <- function() {
 
   }
 
-  list(stripComment=stripComment, readSPCLines=readSPCLines
+  list(readSPCLines=readSPCLines, stripComment=stripComment
        , preprocess=preprocess, parseSpecs=parseSpecs
        , parseSpecNameAndBody=parseSpecNameAndBody
        , parseArgs=parseArgs, parseSPC=parseSPC)
