@@ -189,7 +189,7 @@ SpecificationParser <- function() {
 
   # see roxygen documentation above
   parseSpecs <- function(processed){
-      if (!grepl(specifications, processed)) {
+      if (!grepl(specifications, processed, perl = TRUE)) {
         rlang::abort("Specification is not formatted correctly.")
       }
       str_extract_all(processed, specification) %>% unlist()
