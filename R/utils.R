@@ -35,6 +35,14 @@ unquote <- function(s) {
 
 }
 
+unparen <- function(s) {
+  expr <- "^\\( ?(.*) ?\\)$"
+  res <- str_match(s, expr)
+  if(is.na(res[,1])) return(s)
+  res[,2]
+
+}
+
 unquote0 <- function(s) {
   # if (grepl(" ", s)) return(s)
   if (substr(s, 1, 1) %in% c("\'", "\"") &

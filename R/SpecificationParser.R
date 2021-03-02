@@ -258,6 +258,9 @@ SpecificationParser <- function() {
       expr_parsed <- sprintf("^%s ?= ?%s",lhs,re_escape(rhs))
       rest <- str_replace(str,expr_parsed,"") %>% str_trim()
 
+      # if(grepl(singlerhs,rhs,perl=TRUE)) rhs <- unparen(rhs)
+      # if(grepl(qrhs,rhs,perl=TRUE)) rhs <- unquote(rhs)
+
       # if whole rhs is quoted then unquote, else trim whitespace in parentheses
       # if(str_detect(rhs,"^\" ?(.*) ?\"$|^\' ?(.*) ?\'$")) rhs <- unquote(rhs) else
       #   rhs <- str_replace_all(rhs, expr_paren, trim_parens)
