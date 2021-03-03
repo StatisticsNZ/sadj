@@ -130,10 +130,15 @@ SpecificationParser <- function() {
   # anyrhs <-  "(?:[a-zA-Z\\(]+[a-zA-Z0-9\r\n\\(\\)\"\'\\.,\\\\/ -]*)"
   # anyrhs <-  "(?:[a-zA-Z0-9\\(\\.\\\\/-]+[a-zA-Z0-9_\\(\\)\"\'\\.,\\\\/ :;\\<\\>\\$-]*)"
   # strictrhs <- "(?:[a-zA-Z0-9\\(\\.\\\\/+-]+[a-zA-Z0-9_\\(\\)\\.,\\\\/ :;\\<\\>+-]*)"
-  strictrhs <- "(?:[a-zA-Z0-9\\.,\\\\/+-]+[a-zA-Z0-9_\\.,\\\\/:;\\<\\>+-]*?)"
+  # strictrhs <- "(?:[a-zA-Z0-9\\.,\\\\/+-]+[a-zA-Z0-9_\\.,\\\\/:;\\<\\>+-]*?)"
+  strictrhs <- "(?:[a-zA-Z0-9\\.\\\\/+-]+[a-zA-Z0-9_\\.\\\\/\\<\\>+-]*?)"
   qrhs <- "(?:\".*?\"|\'.*?\')"
   singlerhs <- sprintf("(?:%s|%s)",strictrhs,qrhs)
-  multrhs <- sprintf("(?: ?%s ?)+", singlerhs)
+
+  singleparen <- sprintf("^\\( ?(%s) ?\\)$", singlerhs)
+  singleqrhs <- sprintf("^%s$",qrhs)
+
+  multrhs <- sprintf("(?: ?,? ?%s ?,? ?)+", singlerhs)
   grouprhs <- sprintf("(?:%s|\\(%s\\))", singlerhs,multrhs)
   anyrhs <- sprintf("(?: ?%s ?)+", grouprhs)
 
@@ -258,8 +263,8 @@ SpecificationParser <- function() {
       expr_parsed <- sprintf("^%s ?= ?%s",lhs,re_escape(rhs))
       rest <- str_replace(str,expr_parsed,"") %>% str_trim()
 
-      # if(grepl(singlerhs,rhs,perl=TRUE)) rhs <- unparen(rhs)
-      # if(grepl(qrhs,rhs,perl=TRUE)) rhs <- unquote(rhs)
+      if(grepl(singleparen,rhs,perl=TRUE)) rhs <- unparen(rhs)
+      if(grepl(singleqrhs,rhs,perl=TRUE)) rhs <- unquote(rhs)
 
       # if whole rhs is quoted then unquote, else trim whitespace in parentheses
       # if(str_detect(rhs,"^\" ?(.*) ?\"$|^\' ?(.*) ?\'$")) rhs <- unquote(rhs) else
