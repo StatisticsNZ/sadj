@@ -28,18 +28,18 @@ trim <- function(s) ltrim(rtrim(s))
 #' @keywords internal
 
 unquote <- function(s) {
-  expr <- "^\" ?(.*) ?\"$|^\' ?(.*) ?\'$"
+  expr <- "^\" ?(.*?) ?\"$|^\' ?(.*?) ?\'$"
   res <- str_match(s, expr)
   if(is.na(res[,1])) return(s)
-  if(!is.na(res[,2])) res[,2] else res[,3]
+  if(!is.na(res[,2])) str_trim(res[,2]) else str_trim(res[,3])
 
 }
 
 unparen <- function(s) {
-  expr <- "^\\( ?(.*) ?\\)$"
+  expr <- "^\\( ?([^\\(\\)]*?) ?\\)$"
   res <- str_match(s, expr)
   if(is.na(res[,1])) return(s)
-  res[,2]
+  str_trim(res[,2])
 
 }
 
