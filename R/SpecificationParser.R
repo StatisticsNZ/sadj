@@ -208,7 +208,7 @@ SpecificationParser <- function() {
   }
 
   # see roxygen documentation above
-  parseSpecNameAndBody <- function(str){
+  parseSpecNameAndBody <- function(str, to_lower=TRUE){
     # be sure to deal with case of empty brackets
       spec_expr <- sprintf("^(%s) ?\\{ ?(%s?) ?\\}?$"
                            , name, anyspecbody)
@@ -216,12 +216,14 @@ SpecificationParser <- function() {
       # chec res.  We expect 1 x 3 matrix
       # check case when nothing matches and case with partial match
 
-      res[,3] %>% setNames(res[,2]) %>% return()
+      if(to_lower) names <- tolower(res[,2]) else names <- res[,2]
+
+      res[,3] %>% setNames(names) %>% return()
 
   }
 
   # see roxygen documentation above
-  parseArgs <- function(str) {
+  parseArgs <- function(str, to_lower=TRUE) {
 
     re_escape <- function(strings){
       vals <- c("\\\\", "\\[", "\\]", "\\(", "\\)",
@@ -281,6 +283,14 @@ SpecificationParser <- function() {
       # this should be whole match minus name =$ or minus just $
       expr_parsed <- sprintf("^%s ?= ?%s",lhs,re_escape(rhs))
       rest <- str_replace(str,expr_parsed,"") %>% str_trim()
+
+      if(to_lower) {
+        lhs <- tolower(lhs)
+        rhs <- str_replace_all(rhs, singlerhs,function(x){
+          if(!str_detect(x,qrhs)) x <- tolower(x)
+          x
+        })
+      }
 
       if(grepl(singleparen,rhs,perl=TRUE)) rhs <- unparen(rhs)
       rhs <- trim_parens(rhs)
@@ -369,7 +379,7 @@ SpecificationParser <- function() {
 
   }
 
-  parseSPC <- function(fname) {
+  parseSPC <- function(fname, to_lower=TRUE) {
     if (!file.exists(fname))
       stop("File does not exist.")
 
@@ -379,7 +389,7 @@ SpecificationParser <- function() {
     on.exit(close(con), add = TRUE)
 
     con %>% readSPCLines() %>% preprocess() %>% parseSpecs() %>%
-      parseSpecNameAndBody() %>% map(~ parseArgs(.x))
+      parseSpecNameAndBody(to_lower=to_lower) %>% map(~ parseArgs(.x,to_lower=to_lower))
 
   }
 

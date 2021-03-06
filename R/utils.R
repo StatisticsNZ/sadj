@@ -213,9 +213,9 @@ writeDAT <- function(x, fname){
 #' @param fname file name
 #'
 #' @export
-readSPC <- function(fname){
+readSPC <- function(fname, to_lower=TRUE){
 
-  res <- SPCparser$parseSPC(fname) %>% parsedSpecToX13SpecList()
+  res <- SPCparser$parseSPC(fname, to_lower=to_lower) %>% parsedSpecToX13SpecList()
 
   # add a fac_name if a `file` argument exists in the `transform` specification
   fac_name <- getSpecParameter(res,"transform","file")
