@@ -36,7 +36,7 @@ unquote <- function(s) {
 }
 
 unparen <- function(s) {
-  expr <- "^\\( ?([^\\(\\)]*?) ?\\)$"
+  expr <- "^\\( ?(.*?) ?\\)$"
   res <- str_match(s, expr)
   if(is.na(res[,1])) return(s)
   str_trim(res[,2])

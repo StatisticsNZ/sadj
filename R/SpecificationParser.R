@@ -68,7 +68,11 @@ SpecificationParser <- function() {
   # utility functions to imitate ones in scala -------------
 
   startsWith <- function(s, pattern) {
-    grepl(sprintf('^%s',pattern), s, fixed = TRUE)
+    grepl(sprintf('^%s',pattern), s, fixed = FALSE)
+  }
+
+  endsWith <- function(s, pattern) {
+    grepl(sprintf('%s$',pattern), s, fixed = FALSE)
   }
 
   contains <- function(s, pattern) {
@@ -153,7 +157,7 @@ SpecificationParser <- function() {
   # high-level match for entire spec, i.e. spec { specname}
   # match the name, the lbrace.
   # Match any amount of whitespace (or none) or any amount of text (at least one character)
-  specification <- sprintf("%s ?\\{ ?%s? ?\\}"
+  specification <- sprintf("%s ?\\{ ?%s? ?(?:\\}|$)"
                           , name, anyspecbody)
 
   # high-level match for entire spec 'file', i.e. name { param = value} name { param = value}...
@@ -175,8 +179,8 @@ SpecificationParser <- function() {
 
   # see roxygen documentation above
   stripComment <- function(str){
-    if (startsWith(str,"#")) ""
-    else if (contains(str,"#")) take(str,(indexOf(str,"#")- 1))
+    # if (startsWith(str,"#")) ""
+    if (contains(str,"#")) take(str,(indexOf(str,"#")- 1))
     else str
   }
 
@@ -185,6 +189,7 @@ SpecificationParser <- function() {
   preprocess <-function(str){
 
     #str_split("\\R") %>% unlist() %>% # split into character vector of lines. Matches any newline char
+    str <- str_replace_all(str,"\x92","'")
     res <- str %>%
       map_chr(stripComment) %>% # strip out comments from each line
       map_chr(str_squish) #%>% map_chr(~ str_replace_all(.x,"[\"\']",""))  # squish whitespace
@@ -194,19 +199,18 @@ SpecificationParser <- function() {
 
   # see roxygen documentation above
   parseSpecs <- function(processed){
-      if (!grepl(specifications, processed, perl = TRUE)) {
-        rlang::abort("Specification is not formatted correctly.")
-      }
-      str_extract_all(processed, specification) %>% unlist()
+    if (!grepl(specifications, processed, perl = TRUE)) {
+      rlang::abort("Specification is not formatted correctly.")
+    }
 
+    if(!endsWith(processed,"}")) warning("Last specification is missing `}`")
+    str_extract_all(processed, specification) %>% unlist()
   }
-
-
 
   # see roxygen documentation above
   parseSpecNameAndBody <- function(str){
     # be sure to deal with case of empty brackets
-      spec_expr <- sprintf("^(%s) ?\\{ ?(%s?) ?\\}$"
+      spec_expr <- sprintf("^(%s) ?\\{ ?(%s?) ?\\}?$"
                            , name, anyspecbody)
       res <- str_match(str, spec_expr)
       # chec res.  We expect 1 x 3 matrix
@@ -231,10 +235,25 @@ SpecificationParser <- function() {
     }
 
     # trim whitespace inside parentheses
-    expr_paren <- "\\(([^()]+)\\)"
-    trim_parens <- function(x){
-      inside_paren <- x %>% str_match(expr_paren)
-      inside_paren[,2] %>% str_trim() %>% sprintf("(%s)",.)
+    # expr_paren <- "\\(([^()]+)\\)"
+    # trim_parens <- function(x){
+    #   inside_paren <- x %>% str_match(expr_paren)
+    #   inside_paren[,2] %>% str_trim() %>% sprintf("(%s)",.)
+    # }
+    trim_parens <- function(rhs){
+      expr_openparen <- sprintf("\\( (,? ?%s)", singlerhs)
+      rhs <- str_replace_all(rhs, expr_openparen,function(x){
+        inside_paren <-x %>% str_match(expr_openparen)
+        inside_paren[,2] %>% sprintf("(%s",.)
+      })
+
+      expr_closeparen <- sprintf("(%s ?,?) \\)", singlerhs)
+      rhs <- str_replace_all(rhs, expr_closeparen,function(x){
+        inside_paren <-x %>% str_match(expr_closeparen)
+        inside_paren[,2] %>% sprintf("%s)",.)
+      })
+
+      rhs
     }
 
     append_by_name <- function(x, name, y){
@@ -264,6 +283,7 @@ SpecificationParser <- function() {
       rest <- str_replace(str,expr_parsed,"") %>% str_trim()
 
       if(grepl(singleparen,rhs,perl=TRUE)) rhs <- unparen(rhs)
+      rhs <- trim_parens(rhs)
       if(grepl(singleqrhs,rhs,perl=TRUE)) rhs <- unquote(rhs)
 
       # if whole rhs is quoted then unquote, else trim whitespace in parentheses
