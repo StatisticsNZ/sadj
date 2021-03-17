@@ -22,7 +22,24 @@ trim <- function(s) ltrim(rtrim(s))
 #' Remove quotes from string.
 #'
 #' @keywords internal
+
 unquote <- function(s) {
+  expr <- "^\" ?(.*?) ?\"$|^\' ?(.*?) ?\'$"
+  res <- str_match(s, expr)
+  if(is.na(res[,1])) return(s)
+  if(!is.na(res[,2])) str_trim(res[,2]) else str_trim(res[,3])
+
+}
+
+unparen <- function(s) {
+  expr <- "^\\( ?(.*?) ?\\)$"
+  res <- str_match(s, expr)
+  if(is.na(res[,1])) return(s)
+  str_trim(res[,2])
+
+}
+
+unquote0 <- function(s) {
   # if (grepl(" ", s)) return(s)
   if (substr(s, 1, 1) %in% c("\'", "\"") &
       substr(s, nchar(s), nchar(s)) %in% c("\'", "\""))
@@ -192,9 +209,9 @@ writeDAT <- function(x, fname){
 #' @param fname file name
 #'
 #' @export
-readSPC <- function(fname){
+readSPC <- function(fname, to_lower=TRUE){
 
-  res <- SPCparser$parseSPC(fname) %>% parsedSpecToX13SpecList()
+  res <- SPCparser$parseSPC(fname, to_lower=to_lower) %>% parsedSpecToX13SpecList()
 
   # add a fac_name if a `file` argument exists in the `transform` specification
   fac_name <- getSpecParameter(res,"transform","file")

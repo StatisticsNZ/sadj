@@ -68,7 +68,11 @@ SpecificationParser <- function() {
   # utility functions to imitate ones in scala -------------
 
   startsWith <- function(s, pattern) {
-    grepl(sprintf('^%s',pattern), s, fixed = TRUE)
+    grepl(sprintf('^%s',pattern), s, fixed = FALSE)
+  }
+
+  endsWith <- function(s, pattern) {
+    grepl(sprintf('%s$',pattern), s, fixed = FALSE)
   }
 
   contains <- function(s, pattern) {
@@ -120,20 +124,41 @@ SpecificationParser <- function() {
 
   # anything permitted inside a spec value
   # anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9\r\n\\(\\)\"\'\\.,=\\\\/ -]*)"
-  anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9_\\(\\)\"\'\\.,=\\\\/ :;\\<\\>\\$-]*)"
+  # anytext <- "(?:[a-zA-Z]+[a-zA-Z0-9_\\(\\)\"\'\\.,=\\\\/ :;\\<\\>\\$-]*)"
+  anyspecbody <- "(?:[a-zA-Z]+[^\\{\\}]*)"
+  anytext <- "(?:.*)"
 
   # anything permitted on the rhs of a spec parameter
   # similar to anytext but first character can be open parentheses as well
   # Also does not match =
   # anyrhs <-  "(?:[a-zA-Z\\(]+[a-zA-Z0-9\r\n\\(\\)\"\'\\.,\\\\/ -]*)"
-  anyrhs <-  "(?:[a-zA-Z0-9\\(\\.\\\\/-]+[a-zA-Z0-9_\\(\\)\"\'\\.,\\\\/ :;\\<\\>\\$-]*)"
+  # anyrhs <-  "(?:[a-zA-Z0-9\\(\\.\\\\/-]+[a-zA-Z0-9_\\(\\)\"\'\\.,\\\\/ :;\\<\\>\\$-]*)"
+  # strictrhs <- "(?:[a-zA-Z0-9\\(\\.\\\\/+-]+[a-zA-Z0-9_\\(\\)\\.,\\\\/ :;\\<\\>+-]*)"
+  # strictrhs <- "(?:[a-zA-Z0-9\\.,\\\\/+-]+[a-zA-Z0-9_\\.,\\\\/:;\\<\\>+-]*?)"
+  strictrhs <- "(?:[a-zA-Z0-9\\.\\\\/+-]+[a-zA-Z0-9_\\.\\\\/\\<\\>+-]*?)"
+  qrhs <- "(?:\".*?\"|\'.*?\')"
+  singlerhs <- sprintf("(?:%s|%s)",strictrhs,qrhs)
+
+  singleparen <- sprintf("^\\( ?(%s) ?\\)$", singlerhs)
+  singleqrhs <- sprintf("^%s$",qrhs)
+
+  multrhs <- sprintf("(?: ?,? ?%s ?,? ?)+", singlerhs)
+  grouprhs <- sprintf("(?:%s|\\(%s\\))", singlerhs,multrhs)
+  anyrhs <- sprintf("(?: ?%s ?)+", grouprhs)
+
+  # anyrhs includes anytext in quotes
+  # anyrhs <-  sprintf("(?:%s|\" ?%s ?\"|\' ?%s ?\')", strictrhs,anytext,anytext)
+  # openparen <- "(?:\\( ?)"
+  # closeparen <- "(?: ?\\))"
+  # anyrhs <-  sprintf("(?:%s|\".*?\"|\'.*?\'|%s\".*?\"%s|%s\'.*?\'%s)", strictrhs,openparen,closeparen,openparen,closeparen)
+
 
 
   # high-level match for entire spec, i.e. spec { specname}
   # match the name, the lbrace.
   # Match any amount of whitespace (or none) or any amount of text (at least one character)
-  specification <- sprintf("%s ?\\{ ?%s? ?\\}"
-                          , name, anytext)
+  specification <- sprintf("%s ?\\{ ?%s? ?(?:\\}|$)"
+                          , name, anyspecbody)
 
   # high-level match for entire spec 'file', i.e. name { param = value} name { param = value}...
   # this group will get remembered.
@@ -154,8 +179,8 @@ SpecificationParser <- function() {
 
   # see roxygen documentation above
   stripComment <- function(str){
-    if (startsWith(str,"#")) ""
-    else if (contains(str,"#")) take(str,(indexOf(str,"#")- 1))
+    # if (startsWith(str,"#")) ""
+    if (contains(str,"#")) take(str,(indexOf(str,"#")- 1))
     else str
   }
 
@@ -164,39 +189,41 @@ SpecificationParser <- function() {
   preprocess <-function(str){
 
     #str_split("\\R") %>% unlist() %>% # split into character vector of lines. Matches any newline char
+    str <- str_replace_all(str,"\x92","'")
     res <- str %>%
       map_chr(stripComment) %>% # strip out comments from each line
-      map_chr(str_squish) %>% map_chr(~ str_replace_all(.x,"[\"\']",""))  # squish whitespace
+      map_chr(str_squish) #%>% map_chr(~ str_replace_all(.x,"[\"\']",""))  # squish whitespace
     res[res != ""] %>% # throw away blank lines.  How can I turn this into pipe?
       mkString(" ") # recombine lines with a space character
   }
 
   # see roxygen documentation above
   parseSpecs <- function(processed){
-      if (!grepl(specifications, processed)) {
-        rlang::abort("Specification is not formatted correctly.")
-      }
-      str_extract_all(processed, specification) %>% unlist()
+    if (!grepl(specifications, processed, perl = TRUE)) {
+      rlang::abort("Specification is not formatted correctly.")
+    }
 
+    if(!endsWith(processed,"}")) warning("Last specification is missing `}`")
+    str_extract_all(processed, specification) %>% unlist()
   }
 
-
-
   # see roxygen documentation above
-  parseSpecNameAndBody <- function(str){
+  parseSpecNameAndBody <- function(str, to_lower=TRUE){
     # be sure to deal with case of empty brackets
-      spec_expr <- sprintf("^(%s) ?\\{ ?(%s?) ?\\}$"
-                           , name, anytext)
+      spec_expr <- sprintf("^(%s) ?\\{ ?(%s?) ?\\}?$"
+                           , name, anyspecbody)
       res <- str_match(str, spec_expr)
       # chec res.  We expect 1 x 3 matrix
       # check case when nothing matches and case with partial match
 
-      res[,3] %>% setNames(res[,2]) %>% return()
+      if(to_lower) names <- tolower(res[,2]) else names <- res[,2]
+
+      res[,3] %>% setNames(names) %>% return()
 
   }
 
   # see roxygen documentation above
-  parseArgs <- function(str) {
+  parseArgs <- function(str, to_lower=TRUE) {
 
     re_escape <- function(strings){
       vals <- c("\\\\", "\\[", "\\]", "\\(", "\\)",
@@ -210,10 +237,25 @@ SpecificationParser <- function() {
     }
 
     # trim whitespace inside parentheses
-    expr_paren <- "\\(([^()]+)\\)"
-    trim_parens <- function(x){
-      inside_paren <- x %>% str_match(expr_paren)
-      inside_paren[,2] %>% str_trim() %>% sprintf("(%s)",.)
+    # expr_paren <- "\\(([^()]+)\\)"
+    # trim_parens <- function(x){
+    #   inside_paren <- x %>% str_match(expr_paren)
+    #   inside_paren[,2] %>% str_trim() %>% sprintf("(%s)",.)
+    # }
+    trim_parens <- function(rhs){
+      expr_openparen <- sprintf("\\( (,? ?%s)", singlerhs)
+      rhs <- str_replace_all(rhs, expr_openparen,function(x){
+        inside_paren <-x %>% str_match(expr_openparen)
+        inside_paren[,2] %>% sprintf("(%s",.)
+      })
+
+      expr_closeparen <- sprintf("(%s ?,?) \\)", singlerhs)
+      rhs <- str_replace_all(rhs, expr_closeparen,function(x){
+        inside_paren <-x %>% str_match(expr_closeparen)
+        inside_paren[,2] %>% sprintf("%s)",.)
+      })
+
+      rhs
     }
 
     append_by_name <- function(x, name, y){
@@ -225,7 +267,6 @@ SpecificationParser <- function() {
     expr_notlast <- sprintf("(?: %s ?=)",name)
     expr_last <- sprintf("(?: ?$)")
 
-    # Could remove the possible space match at the beginning
     expr_lh_rh <- sprintf("^(%s) ?= ?(%s)(?:%s|%s)",name,anyrhs,expr_notlast, expr_last)
 
     parse <- function(str,accum) {
@@ -234,6 +275,7 @@ SpecificationParser <- function() {
       # We replace with nothing and then parse again
       # Ideally anyrhs is made smart enough to match all parameters in one go with str_match_all
       parsed_args <- str_match(str,expr_lh_rh)
+      # browser(expr = is.na(parsed_args[[1]]))
       whole_match <- parsed_args[[1]]
       lhs <- parsed_args[[2]] %>% str_trim()
       rhs <- parsed_args[[3]] %>% str_trim()
@@ -242,11 +284,23 @@ SpecificationParser <- function() {
       expr_parsed <- sprintf("^%s ?= ?%s",lhs,re_escape(rhs))
       rest <- str_replace(str,expr_parsed,"") %>% str_trim()
 
-      # trim whitespace in parentheses
-      rhs <- str_replace_all(rhs, expr_paren, trim_parens)
+      if(to_lower) {
+        lhs <- tolower(lhs)
+        rhs <- str_replace_all(rhs, singlerhs,function(x){
+          if(!str_detect(x,qrhs)) x <- tolower(x)
+          x
+        })
+      }
 
-      if(rest=="") append_by_name(accum,lhs,rhs)
-      else
+      if(grepl(singleparen,rhs,perl=TRUE)) rhs <- unparen(rhs)
+      rhs <- trim_parens(rhs)
+      if(grepl(singleqrhs,rhs,perl=TRUE)) rhs <- unquote(rhs)
+
+      # if whole rhs is quoted then unquote, else trim whitespace in parentheses
+      # if(str_detect(rhs,"^\" ?(.*) ?\"$|^\' ?(.*) ?\'$")) rhs <- unquote(rhs) else
+      #   rhs <- str_replace_all(rhs, expr_paren, trim_parens)
+
+      if(rest=="") append_by_name(accum,lhs,rhs) else
         parse(rest, append_by_name(accum,lhs,rhs))
     }
 
@@ -325,7 +379,7 @@ SpecificationParser <- function() {
 
   }
 
-  parseSPC <- function(fname) {
+  parseSPC <- function(fname, to_lower=TRUE) {
     if (!file.exists(fname))
       stop("File does not exist.")
 
@@ -335,11 +389,11 @@ SpecificationParser <- function() {
     on.exit(close(con), add = TRUE)
 
     con %>% readSPCLines() %>% preprocess() %>% parseSpecs() %>%
-      parseSpecNameAndBody() %>% map(~ parseArgs(.x))
+      parseSpecNameAndBody(to_lower=to_lower) %>% map(~ parseArgs(.x,to_lower=to_lower))
 
   }
 
-  list(stripComment=stripComment, readSPCLines=readSPCLines
+  list(readSPCLines=readSPCLines, stripComment=stripComment
        , preprocess=preprocess, parseSpecs=parseSpecs
        , parseSpecNameAndBody=parseSpecNameAndBody
        , parseArgs=parseArgs, parseSPC=parseSPC)
