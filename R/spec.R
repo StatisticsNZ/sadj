@@ -392,11 +392,11 @@ getSpecComments.X13SpecList <- function(x){
 }
 
 #' @export
-writeSpecToFile.X13SpecList <- function(x, fname) {
+writeSpecToFile.X13SpecList <- function(x, fname, print_comments=FALSE) {
   # if(!inherits(x,"X13SpecList"))
     # stop(sprintf("Object is not of class X13SpecList."))
   sink(file = fname)
-  print(x)
+  print(x, print_comments=print_comments)
   sink()
 }
 

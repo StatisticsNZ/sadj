@@ -184,6 +184,12 @@ SpecificationParser <- function() {
     else str
   }
 
+  getCommentLine <- function(str){
+    # if (startsWith(str,"#")) ""
+    if (contains(str,"#")) substr(str, start = indexOf(str,"#"), stop = nchar(str))
+    else ""
+  }
+
 
   # see roxygen documentation above
   preprocess <-function(str){
@@ -393,7 +399,7 @@ SpecificationParser <- function() {
 
   }
 
-  list(readSPCLines=readSPCLines, stripComment=stripComment
+  list(readSPCLines=readSPCLines, stripComment=stripComment, getCommentLine=getCommentLine
        , preprocess=preprocess, parseSpecs=parseSpecs
        , parseSpecNameAndBody=parseSpecNameAndBody
        , parseArgs=parseArgs, parseSPC=parseSPC)

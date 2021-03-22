@@ -215,7 +215,11 @@ writeDAT <- function(x, fname){
 #' @export
 readSPC <- function(fname, to_lower=TRUE){
 
+  comments <-SPCparser$readSPCLines(fname) %>% map_chr(SPCparser$getCommentLine) %>%
+    purrr::keep(~.x !="") %>% X13SpecComments()
+
   res <- SPCparser$parseSPC(fname, to_lower=to_lower) %>% parsedSpecToX13SpecList()
+  attr(res,"comments") <- comments
 
   # add a fac_name if a `file` argument exists in the `transform` specification
   fac_name <- getSpecParameter(res,"transform","file")
