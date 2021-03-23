@@ -15,7 +15,8 @@ plot.X13Series <- function(x, interactive = FALSE, ...){
 #' Plot adjustment results
 #'
 #' @param x \code{X13SeriesResult}
-#' @param type one of \code{B1D11D12}, \code{decomp}, \code{D10}, \code{D10D8}, \code{D11oD11}, or \code{D12oD12}
+#' @param type one of \code{B1D11D12}, \code{decomp}, \code{D10}
+#' , \code{D10D8}, \code{D11oD11}, \code{D12oD12} or \code{b1d11isa}
 #'
 #' @import reshape2
 #' @import ggplot2
@@ -292,55 +293,4 @@ plot.X13SeriesResult.D12oD12 <- function(x, interactive = FALSE, ...) {
 
 
 
-# Composite - Indirect Plots -------------------------------
 
-plot.X13SeriesResult.B1D11ISA <- function(x, interactive = FALSE, ...) {
-  cols <- colnames(x)
-  sa <- if ("d11" %in% cols) "d11" else "s11"
-  isa <- "isa"
-  # tr <- if ("d12" %in% cols) "d12" else "s12"
-
-  e <- lapply(c("date", attr(x, "value"), sa, isa), rlang::sym) %>%
-    setNames(c("date", "original", "direct adjusted", "indirect adjusted"))
-
-  d <- dplyr::select(x, !!!e) %>%
-    reshape2::melt(id.vars = c("date"))
-
-  p <- ggplot2::ggplot(
-    data = d,
-    aes(x = date, y = value, col = variable)
-  ) +
-    ggplot2::geom_line() +
-    ggplot2::labs(title = lname(attr(x, "input"))) +
-    ggplot2::xlab("") +
-    ggplot2::ylab("") +
-    ggplot2::scale_color_discrete(
-      name = "series"
-    ) +
-    ggplot2::theme(
-      legend.position = "bottom",
-      plot.title = element_text(hjust = 0.5)
-    )
-
-  if ("c17" %in% cols) {
-    o <- x %>%
-      dplyr::filter(c17 < 1) %>%
-      dplyr::mutate(outlier = ifelse(c17 == 0, "zero weight", "partial weight")) %>%
-      dplyr::select(date, !!rlang::sym(attr(x, "value")), outlier)
-
-    p <- p +
-      ggplot2::geom_point(
-        data = o,
-        aes(x = date, y = !!rlang::sym(attr(x, "value")), shape = outlier),
-        inherit.aes = FALSE
-      )
-  }
-
-  if (interactive & require(plotly)) {
-    p <- ggplotly(p, ...)
-    # TODO fix up legends here.
-    # TODO inc. changing legend location.
-  }
-
-  p
-}
