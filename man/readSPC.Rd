@@ -4,7 +4,7 @@
 \alias{readSPC}
 \title{Read SPC file.}
 \usage{
-readSPC(fname)
+readSPC(fname, to_lower = TRUE)
 }
 \arguments{
 \item{fname}{file name}

@@ -17,6 +17,11 @@ readUDG <- function(x, outpdir, ext = "udg"){
   # l <- readLines(f)
   l <- readLines(f, skipNul = TRUE)
   o <- structure(list(), class = "X13Diagnostics")
+
+  spec_names <- x %>% getSpecList() %>% names()
+  if("composite" %in% spec_names) attr(o,"is_composite") <- TRUE else
+    attr(o,"is_composite") <- FALSE
+
   pos <- 1
 
   for (i in 1:length(l)){
@@ -48,6 +53,9 @@ as.data.frame.X13Diagnostics <- function(
   ),
   colfilter = c("stat", "value")
 ) {
+
+  if(attr(x,"is_composite")) statfilter <- c(statfilter,"r1mse","r1rmse", "r2mse", "r2rmse")
+
   ll <- list()
   for (name in names(x)){
     stat <- strsplit(name, '.', fixed = TRUE)[[1]]
