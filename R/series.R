@@ -308,7 +308,7 @@ print.X13SeriesResult <- function(x, ...){
 
 #'
 #' @export
-summary.X13SeriesResult <- function(x, html = FALSE, ...){
+summary.X13SeriesResult <- function(x, html = FALSE, stringsAsFactors = FALSE, ...){
   if (html & !is.null(attr(x, "html"))){
     v <- getOption("viewer")
     tf <- tempfile(fileext = ".html")
@@ -321,9 +321,9 @@ summary.X13SeriesResult <- function(x, html = FALSE, ...){
     stop("No diagnostics present.")
 
   if (!is.null(attr(x, "udg")))
-    d <- as.data.frame(attr(x, "udg"))
+    d <- as.data.frame(attr(x, "udg"),stringsAsFactors=stringsAsFactors)
   else if (!is.null(attr(x, "xdg")))
-    d <- as.data.frame(attr(x, "xdg"))
+    d <- as.data.frame(attr(x, "xdg"),stringsAsFactors=stringsAsFactors)
 
   return(d)
 }

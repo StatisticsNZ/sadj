@@ -48,7 +48,8 @@ readUDG <- function(x, outpdir, ext = "udg"){
 as.data.frame.X13Diagnostics <- function(
   x,
   statfilter,
-  colfilter = c("stat", "value")
+  colfilter = c("stat", "value"),
+  stringsAsFactors=FALSE
 ) {
 
   if(missing(statfilter)) {
@@ -66,7 +67,7 @@ as.data.frame.X13Diagnostics <- function(
     stat <- strsplit(name, '.', fixed = TRUE)[[1]]
     nstat <- length(stat)
     stat <- head(c(stat, rep(NA, 4)), 4)
-    this <- do.call('data.frame', as.list(c(name, stat, x[[name]])))
+    this <- do.call('data.frame', as.list(c(name, stat, x[[name]], stringsAsFactors = stringsAsFactors)))
     colnames(this) <- c("stat", sprintf("stat.%s", 1:4), "value")
     ll[[length(ll) + 1]] <- this
   }
