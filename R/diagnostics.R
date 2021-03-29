@@ -47,14 +47,19 @@ readUDG <- function(x, outpdir, ext = "udg"){
 #' @export
 as.data.frame.X13Diagnostics <- function(
   x,
-  statfilter = c(
-    "f2.mcd", "f2.ic", "f2.is", "f2.fsd8","f2.msf",
-    sprintf("f3.m%02d", 1:11), "f3.q", "f3.qm2"
-  ),
+  statfilter,
   colfilter = c("stat", "value")
 ) {
 
-  if(attr(x,"is_composite")) statfilter <- c(statfilter,"r1mse","r1rmse", "r2mse", "r2rmse")
+  if(missing(statfilter)) {
+    statfilter <-  c(
+      "f2.mcd", "f2.ic", "f2.is", "f2.fsd8","f2.msf",
+      sprintf("f3.m%02d", 1:11), "f3.q", "f3.qm2"
+    )
+    if(attr(x,"is_composite"))
+      statfilter <- c(statfilter, paste0("i",statfilter),"r1mse","r1rmse", "r2mse", "r2rmse")
+  }
+
 
   ll <- list()
   for (name in names(x)){
