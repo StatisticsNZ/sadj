@@ -6,7 +6,9 @@
 \usage{
 readDAT(fname)
 }
+\arguments{
+\item{fname}{file name}
+}
 \description{
 Read DAT file.
 }
-\keyword{internal}

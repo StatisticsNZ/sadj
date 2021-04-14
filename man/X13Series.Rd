@@ -11,6 +11,7 @@ X13Series(
   lname = sname,
   type = "x11",
   speclist,
+  facfile,
   ...
 )
 }
@@ -28,6 +29,8 @@ left missing, a default is provided; and this determines whether the
 provided specification contains an \code{x11} or \code{seats} block.}
 
 \item{speclist}{A spec list created with \code{\link{X13SpecList}}.}
+
+\item{facfile}{A factor file created with \code{\link{new_facFile}}.}
 
 \item{...}{As an alternative to \code{SpecList}, a variable number of
 name-value pairs.}

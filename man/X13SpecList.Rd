@@ -4,12 +4,14 @@
 \alias{X13SpecList}
 \title{X13-ARIMA SEATS specification.}
 \usage{
-X13SpecList(...)
+X13SpecList(..., fac_name)
 }
 \arguments{
 \item{...}{Variable number of name-value pairs.  The name is the name of the
 spec, and the value is a list containing additional name-value pairs where
 names are spec parameter names and values are the spec parameter values.}
+
+\item{fac_name}{The name of a factor files as a string.}
 }
 \value{
 A list of class \code{\link{X13SpecList}}, where each element in the

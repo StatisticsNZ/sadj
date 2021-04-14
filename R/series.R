@@ -24,20 +24,29 @@ X13Series <- function(x,
                       type = "x11",
                       speclist,
                       facfile,
+                      spec_fname=NULL,
                       ...){
-  if (inherits(x, "ts")) res <- tsdf(x)
-  else res <- data.frame(x)[, c("year", "period", value)]
-  res <- cbind(date=date(res),res)
-  attr(res, "value") <- value
 
-  # Try to handle snames derived from list element
-  if(missing(sname) && grepl("\\[\\[\"\\w+\"\\]\\]",sname)) sname <- str_extract_all(sname, "\\w+")[[1]][[2]]
 
-  attr(res, "sname") <- tolower(sname)
-  attr(res, "lname") <- lname
+
+  if(!is.null(spec_fname) && !is_empty(spec_fname)) {
+    if(file.exists(spec_fname)) {
+      userwd <- getwd()
+      if(dir.exists(spec_dir <- dirname(spec_fname)))
+        setwd(dirname(spec_fname)) else
+          stop(sprintf("Spec directory does not exist:\n%s",spec_dir))
+
+      on.exit(setwd(userwd), add = TRUE)
+    } else stop(sprintf("Spec file does not exist:\n%s",spec_fname))
+
+    if(!missing(speclist)) {
+      warning("Both `speclist` and `spec_fname` provided.  `spec_fname` Will be ignored.")
+    } else speclist <- readSPC(spec_fname)
+  }
+
   args <- list(...)
   if (length(args) > 0) {
-    attr(res, "SpecList") <- do.call('X13SpecList', list(...))
+    speclist <- do.call('X13SpecList', list(...))
     if (!missing(speclist))
       warn(sprintf("Specs provided as separate arguments.  Ignoring %s.",
                    deparse(substitute(speclist))))
@@ -45,10 +54,104 @@ X13Series <- function(x,
   else {
     if (missing(speclist) & tolower(type) == "x11") speclist <- .x11
     else if (missing(speclist) & tolower(type) == "seats") speclist <- .seats
-    attr(res, "SpecList") <- speclist
   }
 
-  if(!missing(facfile)) attr(res, "SpecList") <- facfile
+  series_path <- getSpecParameter(speclist,"series","file")
+
+  if(missing(x)) {
+    if(!is.null(series_path)) {
+      sname <- str_remove(basename(series_path),"[.]dat$")
+      # doesn't work on composites:
+      # sname <- tolower(getSpecParameter(speclist,"series", "name"))
+      if(missing(lname)) lname <- sname
+      if (file.exists(series_path)) {
+        x <- readDAT(series_path)
+        if(!is.null(getSpec(speclist,"series"))) {
+          setSpecParameter(speclist, "series","file") <- NULL
+          setSpecParameter(speclist, "series","format") <- NULL
+        }
+
+      } else {
+        warning(sprintf("couldn't find DAT file in:\n%s.
+                        Searching paths relative to:\n%s.", series_path,getwd()))
+        path_split <- str_split(series_path, "/")[[1]] %>% rev()
+        for(i in seq_along(path_split)) {
+          try_path <- paste(path_split[i:1],collapse = "/")
+          if(file.exists(try_path)) {
+            x <- readDAT(try_path)
+            if(!is.null(getSpec(speclist,"series"))) {
+              setSpecParameter(speclist, "series","file") <- NULL
+              setSpecParameter(speclist, "series","format") <- NULL
+            }
+            break
+          }
+        }
+      }
+      if ((is.null(x) || rlang::is_empty(x)))
+        stop("Unable to find DAT file.")
+    } else stop("No time series supplied and none referenced in the spec file.")
+  } else if(!is.null(series_path) && !is_empty(series_path)) {
+    warning("Time series provided, but `series` `file` argument in spec is not empty.
+            Spec argument will be ignored.")
+  }
+
+  # Fac file
+  transformpath <- getSpecParameter(speclist, "transform", "file")
+
+  if (missing(facfile)) {
+    if(!is.null(transformpath)) {
+      # try transform path first
+      if (file.exists(transformpath)) {
+        warning("No facfile supplied.  Path to fac in spec 'transform' parameter 'file' used.")
+        facfile <- readFAC(transformpath)
+        setSpecParameter(speclist, "transform", "file") <- NULL
+        setSpecParameter(speclist, "transform", "format") <- NULL
+      } else {
+        warning(sprintf("couldn't find FAC file in:\n%s.
+                        Searching paths relative to:\n%s.", transformpath, getwd()))
+        path_split <- str_split(transformpath, "/")[[1]] %>% rev()
+        for(i in seq_along(path_split)) {
+          try_path <- paste(path_split[i:1],collapse = "/")
+          if(file.exists(try_path)) {
+            facfile <- readFAC(try_path)
+            setSpecParameter(speclist, "transform", "file") <- NULL
+            setSpecParameter(speclist, "transform", "format") <- NULL
+            break
+          }
+
+        }
+      }
+      if ((is.null(facfile) || rlang::is_empty(facfile)))
+        warning("Unable to find factor file.")
+    }
+  } else if(!is.null(transformpath) && !is_empty(transformpath)) {
+    warning("FAC file provided, but `transform` `file` argument in spec is not empty.
+            Spec argument will be ignored.")
+  }
+
+
+
+
+
+
+  if (inherits(x, "ts")) res <- tsdf(x)
+  else res <- data.frame(x)[, c("year", "period", value)]
+  res <- cbind(date=date(res),res)
+  attr(res, "value") <- value
+  attr(res, "SpecList") <- speclist
+
+  # Try to handle snames derived from list element
+  # if(missing(sname) && grepl("\\[\\[\"\\w+\"\\]\\]",sname)) sname <- str_extract_all(sname, "\\w+")[[1]][[2]]
+
+  attr(res, "sname") <- tolower(sname)
+  attr(res, "lname") <- lname
+
+
+  if(!missing(facfile)){
+    if(!is.data.frame(facfile))
+      stop("facfile is not a dataframe")
+    attr(res, "FacFile") <- facfile
+  }
 
   class(res) <- c("X13Series", class(res))
   res
@@ -62,6 +165,26 @@ lname.X13Series <- function(x) attr(x, 'lname')
 
 #' @export
 is.X13Series <- function(x) inherits(x, "X13Series")
+
+#' Get a factor file.
+#'
+#' @param x Input object.
+#'
+#' @export
+getFacFile.X13Series <- function(x){
+  attr(x, "FacFile")
+}
+
+#' Set a factor file.
+#'
+#' @param x Input object.
+#'
+#' @export
+"setFacFile<-.X13Series" <- function(x, value){
+  attr(x, "FacFile") <- value
+  x
+}
+
 
 #' Get a specification list.
 #'
@@ -125,13 +248,109 @@ clean <- function(x){
   if (inherits(x, "X13Series")){
     unlink(c(dir(workdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
              dir(workdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
+             dir(datdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
+             dir(datdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
              dir(outpdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
              dir(outpdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE)))
   }
 }
 
 #' @keywords internal
-writeSpecList <- function(x, ...){
+writeSpecList <- function(x, datname, ...){
+  if (!inherits(x, "X13Series"))
+    stop(sprintf("%s must be of class 'X13Series'.", deparse(substitute(x))))
+
+  spec <- getSpecList(x)
+
+  if (!is.null(getSpecParameter(spec, "series", "file")))
+    warning(sprintf("In the spec 'series', the 'file' parameter is not empty:\n%s
+    But will be overwritten with supplied X13Series."
+                    ,getSpecParameter(spec, "series", "file")))
+
+  setSpecParameter(spec, "series", "file") <- datname
+  setSpecParameter(spec, "series", "format") <- "datevalue"
+
+  if (!is.null(getSpecParameter(spec, "series", "data"))){
+    warning("In the spec 'series', the 'data' parameter is not empty but will be ignored")
+    setSpecParameter(spec, "series", "data") <- NULL
+
+  }
+
+  # Fac file
+  facfile <- getFacFile(x)
+  transformpath <- getSpecParameter(spec, "transform", "file")
+  facpath <- sprintf("%s/%s.fac",facdir(),sname(x))
+
+
+  if ((is.null(facfile) || rlang::is_empty(facfile))) {
+    if(!is.null(transformpath)) {
+      # try transform path first
+      if (file.exists(transformpath)) {
+        warning("No facfile attached to X13Series.  Path to fac in spec 'transform' parameter 'file' used.")
+        facfile <- readFAC(transformpath)
+        setFacFile(x) <- facfile
+      } else {
+        path_split <- str_split(transformpath, "/")[[1]] %>% rev()
+        for(i in seq_along(path_split)) {
+          try_path <- paste(path_split[i:1],collapse = "/")
+          if(file.exists(try_path)) {
+            facfile <- readFAC(try_path)
+            setFacFile(x) <- facfile
+            break
+          }
+
+        }
+        # stop("factor file path is not valid")
+      }
+      if ((is.null(facfile) || rlang::is_empty(facfile)))
+        warning("Unable to find factor file.")
+    }
+  }
+
+
+
+  if(!is.null(facfile) && !rlang::is_empty(facfile)) {
+    if(!is.null(transformpath))
+      warning(sprintf("In the spec 'series', the 'file' parameter is not empty but will be ignored:\n%s"
+                      ,transformpath))
+    writeFAC(facfile, facpath)
+    setSpecParameter(spec, "transform", "file") <- facpath
+  }
+
+
+
+  # value <- x[, attr(x, "value")]
+  #
+  # if (is.null(getSpecParameter(spec, "series", "file")) &
+  #     is.null(getSpecParameter(spec, "series", "data"))) {
+  #   f <- length(unique(x$period))
+  #   d <- "("
+  #   for (i in 1:length(value)){
+  #     if (i%%4 == 1) d <- paste0(d, "\n  ")
+  #     d <- sprintf("%s  %s", d, value[i])
+  #   }
+  #   d <- sprintf("%s)", d)
+  #   setSpecParameter(spec, "series", "data") <- d
+  # }
+
+  # if (is.null(getSpecParameter(spec, "series", "start")))
+  #   setSpecParameter(spec, "series", "start") <-
+  #   sprintf("%04d.%02d", x$year[1], x$period[1])
+
+  if (is.null(getSpecParameter(spec, "series", "period")))
+    setSpecParameter(spec, "series", "period") <-
+    length(unique(x$period))
+
+  specroot <- sprintf("%s/%s", workdir(), sname(x))
+  specfile <- sprintf("%s.spc", specroot)
+
+  sink(specfile)
+  cat(toString(spec))
+  sink()
+}
+
+#' @keywords internal
+writeSpecList1 <- function(x, ...){
   if (!inherits(x, "X13Series"))
     stop(sprintf("%s must be of class 'X13Series'.", deparse(substitute(x))))
 
@@ -221,9 +440,14 @@ importOutput <- function(x, ...){
 #'
 #' @export
 adjust.X13Series <- function(x, purge = TRUE, ...){
+  #attr(ap,"sname")
+  if(sname(x)=="" || is_empty(sname(x)))
+    stop(sprintf("sname is not valid"))
   if (purge)
     clean(x)
-  writeSpecList(x)
+  datname <- sprintf("%s/%s.dat",datdir(),sname(x))
+  writeDAT(x, fname = datname )
+  writeSpecList(x, datname = datname)
   writeMTA.X13Series(x)
   binpath <- sprintf("%s/x13ashtml", paste0(x13binary::x13path()))
   cmd <- sprintf("%s -m %s -s", binpath, specroot.X13Series(x))

@@ -1,4 +1,14 @@
 #' @export
+getFacFile <- function(x, ...){
+  UseMethod("getFacFile", x)
+}
+
+#' @export
+"setFacFile<-" <- function(x, ...){
+  UseMethod("setFacFile<-", x)
+}
+
+#' @export
 getSpecParameter <- function(x, ...){
   UseMethod("getSpecParameter", x)
 }

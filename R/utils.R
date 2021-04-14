@@ -187,9 +187,29 @@ outpdir <- function(){
   res
 }
 
+#' @keywords internal
+datdir <- function(){
+  res <- sprintf("%s/d", workdir())
+  if (!dir.exists(res))
+    if(!dir.create(res))
+      stop("Failed to create data directory.")
+  res
+}
+
+#' @keywords internal
+facdir <- function(){
+  res <- sprintf("%s/f", workdir())
+  if (!dir.exists(res))
+    if(!dir.create(res))
+      stop("Failed to create factor directory.")
+  res
+}
+
 #' Read DAT file.
 #'
-#' @keywords internal
+#' @param fname file name
+#'
+#' @export
 readDAT <- function(fname){
   if (!file.exists(fname))
     stop(sprintf("No such file: %s.", deparse(substitute(fname))))
@@ -202,10 +222,40 @@ readDAT <- function(fname){
 #' @keywords internal
 writeDAT <- function(x, fname){
   if (inherits(x, "X13Series")){
+    # x %<>% mutate(value=sprintf("%12s",as.character(value)))
+    # x %<>% mutate(period=sprintf("%-2s",as.character(period)))
+    write.table(select(x,year, period, value), file= fname, sep = " "
+                , row.names = FALSE,col.names = FALSE, quote=FALSE)
+  }
+}
+
+#' Write DAT file.
+#'
+#' @keywords internal
+writeDAT1 <- function(x, fname){
+  if (inherits(x, "X13Series")){
     sink(fname)
     paste(paste(x$year, x$period, x$value, sep = "\t"), collapse = "\n")
     sink()
   }
+}
+
+#' Read FAC file.
+#'
+#' @param fname file name
+#'
+#' @export
+readFAC <- function(fname){
+  if (!file.exists(fname))
+    stop(sprintf("No such file: %s.", deparse(substitute(fname))))
+  read.table(fname)
+}
+
+#' Write FAC file.
+#'
+#' @keywords internal
+writeFAC <- function(x, fname){
+  write.table(x, file= fname, row.names = FALSE,col.names = FALSE)
 }
 
 #' Read SPC file.
