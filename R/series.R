@@ -25,26 +25,30 @@ X13Series <- function(x,
                       speclist,
                       facfile,
                       spec_fname=NULL,
+                      clean_spec=TRUE,
                       ...){
-
-
+  args <- list(...)
 
   if(!is.null(spec_fname) && !is_empty(spec_fname)) {
     if(file.exists(spec_fname)) {
       userwd <- getwd()
-      if(dir.exists(spec_dir <- dirname(spec_fname)))
-        setwd(dirname(spec_fname)) else
-          stop(sprintf("Spec directory does not exist:\n%s",spec_dir))
+      if(dir.exists(spec_dir <- dirname(spec_fname))) {
+        setwd(dirname(spec_fname))
+        on.exit(setwd(userwd), add = TRUE)
 
-      on.exit(setwd(userwd), add = TRUE)
+      } else
+        stop(sprintf("Spec directory does not exist:\n%s",spec_dir))
+
     } else stop(sprintf("Spec file does not exist:\n%s",spec_fname))
 
-    if(!missing(speclist)) {
+
+
+    if(!missing(speclist) && length(args) == 0) {
       warning("Both `speclist` and `spec_fname` provided.  `spec_fname` Will be ignored.")
     } else speclist <- readSPC(spec_fname)
   }
 
-  args <- list(...)
+
   if (length(args) > 0) {
     speclist <- do.call('X13SpecList', list(...))
     if (!missing(speclist))
@@ -60,17 +64,14 @@ X13Series <- function(x,
 
   if(missing(x)) {
     if(!is.null(series_path)) {
-      sname <- str_remove(basename(series_path),"[.]dat$")
+      if(!is.null(spec_fname) && !is_empty(spec_fname) && missing(sname))
+        sname <- str_remove(basename(spec_fname),"[.]spc$") else if(missing(sname))
+          sname <- str_remove(basename(series_path),"[.]dat$")
       # doesn't work on composites:
       # sname <- tolower(getSpecParameter(speclist,"series", "name"))
       if(missing(lname)) lname <- sname
       if (file.exists(series_path)) {
         x <- readDAT(series_path)
-        if(!is.null(getSpec(speclist,"series"))) {
-          setSpecParameter(speclist, "series","file") <- NULL
-          setSpecParameter(speclist, "series","format") <- NULL
-        }
-
       } else {
         warning(sprintf("couldn't find DAT file in:\n%s.
                         Searching paths relative to:\n%s.", series_path,getwd()))
@@ -79,10 +80,7 @@ X13Series <- function(x,
           try_path <- paste(path_split[i:1],collapse = "/")
           if(file.exists(try_path)) {
             x <- readDAT(try_path)
-            if(!is.null(getSpec(speclist,"series"))) {
-              setSpecParameter(speclist, "series","file") <- NULL
-              setSpecParameter(speclist, "series","format") <- NULL
-            }
+
             break
           }
         }
@@ -90,9 +88,14 @@ X13Series <- function(x,
       if ((is.null(x) || rlang::is_empty(x)))
         stop("Unable to find DAT file.")
     } else stop("No time series supplied and none referenced in the spec file.")
-  } else if(!is.null(series_path) && !is_empty(series_path)) {
-    warning("Time series provided, but `series` `file` argument in spec is not empty.
-            Spec argument will be ignored.")
+  } else if(!is.null(series_path) ) {
+    warning(sprintf("Time series provided, but the `file` argument of the `series` spec is not empty.
+            Spec argument will be ignored:\n",series_path))
+  }
+
+  if(!is.null(getSpec(speclist,"series")) && clean_spec) {
+    setSpecParameter(speclist, "series","file") <- NULL
+    setSpecParameter(speclist, "series","format") <- NULL
   }
 
   # Fac file
@@ -102,10 +105,8 @@ X13Series <- function(x,
     if(!is.null(transformpath)) {
       # try transform path first
       if (file.exists(transformpath)) {
-        warning("No facfile supplied.  Path to fac in spec 'transform' parameter 'file' used.")
+        warning("No facfile supplied.  Path to FAC in the `file` argument of the `transform` spec will be used.")
         facfile <- readFAC(transformpath)
-        setSpecParameter(speclist, "transform", "file") <- NULL
-        setSpecParameter(speclist, "transform", "format") <- NULL
       } else {
         warning(sprintf("couldn't find FAC file in:\n%s.
                         Searching paths relative to:\n%s.", transformpath, getwd()))
@@ -114,8 +115,6 @@ X13Series <- function(x,
           try_path <- paste(path_split[i:1],collapse = "/")
           if(file.exists(try_path)) {
             facfile <- readFAC(try_path)
-            setSpecParameter(speclist, "transform", "file") <- NULL
-            setSpecParameter(speclist, "transform", "format") <- NULL
             break
           }
 
@@ -125,8 +124,14 @@ X13Series <- function(x,
         warning("Unable to find factor file.")
     }
   } else if(!is.null(transformpath) && !is_empty(transformpath)) {
-    warning("FAC file provided, but `transform` `file` argument in spec is not empty.
-            Spec argument will be ignored.")
+    warning(sprintf("FAC file provided, but the `file` argument in the`transform` spec is not empty.
+            Spec argument will be ignored: %s",transformpath))
+
+  }
+
+  if(!is.null(getSpecParameter(speclist,"transform","file")) && clean_spec) {
+    setSpecParameter(speclist, "transform","file") <- NULL
+    setSpecParameter(speclist, "transform","format") <- NULL
   }
 
 
@@ -263,7 +268,7 @@ writeSpecList <- function(x, datname, ...){
   spec <- getSpecList(x)
 
   if (!is.null(getSpecParameter(spec, "series", "file")))
-    warning(sprintf("In the spec 'series', the 'file' parameter is not empty:\n%s
+    warning(sprintf("The `file` argument of the `series` spec is not empty:\n%s
     But will be overwritten with supplied X13Series."
                     ,getSpecParameter(spec, "series", "file")))
 
@@ -286,10 +291,12 @@ writeSpecList <- function(x, datname, ...){
     if(!is.null(transformpath)) {
       # try transform path first
       if (file.exists(transformpath)) {
-        warning("No facfile attached to X13Series.  Path to fac in spec 'transform' parameter 'file' used.")
+        warning("No facfile attached to X13Series.  Path to fac in the `file` argument of the 'transform' spec will be used.")
         facfile <- readFAC(transformpath)
         setFacFile(x) <- facfile
       } else {
+        warning(sprintf("couldn't find FAC file in:\n%s.
+                        Searching paths relative to:\n%s.", transformpath, getwd()))
         path_split <- str_split(transformpath, "/")[[1]] %>% rev()
         for(i in seq_along(path_split)) {
           try_path <- paste(path_split[i:1],collapse = "/")
@@ -308,13 +315,13 @@ writeSpecList <- function(x, datname, ...){
   }
 
 
-
   if(!is.null(facfile) && !rlang::is_empty(facfile)) {
     if(!is.null(transformpath))
-      warning(sprintf("In the spec 'series', the 'file' parameter is not empty but will be ignored:\n%s"
-                      ,transformpath))
+      warning(sprintf("FAC file provided, but the `file` argument in the`transform` spec is not empty.
+                      Spec argument will be ignored: %s",transformpath))
     writeFAC(facfile, facpath)
     setSpecParameter(spec, "transform", "file") <- facpath
+    setSpecParameter(spec, "transform", "format") <- "datevalue"
   }
 
 
