@@ -401,7 +401,7 @@ getSpecComments.X13SpecList <- function(x){
     stop(sprintf("Unknown spec: %s.", specname))
   s <- do.call('X13Spec', c(specname = specname, value))
   x[[specname]] <- s
-  if(specname =="series" || specname =="composite")
+  # if(specname =="series" || specname =="composite")
   x
 }
 

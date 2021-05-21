@@ -22,6 +22,7 @@ RoxygenNote: 7.1.1
 Suggests: 
     testthat,
     plotly,
-    shiny
+    shiny,
+    rmarkdown
 Imports: 
     knitr

@@ -10,3 +10,5 @@ work.R
 test_scripts/
 tests/test_spec/full_sets
 data/hlfs
+/doc/
+/Meta/
