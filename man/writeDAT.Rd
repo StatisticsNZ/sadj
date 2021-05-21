@@ -4,7 +4,7 @@
 \alias{writeDAT}
 \title{Write DAT file.}
 \usage{
-writeDAT(x, fname)
+writeDAT(x)
 }
 \description{
 Write DAT file.

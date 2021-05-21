@@ -4,7 +4,7 @@
 \alias{X13SpecList}
 \title{X13-ARIMA SEATS specification.}
 \usage{
-X13SpecList(..., fac_name)
+X13SpecList(..., sname, fac_name)
 }
 \arguments{
 \item{...}{Variable number of name-value pairs.  The name is the name of the

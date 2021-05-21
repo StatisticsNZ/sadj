@@ -45,6 +45,7 @@ adjust.X13SeriesGroup <- function(x, purge = TRUE, ...){
    for (series in x){
      if (purge)
        clean(series)
+     writeDAT(series)
      writeSpecList(series)
    }
   if (purge){
@@ -54,7 +55,29 @@ adjust.X13SeriesGroup <- function(x, purge = TRUE, ...){
   writeMTA.X13SeriesGroup(x)
   binpath <- sprintf("%s/x13ashtml", paste0(x13binary::x13path()))
   cmd <- sprintf("%s -m %s -s", binpath, specroot.X13SeriesGroup(x))
-  system(cmd, intern=TRUE)
+
+  x13_messages <- system(cmd, intern=TRUE)
+
+  # Currently, dumping entirety of x13 messages on error
+  saved_option_warn_len <- getOption("warning.length")
+  options(warning.length = 8000L)
+  on.exit(options(warning.length = saved_option_warn_len), add = TRUE)
+
+  if(x13ErrorDetected(x13_messages))
+    stop(paste(x13_messages, collapse="\n"))
+
+
+  # tryCatch(
+  #   error = function(cnd){
+  #     message(cnd)
+  #     message(cat(paste(x13_messages, collapse="\n")))
+  #
+  #   },
+  #   x13_messages <- system(cmd, intern=TRUE)
+  #
+  # )
+
+
   res <- list()
   for(i in 1:length(x)){
     res_ <- importOutput(x[[i]])
@@ -68,6 +91,7 @@ adjust.X13SeriesGroup <- function(x, purge = TRUE, ...){
     unlink(sprintf("%s.mta", specroot.X13SeriesGroup(x)))
   }
 
+  attr(res,"x13_messages") <- x13_messages
   class(res) <- c("X13SeriesGroupResult")
 
   res
@@ -84,3 +108,5 @@ print.X13SeriesGroup <- function(x, ...){
     cat(sprintf("\n  %s (%s)", lname(series), sname(series)))
   }
 }
+
+X13Messages.X13SeriesGroupResult <- function(x) cat(paste(attr(x,"x13_messages"), collapse="\n"))

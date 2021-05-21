@@ -71,18 +71,6 @@ test_that("testairline.spc is parsed correctly", {
   )
 })
 
-test_that("adjust air passengers with default x11 spec", {
-  ap <- X13Series(AirPassengers, type = "x11")
-  ap.res <- adjust(ap)
-  expect_true((nrow(ap) == nrow(sa(ap.res))) & (nrow(ap) == nrow(trend(ap.res))))
-})
-
-test_that("adjust air passengers with default seats spec", {
-  ap <- X13Series(AirPassengers, type = "seats")
-  ap.res <- adjust(ap)
-  expect_true((nrow(ap) == nrow(sa(ap.res))) & (nrow(ap) == nrow(trend(ap.res))))
-})
-
 test_that("concrete.spc is parsed correctly", {
   concrete <- readSPC("../test_spec/concrete.spc")
   expect_equal(
@@ -95,3 +83,43 @@ test_that("concrete.spc is parsed correctly", {
     , "ao"
   )
 })
+
+test_that("adjust air passengers with default x11 spec", {
+  ap <- X13Series(AirPassengers, type = "x11")
+  ap.res <- adjust(ap)
+  expect_true((nrow(ap) == nrow(sa(ap.res))) & (nrow(ap) == nrow(trend(ap.res))))
+})
+
+test_that("adjust air passengers with default seats spec", {
+  ap <- X13Series(AirPassengers, type = "seats")
+  ap.res <- adjust(ap)
+  expect_true((nrow(ap) == nrow(sa(ap.res))) & (nrow(ap) == nrow(trend(ap.res))))
+})
+
+test_that("adjust group from HLFS fake data", {
+  memp <- X13Series(HLFS[HLFS$sname == "mlem",], sname = "memp")
+  setSpecParameter(memp, "series", "comptype") <- "add"
+
+  femp <- X13Series(HLFS[HLFS$sname == "fmle",], sname = "femp")
+  setSpecParameter(femp, "series", "comptype") <- "add"
+
+  emp  <- X13Series(
+    data.frame(memp[,c("year","period")], value = memp[,"value"] + femp[,"value"]),
+    sname = "emp",
+    composite = list(title = "emp", save = "(isf isa itn b1 id8 iir)"),
+    x11 = list(mode = "add", sigmalim = "(1.8,2.8)", save = "(e1 c17 d8 d9 d10 d11 d12 d13)")
+  )
+
+  empgrp <- X13SeriesGroup("employment", memp, femp, emp)
+
+  empgrp.res <- adjust(empgrp)
+  expect_true((nrow(empgrp[[3]]) == nrow(sa(empgrp.res[[3]]))) &
+                (nrow(empgrp[[3]]) == nrow(trend(empgrp.res[[3]]))))
+  expect_equal(round(tail(empgrp.res[[3]][["d11"]],1),3),2511.741)
+  expect_equal(round(tail(empgrp.res[[3]][["d12"]],1),3),2513.785)
+  expect_equal(round(tail(empgrp.res[[3]][["isa"]],1),3),2511.886)
+  expect_equal(round(tail(empgrp.res[[3]][["itn"]],1),3),2513.856)
+
+})
+
+

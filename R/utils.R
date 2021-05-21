@@ -220,13 +220,14 @@ readDAT <- function(fname){
 #' Write DAT file.
 #'
 #' @keywords internal
-writeDAT <- function(x, fname){
+writeDAT <- function(x){
+  fname <- sprintf("%s/%s.dat",datdir(),sname(x))
   if (inherits(x, "X13Series")){
     # x %<>% mutate(value=sprintf("%12s",as.character(value)))
     # x %<>% mutate(period=sprintf("%-2s",as.character(period)))
     write.table(select(x,year, period, value), file= fname, sep = " "
                 , row.names = FALSE,col.names = FALSE, quote=FALSE)
-  }
+  } else stop(sprintf("%s is not of class X13Series.", sname(x)))
 }
 
 #' Write DAT file.
@@ -263,20 +264,37 @@ writeFAC <- function(x, fname){
 #' @param fname file name
 #'
 #' @export
-readSPC <- function(fname, to_lower=TRUE){
+readSPC <- function(fname, to_lower=TRUE, sname=stringr::str_remove(basename(fname),"[.]spc$")){
 
   res <- SPCparser$parseSPC(fname, to_lower=to_lower) %>% parsedSpecToX13SpecList()
+
+  attr(res, "sname") <- sname
+
 
   # add a fac_name if a `file` argument exists in the `transform` specification
   fac_name <- getSpecParameter(res,"transform","file")
   expr_facname <- "([a-zA-Z]+[a-zA-Z0-9]*)[\\.]fac$"
 
-  if(!is_empty(fac_name) && str_detect(fac_name,expr_facname)) {
-    attr(res, "fac_name") <- str_match(fac_name,expr_facname)[,2]
-  } else attr(res, "fac_name") <- character()
+  if(!is_empty(fac_name) && stringr::str_detect(fac_name,expr_facname)) {
+    attr(res, "fac_name") <- stringr::str_match(fac_name,expr_facname)[,2]
+  } #else attr(res, "fac_name") <- character()
+
+  # attr(res, "spec_type") <- checkSpecType(names(res))
 
   return(res)
 }
+
+
+# checkSpecType <- function(spec_names){
+#   if("composite" %in% spec_names && "series" %in% spec_names){
+#     spec_type <- "both"
+#     warning("The speclist contains both a `series` and a `composite`.  X13 requires one and only one of these.")
+#   } else if("series" %in% spec_names) spec_type <- "series" else
+#     if("composite" %in% spec_names) spec_type <- "composite" else {
+#       spec_type <- "neither"
+#       warning("The speclist must contain a `series` spec or a `composite` spec to run X13.")
+#     }
+# }
 
 #' Read all SPC's in path.
 #'
@@ -570,3 +588,12 @@ mergeList <- function(x, ...){
     res <- merge(res, x[[i]], all=TRUE,...)
   res[order(res$year, res$period), ]
 }
+
+#' Detect Error from X13 messages.
+#'
+#' @keywords internal
+x13ErrorDetected <- function(msg){
+  msg %>% map_lgl(~str_detect(.x,"ERROR")) %>% any()
+
+}
+

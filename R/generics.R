@@ -38,6 +38,11 @@ getSpecComments <- function(x, ...){
   UseMethod("setSpec<-", x)
 }
 
+#' @export
+"setSpecList<-" <- function(x, ...){
+  UseMethod("setSpecList<-", x)
+}
+
 
 #' @export
 "setSpecComments<-" <- function(x, ...){
@@ -82,4 +87,14 @@ lname <- function(x, ...){
 #' @export
 view <- function(x, ...){
   UseMethod("view", x)
+}
+
+#' @export
+specType <- function(x, ...){
+  UseMethod("specType", x)
+}
+
+#' @export
+X13Messages <- function(x, ...){
+  UseMethod("X13Messages", x)
 }

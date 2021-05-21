@@ -185,7 +185,7 @@ X13Spec <- function(specname = "series", ...){
 #'   )
 #' )
 #' specl
-X13SpecList <- function(..., fac_name){
+X13SpecList <- function(..., sname,fac_name){
   args <- list(...)
   if (length(args)==0)
     stop("No specs provided.")
@@ -203,9 +203,16 @@ X13SpecList <- function(..., fac_name){
     spec <- do.call("X13Spec", spec)
     o[[i]] <- spec
   }
-  if(!missing(fac_name)){
-    attr(o, "fac_name") <- fac_name
-  } else attr(o, "fac_name") <- character()
+  if(!missing(fac_name))
+    attr(o, "fac_name") <- fac_name #else attr(o, "fac_name") <- character()
+  if(!missing(sname))
+    attr(o, "sname") <- sname
+
+  # if("series" %in% names(o)) spec_type <- "series" else
+  #   if("composite" %in% names(o)) spec_type <- "composite" else
+  #     stop("The speclist must contain a `series` spec or a `composite` spec.")
+  # attr(o, "spec_type") <- spec_type
+
   class(o) <- c("X13SpecList", "list")
   names(o) <- sapply(o, function(x) attr(x,"name"))
   o
@@ -228,6 +235,28 @@ is.X13SpecList <- function(x) inherits(x, "X13SpecList")
 
 #' @export
 is.X13SpecComments <- function(x) inherits(x, "X13SpecComments")
+
+#' @export
+sname.X13SpecList <- function(x) attr(x, 'sname')
+
+#' Specification type
+#'
+#' Is the specification `series` or `composite`
+#'
+#'
+#' @export
+specType.X13SpecList <- function(x) {
+  spec_names <- names(x)
+  if("composite" %in% spec_names && "series" %in% spec_names){
+    spec_type <- "both"
+    warning("The speclist contains both a `series` and a `composite`.  X13 requires one and only one of these.")
+  } else if("series" %in% spec_names) spec_type <- "series" else
+    if("composite" %in% spec_names) spec_type <- "composite" else {
+      spec_type <- "neither"
+      warning("The speclist must contain a `series` spec or a `composite` spec to run X13.")
+    }
+    spec_type
+}
 
 #' Get a spec.
 #'
@@ -322,7 +351,10 @@ getSpecComments.X13SpecList <- function(x){
   if (!name %in% .spec[[spec]])
     stop(sprintf("Unknown parameter for spec '%s': %s", spec, name))
   if (!spec %in% names(x))
-    x %+% do.call("X13Spec", structure(list(spec, value), names = c("specname", name)))
+    # x %+% do.call("X13Spec", structure(list(spec, value), names = c("specname", name)))
+    setSpec(x,spec) <- structure(as.list(value), names=name)
+
+
   else{
     if (is.null(value))
       x[[spec]][[name]] <- NULL
@@ -369,6 +401,7 @@ getSpecComments.X13SpecList <- function(x){
     stop(sprintf("Unknown spec: %s.", specname))
   s <- do.call('X13Spec', c(specname = specname, value))
   x[[specname]] <- s
+  if(specname =="series" || specname =="composite")
   x
 }
 
@@ -391,6 +424,11 @@ getSpecComments.X13SpecList <- function(x){
 
 }
 
+#' Write a spec to file
+#'
+#' @param x The spec to write out.
+#' @param fname The full file name.
+#'
 #' @export
 writeSpecToFile.X13SpecList <- function(x, fname) {
   # if(!inherits(x,"X13SpecList"))

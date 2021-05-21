@@ -29,7 +29,18 @@ X13Series <- function(x,
                       ...){
   args <- list(...)
 
-  if(!is.null(spec_fname) && !is_empty(spec_fname)) {
+  if (length(args) > 0) {
+
+    if(!missing(spec_fname))
+      warning("Specs provided as separate arguments.  `spec_fname` Will be ignored.")
+    if (!missing(speclist))
+      warning(sprintf("Specs provided as separate arguments.  Ignoring %s.",
+                      deparse(substitute(speclist))))
+    speclist <- do.call('X13SpecList', list(...))
+  } else if(!missing(speclist)) {
+    if(!missing(spec_fname))
+          warning("Both `speclist` and `spec_fname` provided.  `spec_fname` Will be ignored.")
+  } else if(!is.null(spec_fname) && !rlang::is_empty(spec_fname)) {
     if(file.exists(spec_fname)) {
       userwd <- getwd()
       if(dir.exists(spec_dir <- dirname(spec_fname))) {
@@ -41,41 +52,42 @@ X13Series <- function(x,
 
     } else stop(sprintf("Spec file does not exist:\n%s",spec_fname))
 
+    speclist <- readSPC(spec_fname)
 
-
-    if(!missing(speclist) && length(args) == 0) {
-      warning("Both `speclist` and `spec_fname` provided.  `spec_fname` Will be ignored.")
-    } else speclist <- readSPC(spec_fname)
+  } else {
+    if (tolower(type) == "x11") speclist <- .x11
+    else if (tolower(type) == "seats") speclist <- .seats
   }
 
+  comp_ser <- specType(speclist)
+  # if("series" %in% names(speclist)) comp_ser <- "series" else
+  #   if("composite" %in% names(speclist)) comp_ser <- "composite" else
+  #     stop("The speclist must contain a `series` spec or a `composite` spec.")
 
-  if (length(args) > 0) {
-    speclist <- do.call('X13SpecList', list(...))
-    if (!missing(speclist))
-      warn(sprintf("Specs provided as separate arguments.  Ignoring %s.",
-                   deparse(substitute(speclist))))
-  }
-  else {
-    if (missing(speclist) & tolower(type) == "x11") speclist <- .x11
-    else if (missing(speclist) & tolower(type) == "seats") speclist <- .seats
+  dat_path <- getSpecParameter(speclist,comp_ser,"file")
+
+  # handle missing sname
+  if(missing(sname)){
+    if(!is.null(sname(speclist)) && !rlang::is_empty(sname(speclist)))
+      sname <- sname(speclist) else
+        if(!is.null(dat_path) && !rlang::is_empty(dat_path))
+          sname <- str_remove(basename(dat_path),"[.]dat$") else {
+            ser_name <- tolower(getSpecParameter(speclist,comp_ser, "name"))
+            if(!is.null(ser_name) && !rlang::is_empty(ser_name)) sname <- ser_name
+          }
   }
 
-  series_path <- getSpecParameter(speclist,"series","file")
+  if(missing(lname)) lname <- sname
 
   if(missing(x)) {
-    if(!is.null(series_path)) {
-      if(!is.null(spec_fname) && !is_empty(spec_fname) && missing(sname))
-        sname <- str_remove(basename(spec_fname),"[.]spc$") else if(missing(sname))
-          sname <- str_remove(basename(series_path),"[.]dat$")
-      # doesn't work on composites:
-      # sname <- tolower(getSpecParameter(speclist,"series", "name"))
-      if(missing(lname)) lname <- sname
-      if (file.exists(series_path)) {
-        x <- readDAT(series_path)
+    if(!is.null(dat_path)) {
+
+      if (file.exists(dat_path)) {
+        x <- readDAT(dat_path)
       } else {
         warning(sprintf("couldn't find DAT file in:\n%s.
-                        Searching paths relative to:\n%s.", series_path,getwd()))
-        path_split <- str_split(series_path, "/")[[1]] %>% rev()
+                        Searching paths relative to:\n%s.", dat_path,getwd()))
+        path_split <- str_split(dat_path, "/")[[1]] %>% rev()
         for(i in seq_along(path_split)) {
           try_path <- paste(path_split[i:1],collapse = "/")
           if(file.exists(try_path)) {
@@ -88,9 +100,9 @@ X13Series <- function(x,
       if ((is.null(x) || rlang::is_empty(x)))
         stop("Unable to find DAT file.")
     } else stop("No time series supplied and none referenced in the spec file.")
-  } else if(!is.null(series_path) ) {
+  } else if(!is.null(dat_path) ) {
     warning(sprintf("Time series provided, but the `file` argument of the `series` spec is not empty.
-            Spec argument will be ignored:\n",series_path))
+            Spec argument will be ignored:\n",dat_path))
   }
 
   if(!is.null(getSpec(speclist,"series")) && clean_spec) {
@@ -98,7 +110,7 @@ X13Series <- function(x,
     setSpecParameter(speclist, "series","format") <- NULL
   }
 
-  # Fac file
+  # Fac file ---------------------------------------------
   transformpath <- getSpecParameter(speclist, "transform", "file")
 
   if (missing(facfile)) {
@@ -123,7 +135,7 @@ X13Series <- function(x,
       if ((is.null(facfile) || rlang::is_empty(facfile)))
         warning("Unable to find factor file.")
     }
-  } else if(!is.null(transformpath) && !is_empty(transformpath)) {
+  } else if(!is.null(transformpath) && !rlang::is_empty(transformpath)) {
     warning(sprintf("FAC file provided, but the `file` argument in the`transform` spec is not empty.
             Spec argument will be ignored: %s",transformpath))
 
@@ -133,10 +145,6 @@ X13Series <- function(x,
     setSpecParameter(speclist, "transform","file") <- NULL
     setSpecParameter(speclist, "transform","format") <- NULL
   }
-
-
-
-
 
 
   if (inherits(x, "ts")) res <- tsdf(x)
@@ -170,6 +178,11 @@ lname.X13Series <- function(x) attr(x, 'lname')
 
 #' @export
 is.X13Series <- function(x) inherits(x, "X13Series")
+
+#' @export
+specType.X13Series <- function(x) getSpecList(x) %>% specType()
+
+
 
 #' Get a factor file.
 #'
@@ -241,6 +254,15 @@ getSpecParameter.X13Series <- function(x, spec, parameter){
 }
 
 #' @export
+"setSpecList<-.X13Series" <- function(x, value){
+  if (inherits(value, "X13SpecList"))
+    attr(x, "SpecList") <- value
+  else
+    stop(sprintf("%s is not of class: X13SpecList.", deparse(substitute(value))))
+  x
+}
+
+#' @export
 removeSpec.X13Series <- function(x, specname){
   s <- getSpecList(x)
   s <- removeSpec(s)
@@ -261,23 +283,28 @@ clean <- function(x){
 }
 
 #' @keywords internal
-writeSpecList <- function(x, datname, ...){
+writeSpecList <- function(x, ...){
   if (!inherits(x, "X13Series"))
     stop(sprintf("%s must be of class 'X13Series'.", deparse(substitute(x))))
 
   spec <- getSpecList(x)
+  datname <- sprintf("%s/%s.dat",datdir(),sname(x))
 
-  if (!is.null(getSpecParameter(spec, "series", "file")))
-    warning(sprintf("The `file` argument of the `series` spec is not empty:\n%s
+
+  if(specType(spec)=="series"){
+    if (!is.null(getSpecParameter(spec, "series", "file")))
+      warning(sprintf("The `file` argument of the `series` spec is not empty:\n%s
     But will be overwritten with supplied X13Series."
-                    ,getSpecParameter(spec, "series", "file")))
-
-  setSpecParameter(spec, "series", "file") <- datname
-  setSpecParameter(spec, "series", "format") <- "datevalue"
-
-  if (!is.null(getSpecParameter(spec, "series", "data"))){
-    warning("In the spec 'series', the 'data' parameter is not empty but will be ignored")
-    setSpecParameter(spec, "series", "data") <- NULL
+                      ,getSpecParameter(spec, "series", "file")))
+    setSpecParameter(spec, "series", "file") <- datname
+    setSpecParameter(spec, "series", "format") <- "datevalue"
+    if (!is.null(getSpecParameter(spec, "series", "data"))){
+      warning("In the spec 'series', the 'data' parameter is not empty but will be ignored")
+      setSpecParameter(spec, "series", "data") <- NULL
+    }
+    if (is.null(getSpecParameter(spec, "series", "period")))
+      setSpecParameter(spec, "series", "period") <-
+      length(unique(x$period))
 
   }
 
@@ -344,9 +371,7 @@ writeSpecList <- function(x, datname, ...){
   #   setSpecParameter(spec, "series", "start") <-
   #   sprintf("%04d.%02d", x$year[1], x$period[1])
 
-  if (is.null(getSpecParameter(spec, "series", "period")))
-    setSpecParameter(spec, "series", "period") <-
-    length(unique(x$period))
+
 
   specroot <- sprintf("%s/%s", workdir(), sname(x))
   specfile <- sprintf("%s.spc", specroot)
@@ -448,19 +473,30 @@ importOutput <- function(x, ...){
 #' @export
 adjust.X13Series <- function(x, purge = TRUE, ...){
   #attr(ap,"sname")
-  if(sname(x)=="" || is_empty(sname(x)))
+  if(sname(x)=="" || rlang::is_empty(sname(x)))
     stop(sprintf("sname is not valid"))
   if (purge)
     clean(x)
-  datname <- sprintf("%s/%s.dat",datdir(),sname(x))
-  writeDAT(x, fname = datname )
-  writeSpecList(x, datname = datname)
+  writeDAT(x)
+  writeSpecList(x)
   writeMTA.X13Series(x)
   binpath <- sprintf("%s/x13ashtml", paste0(x13binary::x13path()))
   cmd <- sprintf("%s -m %s -s", binpath, specroot.X13Series(x))
-  system(cmd, intern=TRUE)
+
+  x13_messages <- system(cmd, intern=TRUE)
+
+  # Currently, dumping entirety of x13 messages on error
+  saved_option_warn_len <- getOption("warning.length")
+  options(warning.length = 8000L)
+  on.exit(options(warning.length = saved_option_warn_len), add = TRUE)
+
+  if(x13ErrorDetected(x13_messages))
+    stop(paste(x13_messages, collapse="\n"))
+
   res <- importOutput(x)
   attr(res, "input") <- x
+  attr(res,"x13_messages") <- x13_messages
+
   if (purge)
     clean(x)
   res
@@ -558,3 +594,6 @@ summary.X13SeriesResult <- function(x, html = FALSE, ...){
 
   return(d)
 }
+
+
+X13Messages.X13SeriesResult <- function(x) cat(paste(attr(x,"x13_messages"), collapse="\n"))

@@ -12,6 +12,8 @@ X13Series(
   type = "x11",
   speclist,
   facfile,
+  spec_fname = NULL,
+  clean_spec = TRUE,
   ...
 )
 }
