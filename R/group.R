@@ -54,7 +54,8 @@ adjust.X13SeriesGroup <- function(x, purge = TRUE, ...){
   }
   writeMTA.X13SeriesGroup(x)
   binpath <- sprintf("%s/x13ashtml", paste0(x13binary::x13path()))
-  cmd <- sprintf("%s -m %s -s", binpath, specroot.X13SeriesGroup(x))
+  # cmd <- sprintf("%s -m %s -s", binpath, specroot.X13SeriesGroup(x))
+  cmd <- sprintf("cd %s && %s -m %s -s", workdir(), binpath, specroot.X13SeriesGroup(x))
 
   x13_messages <- system(cmd, intern=TRUE)
 
@@ -76,7 +77,6 @@ adjust.X13SeriesGroup <- function(x, purge = TRUE, ...){
   #   x13_messages <- system(cmd, intern=TRUE)
   #
   # )
-
 
   res <- list()
   for(i in 1:length(x)){

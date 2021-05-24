@@ -17,6 +17,11 @@ readUDG <- function(x, outpdir, ext = "udg"){
   # l <- readLines(f)
   l <- readLines(f, skipNul = TRUE)
   o <- structure(list(), class = "X13Diagnostics")
+
+  spec_names <- x %>% getSpecList() %>% names()
+  if("composite" %in% spec_names) attr(o,"is_composite") <- TRUE else
+    attr(o,"is_composite") <- FALSE
+
   pos <- 1
 
   for (i in 1:length(l)){
@@ -42,18 +47,27 @@ readUDG <- function(x, outpdir, ext = "udg"){
 #' @export
 as.data.frame.X13Diagnostics <- function(
   x,
-  statfilter = c(
-    "f2.mcd", "f2.ic", "f2.is", "f2.fsd8","f2.msf",
-    sprintf("f3.m%02d", 1:11), "f3.q", "f3.qm2"
-  ),
-  colfilter = c("stat", "value")
+  statfilter,
+  colfilter = c("stat", "value"),
+  stringsAsFactors=FALSE
 ) {
+
+  if(missing(statfilter)) {
+    statfilter <-  c(
+      "f2.mcd", "f2.ic", "f2.is", "f2.fsd8","f2.msf",
+      sprintf("f3.m%02d", 1:11), "f3.q", "f3.qm2"
+    )
+    if(attr(x,"is_composite"))
+      statfilter <- c(statfilter, paste0("i",statfilter),"r1mse","r1rmse", "r2mse", "r2rmse")
+  }
+
+
   ll <- list()
   for (name in names(x)){
     stat <- strsplit(name, '.', fixed = TRUE)[[1]]
     nstat <- length(stat)
     stat <- head(c(stat, rep(NA, 4)), 4)
-    this <- do.call('data.frame', as.list(c(name, stat, x[[name]])))
+    this <- do.call('data.frame', as.list(c(name, stat, x[[name]], stringsAsFactors = stringsAsFactors)))
     colnames(this) <- c("stat", sprintf("stat.%s", 1:4), "value")
     ll[[length(ll) + 1]] <- this
   }

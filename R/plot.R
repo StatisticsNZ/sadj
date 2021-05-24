@@ -15,7 +15,8 @@ plot.X13Series <- function(x, interactive = FALSE, ...){
 #' Plot adjustment results
 #'
 #' @param x \code{X13SeriesResult}
-#' @param type one of \code{B1D11D12}, \code{decomp}, \code{D10}, \code{D10D8}, \code{D11oD11}, or \code{D12oD12}
+#' @param type one of \code{B1D11D12}, \code{decomp}, \code{D10}
+#' , \code{D10D8}, \code{D11oD11}, \code{D12oD12} or \code{b1d11isa}
 #'
 #' @import reshape2
 #' @import ggplot2
@@ -35,6 +36,8 @@ plot.X13SeriesResult <- function(x, type = "B1D11D12", interactive = FALSE, ...)
     plot.X13SeriesResult.D11oD11(x, interactive, ...)
   else if (tolower(type) == "d12od12")
     plot.X13SeriesResult.D12oD12(x, interactive, ...)
+  else if (tolower(type) == "b1d11isa")
+    plot.X13SeriesResult.B1D11ISA(x, interactive, ...)
   else stop("Unknown plot type.")
 }
 
@@ -287,3 +290,7 @@ plot.X13SeriesResult.D12oD12 <- function(x, interactive = FALSE, ...) {
   else
     p
 }
+
+
+
+

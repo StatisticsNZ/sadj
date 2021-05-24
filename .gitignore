@@ -12,3 +12,5 @@ tests/test_spec/full_sets
 data/hlfs
 /doc/
 /Meta/
+renv
+renv.lock

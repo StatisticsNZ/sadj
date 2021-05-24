@@ -1,21 +1,17 @@
 #' Trim whitespace on left of string.
 #'
 #' @keywords internal
-ltrim <- function(s){
-  t <- s
-  while(substr(t, 1, 1) == ' ' & nchar(t) > 1)
-    t <- substr(t, 2, nchar(t))
-  t
+ltrim <- function(s) {
+  if (substr(s, 1, 1) == " ") ltrim(substr(s, 2, nchar(s)))
+  else s
 }
 
 #' Trim whitespace on right of string.
 #'
 #' @keywords internal
-rtrim <- function(s){
-  t <- s
-  while(substr(t, nchar(t), nchar(t)) == ' ' & nchar(t) > 1)
-    t <- substr(t, 1, nchar(t) - 1)
-  t
+rtrim <- function(s) {
+  if (substr(s, nchar(s), nchar(s)) == " ") rtrim(substr(s, 1, nchar(s) - 1))
+  else s
 }
 
 #' Trim whitespace

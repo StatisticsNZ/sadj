@@ -481,7 +481,8 @@ adjust.X13Series <- function(x, purge = TRUE, ...){
   writeSpecList(x)
   writeMTA.X13Series(x)
   binpath <- sprintf("%s/x13ashtml", paste0(x13binary::x13path()))
-  cmd <- sprintf("%s -m %s -s", binpath, specroot.X13Series(x))
+  # cmd <- sprintf("%s -m %s -s", binpath, specroot.X13Series(x))
+  cmd <- sprintf("cd %s && %s -m %s -s", workdir(), binpath, specroot.X13Series(x))
 
   x13_messages <- system(cmd, intern=TRUE)
 
@@ -575,7 +576,7 @@ print.X13SeriesResult <- function(x, ...){
 
 #'
 #' @export
-summary.X13SeriesResult <- function(x, html = FALSE, ...){
+summary.X13SeriesResult <- function(x, html = FALSE, stringsAsFactors = FALSE, ...){
   if (html & !is.null(attr(x, "html"))){
     v <- getOption("viewer")
     tf <- tempfile(fileext = ".html")
@@ -588,9 +589,9 @@ summary.X13SeriesResult <- function(x, html = FALSE, ...){
     stop("No diagnostics present.")
 
   if (!is.null(attr(x, "udg")))
-    d <- as.data.frame(attr(x, "udg"))
+    d <- as.data.frame(attr(x, "udg"),stringsAsFactors=stringsAsFactors)
   else if (!is.null(attr(x, "xdg")))
-    d <- as.data.frame(attr(x, "xdg"))
+    d <- as.data.frame(attr(x, "xdg"),stringsAsFactors=stringsAsFactors)
 
   return(d)
 }

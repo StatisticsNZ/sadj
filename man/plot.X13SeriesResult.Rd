@@ -9,7 +9,8 @@
 \arguments{
 \item{x}{\code{X13SeriesResult}}
 
-\item{type}{one of \code{B1D11D12}, \code{decomp}, \code{D10}, \code{D10D8}, \code{D11oD11}, or \code{D12oD12}}
+\item{type}{one of \code{B1D11D12}, \code{decomp}, \code{D10}
+, \code{D10D8}, \code{D11oD11}, \code{D12oD12} or \code{b1d11isa}}
 }
 \description{
 Plot adjustment results
