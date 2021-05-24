@@ -25,17 +25,17 @@ trim <- function(s) ltrim(rtrim(s))
 
 unquote <- function(s) {
   expr <- "^\" ?(.*?) ?\"$|^\' ?(.*?) ?\'$"
-  res <- str_match(s, expr)
+  res <- stringr::str_match(s, expr)
   if(is.na(res[,1])) return(s)
-  if(!is.na(res[,2])) str_trim(res[,2]) else str_trim(res[,3])
+  if(!is.na(res[,2])) stringr::str_trim(res[,2]) else stringr::str_trim(res[,3])
 
 }
 
 unparen <- function(s) {
   expr <- "^\\( ?(.*?) ?\\)$"
-  res <- str_match(s, expr)
+  res <- stringr::str_match(s, expr)
   if(is.na(res[,1])) return(s)
-  str_trim(res[,2])
+  stringr::str_trim(res[,2])
 
 }
 
@@ -301,14 +301,14 @@ readSPCsFromDir <- function(path){
   if (!dir.exists(path))
     stop("Directory does not exist.")
 
-  # path %<>% str_replace("[^////]$",function(x){
+  # path %<>% stringr::str_replace("[^////]$",function(x){
   #   paste0(x,"/")
   # })
 
-  path %<>% str_remove("[////]$")
+  path %<>% stringr::str_remove("[////]$")
 
   all_spcs <- list.files(path, full.names = TRUE, pattern = "\\.spc$")
-  names(all_spcs) <- list.files(path, pattern = "\\.spc$") %>% str_remove("\\.spc$")
+  names(all_spcs) <- list.files(path, pattern = "\\.spc$") %>% stringr::str_remove("\\.spc$")
   res <- all_spcs %>% map(readSPC)
   class(res) <- "X13specCol"
   return(res)

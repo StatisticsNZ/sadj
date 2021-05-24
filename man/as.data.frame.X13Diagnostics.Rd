@@ -6,9 +6,9 @@
 \usage{
 \method{as.data.frame}{X13Diagnostics}(
   x,
-  statfilter = c("f2.mcd", "f2.ic", "f2.is", "f2.fsd8", "f2.msf", sprintf("f3.m\%02d",
-    1:11), "f3.q", "f3.qm2"),
-  colfilter = c("stat", "value")
+  statfilter,
+  colfilter = c("stat", "value"),
+  stringsAsFactors = FALSE
 )
 }
 \description{

@@ -11,10 +11,10 @@ readFacsFromDir <- function(path){
   if (!dir.exists(path))
     stop("Directory does not exist.")
 
-  path %<>% str_remove("[////]$")
+  path %<>% stringr::str_remove("[////]$")
 
   all_facs <- list.files(path, full.names = TRUE, pattern = "\\.fac$")
-  names(all_facs) <- list.files(path, pattern = "\\.fac$") %>% str_remove("\\.fac$")
+  names(all_facs) <- list.files(path, pattern = "\\.fac$") %>% stringr::str_remove("\\.fac$")
   res <- all_facs %>% map(read.csv)
   class(res) <- "X13facCol"
   return(res)

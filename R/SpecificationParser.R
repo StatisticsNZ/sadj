@@ -188,11 +188,11 @@ SpecificationParser <- function() {
   # see roxygen documentation above
   preprocess <-function(str){
 
-    #str_split("\\R") %>% unlist() %>% # split into character vector of lines. Matches any newline char
-    str <- str_replace_all(str,"\x92","'")
+    #stringr::str_split("\\R") %>% unlist() %>% # split into character vector of lines. Matches any newline char
+    str <- stringr::str_replace_all(str,"\x92","'")
     res <- str %>%
-      map_chr(stripComment) %>% # strip out comments from each line
-      map_chr(str_squish) #%>% map_chr(~ str_replace_all(.x,"[\"\']",""))  # squish whitespace
+      purrr::map_chr(stripComment) %>% # strip out comments from each line
+      purrr::map_chr(stringr::str_squish) #%>% purrr::map_chr(~ stringr::str_replace_all(.x,"[\"\']",""))  # squish whitespace
     res[res != ""] %>% # throw away blank lines.  How can I turn this into pipe?
       mkString(" ") # recombine lines with a space character
   }
@@ -204,7 +204,7 @@ SpecificationParser <- function() {
     }
 
     if(!endsWith(processed,"}")) warning("Last specification is missing `}`")
-    str_extract_all(processed, specification) %>% unlist()
+    stringr::str_extract_all(processed, specification) %>% unlist()
   }
 
   # see roxygen documentation above
@@ -239,19 +239,19 @@ SpecificationParser <- function() {
     # trim whitespace inside parentheses
     # expr_paren <- "\\(([^()]+)\\)"
     # trim_parens <- function(x){
-    #   inside_paren <- x %>% str_match(expr_paren)
-    #   inside_paren[,2] %>% str_trim() %>% sprintf("(%s)",.)
+    #   inside_paren <- x %>% stringr::str_match(expr_paren)
+    #   inside_paren[,2] %>% stringr::str_trim() %>% sprintf("(%s)",.)
     # }
     trim_parens <- function(rhs){
       expr_openparen <- sprintf("\\( (,? ?%s)", singlerhs)
-      rhs <- str_replace_all(rhs, expr_openparen,function(x){
-        inside_paren <-x %>% str_match(expr_openparen)
+      rhs <- stringr::str_replace_all(rhs, expr_openparen,function(x){
+        inside_paren <-x %>% stringr::str_match(expr_openparen)
         inside_paren[,2] %>% sprintf("(%s",.)
       })
 
       expr_closeparen <- sprintf("(%s ?,?) \\)", singlerhs)
-      rhs <- str_replace_all(rhs, expr_closeparen,function(x){
-        inside_paren <-x %>% str_match(expr_closeparen)
+      rhs <- stringr::str_replace_all(rhs, expr_closeparen,function(x){
+        inside_paren <-x %>% stringr::str_match(expr_closeparen)
         inside_paren[,2] %>% sprintf("%s)",.)
       })
 
@@ -270,23 +270,23 @@ SpecificationParser <- function() {
     expr_lh_rh <- sprintf("^(%s) ?= ?(%s)(?:%s|%s)",name,anyrhs,expr_notlast, expr_last)
 
     parse <- function(str,accum) {
-      str %<>% str_trim
+      str %<>% stringr::str_trim()
       if(str=="") return(accum)
       # We replace with nothing and then parse again
       # Ideally anyrhs is made smart enough to match all parameters in one go with str_match_all
-      parsed_args <- str_match(str,expr_lh_rh)
+      parsed_args <- stringr::str_match(str,expr_lh_rh)
       # browser(expr = is.na(parsed_args[[1]]))
       whole_match <- parsed_args[[1]]
-      lhs <- parsed_args[[2]] %>% str_trim()
-      rhs <- parsed_args[[3]] %>% str_trim()
+      lhs <- parsed_args[[2]] %>% stringr::str_trim()
+      rhs <- parsed_args[[3]] %>% stringr::str_trim()
 
       # this should be whole match minus name =$ or minus just $
       expr_parsed <- sprintf("^%s ?= ?%s",lhs,re_escape(rhs))
-      rest <- str_replace(str,expr_parsed,"") %>% str_trim()
+      rest <- stringr::str_replace(str,expr_parsed,"") %>% stringr::str_trim()
 
       if(to_lower) {
         lhs <- tolower(lhs)
-        rhs <- str_replace_all(rhs, singlerhs,function(x){
+        rhs <- stringr::str_replace_all(rhs, singlerhs,function(x){
           if(!str_detect(x,qrhs)) x <- tolower(x)
           x
         })
@@ -298,7 +298,7 @@ SpecificationParser <- function() {
 
       # if whole rhs is quoted then unquote, else trim whitespace in parentheses
       # if(str_detect(rhs,"^\" ?(.*) ?\"$|^\' ?(.*) ?\'$")) rhs <- unquote(rhs) else
-      #   rhs <- str_replace_all(rhs, expr_paren, trim_parens)
+      #   rhs <- stringr::str_replace_all(rhs, expr_paren, trim_parens)
 
       if(rest=="") append_by_name(accum,lhs,rhs) else
         parse(rest, append_by_name(accum,lhs,rhs))
@@ -328,10 +328,10 @@ SpecificationParser <- function() {
       else if (take(s,1) == "(") complete(drop(s,1), numLeft + 1, numRight, accum %+% "(")
       else if (take(s,1) == ")") {
         if (numLeft == (numRight + 1)) {
-          rest <- drop(s,1) #%>% str_trim()
-          if(take(str_trim(rest),1)=="(") complete(rest, numLeft, numRight + 1, accum %+% ")")
+          rest <- drop(s,1) #%>% stringr::str_trim()
+          if(take(stringr::str_trim(rest),1)=="(") complete(rest, numLeft, numRight + 1, accum %+% ")")
           else list(rest, value = accum %+% ")")
-        } else complete(s.drop(1), numLeft, numRight + 1, accum %+% ")")
+        } else complete(drop(s,1), numLeft, numRight + 1, accum %+% ")")
       }
       else complete(drop(s,1), numLeft, numRight, accum %+% take(s,1))
     }
@@ -342,11 +342,11 @@ SpecificationParser <- function() {
       if (s == "") accum
       else if (contains(s,"=")) {
         i <- indexOf(s,"=")
-        left <- take(s,i -1) %>% str_trim() #str_squish()
-        right <- drop(s, i) %>% str_trim() #str_squish()
+        left <- take(s,i -1) %>% stringr::str_trim() #stringr::str_squish()
+        right <- drop(s, i) %>% stringr::str_trim() #stringr::str_squish()
         if (take(right,1) == "(") {
-          value <- str_match_all(right,partextpar)[[1]][,1]
-          dropped <- str_replace_all(right,partextpar,"") # sub with nothing. trim it
+          value <- stringr::str_match_all(right,partextpar)[[1]][,1]
+          dropped <- stringr::str_replace_all(right,partextpar,"") # sub with nothing. trim it
           parse(dropped, value %>% append_by_name(accum,left,.))
 
 

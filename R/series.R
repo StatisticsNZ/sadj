@@ -71,7 +71,7 @@ X13Series <- function(x,
     if(!is.null(sname(speclist)) && !rlang::is_empty(sname(speclist)))
       sname <- sname(speclist) else
         if(!is.null(dat_path) && !rlang::is_empty(dat_path))
-          sname <- str_remove(basename(dat_path),"[.]dat$") else {
+          sname <- stringr::str_remove(basename(dat_path),"[.]dat$") else {
             ser_name <- tolower(getSpecParameter(speclist,comp_ser, "name"))
             if(!is.null(ser_name) && !rlang::is_empty(ser_name)) sname <- ser_name
           }
@@ -87,7 +87,7 @@ X13Series <- function(x,
       } else {
         warning(sprintf("couldn't find DAT file in:\n%s.
                         Searching paths relative to:\n%s.", dat_path,getwd()))
-        path_split <- str_split(dat_path, "/")[[1]] %>% rev()
+        path_split <- stringr::str_split(dat_path, "/")[[1]] %>% rev()
         for(i in seq_along(path_split)) {
           try_path <- paste(path_split[i:1],collapse = "/")
           if(file.exists(try_path)) {
@@ -122,7 +122,7 @@ X13Series <- function(x,
       } else {
         warning(sprintf("couldn't find FAC file in:\n%s.
                         Searching paths relative to:\n%s.", transformpath, getwd()))
-        path_split <- str_split(transformpath, "/")[[1]] %>% rev()
+        path_split <- stringr::str_split(transformpath, "/")[[1]] %>% rev()
         for(i in seq_along(path_split)) {
           try_path <- paste(path_split[i:1],collapse = "/")
           if(file.exists(try_path)) {
@@ -154,7 +154,7 @@ X13Series <- function(x,
   attr(res, "SpecList") <- speclist
 
   # Try to handle snames derived from list element
-  # if(missing(sname) && grepl("\\[\\[\"\\w+\"\\]\\]",sname)) sname <- str_extract_all(sname, "\\w+")[[1]][[2]]
+  # if(missing(sname) && grepl("\\[\\[\"\\w+\"\\]\\]",sname)) sname <- stringr::str_extract_all(sname, "\\w+")[[1]][[2]]
 
   attr(res, "sname") <- tolower(sname)
   attr(res, "lname") <- lname
@@ -324,7 +324,7 @@ writeSpecList <- function(x, ...){
       } else {
         warning(sprintf("couldn't find FAC file in:\n%s.
                         Searching paths relative to:\n%s.", transformpath, getwd()))
-        path_split <- str_split(transformpath, "/")[[1]] %>% rev()
+        path_split <- stringr::str_split(transformpath, "/")[[1]] %>% rev()
         for(i in seq_along(path_split)) {
           try_path <- paste(path_split[i:1],collapse = "/")
           if(file.exists(try_path)) {

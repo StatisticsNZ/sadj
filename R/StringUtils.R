@@ -9,7 +9,7 @@
 #' @return String
 #' @keywords internal
 indent <- function(s, size){
-  s %>% str_replace("\n", "\n" %+% (1:size %>% map_chr(~ " ") %>% mkString()))
+  s %>% stringr::str_replace("\n", "\n" %+% (1:size %>% purrr::map_chr(~ " ") %>% mkString()))
 }
 
 #' unquote
@@ -25,6 +25,6 @@ unquote <- function(s){
 
 
 escape <- function(s){
-  str_replace(s,"\"", "\\\"") %>% str_replace("\n", "\\n")
+  stringr::str_replace(s,"\"", "\\\"") %>% stringr::str_replace("\n", "\\n")
 }
 
