@@ -54,7 +54,7 @@ X13Series <- function(x,
   if(!is.null(spec_dir <- path(speclist))) {
     if(dir.exists(spec_dir)) {
       userwd <- getwd()
-      setwd(dirname(spec_dir))
+      setwd(spec_dir)
       on.exit(setwd(userwd), add = TRUE)
 
     } else {
