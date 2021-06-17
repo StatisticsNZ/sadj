@@ -544,6 +544,9 @@ print.X13SpecList <- function(x, print_comments=FALSE,...){
   cat(toString(x, ...))
 }
 
+#' @export
+path.X13SpecList <- function(x) attr(x, 'path')
+
 #' Combine \code{\link{X13Spec}} objects.
 #'
 #' @export

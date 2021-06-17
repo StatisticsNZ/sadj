@@ -265,6 +265,7 @@ readSPC <- function(fname, to_lower=TRUE, sname=stringr::str_remove(basename(fna
   res <- SPCparser$parseSPC(fname, to_lower=to_lower) %>% parsedSpecToX13SpecList()
 
   attr(res, "sname") <- sname
+  attr(res,"path") <- fname %>% normalizePath() %>% dirname()
 
 
   # add a fac_name if a `file` argument exists in the `transform` specification

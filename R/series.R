@@ -42,22 +42,29 @@ X13Series <- function(x,
           warning("Both `speclist` and `spec_fname` provided.  `spec_fname` Will be ignored.")
   } else if(!is.null(spec_fname) && !rlang::is_empty(spec_fname)) {
     if(file.exists(spec_fname)) {
-      userwd <- getwd()
-      if(dir.exists(spec_dir <- dirname(spec_fname))) {
-        setwd(dirname(spec_fname))
-        on.exit(setwd(userwd), add = TRUE)
-
-      } else
-        stop(sprintf("Spec directory does not exist:\n%s",spec_dir))
-
+      speclist <- readSPC(spec_fname)
     } else stop(sprintf("Spec file does not exist:\n%s",spec_fname))
-
-    speclist <- readSPC(spec_fname)
 
   } else {
     if (tolower(type) == "x11") speclist <- .x11
     else if (tolower(type) == "seats") speclist <- .seats
   }
+
+  # we don't want to error if specdir is null or not supplied
+  if(!is.null(spec_dir <- path(speclist))) {
+    if(dir.exists(spec_dir)) {
+      userwd <- getwd()
+      setwd(dirname(spec_dir))
+      on.exit(setwd(userwd), add = TRUE)
+
+    } else {
+      warning(sprintf("Spec directory does not exist:\n%s.  Current working directory will be used to find files.",spec_dir))
+    }
+
+  }
+
+
+
 
   comp_ser <- specType(speclist)
   # if("series" %in% names(speclist)) comp_ser <- "series" else
@@ -115,9 +122,9 @@ X13Series <- function(x,
 
   if (missing(facfile)) {
     if(!is.null(transformpath)) {
+      warning("No facfile supplied.  Path to FAC in the `file` argument of the `transform` spec will be used.")
       # try transform path first
       if (file.exists(transformpath)) {
-        warning("No facfile supplied.  Path to FAC in the `file` argument of the `transform` spec will be used.")
         facfile <- readFAC(transformpath)
       } else {
         warning(sprintf("couldn't find FAC file in:\n%s.

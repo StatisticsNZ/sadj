@@ -103,3 +103,8 @@ X13Messages <- function(x, ...){
 Sum <- function(x, ...){
   UseMethod("Sum", x)
 }
+
+#' @export
+path <- function(x, ...){
+  UseMethod("path", x)
+}
