@@ -122,7 +122,8 @@ X13Series <- function(x,
 
   if (missing(facfile)) {
     if(!is.null(transformpath)) {
-      warning("No facfile supplied.  Path to FAC in the `file` argument of the `transform` spec will be used.")
+      warning(sprintf("%s: No facfile supplied.  Path to FAC in the `file` argument of the `transform` spec will be used."
+                      , sname))
       # try transform path first
       if (file.exists(transformpath)) {
         facfile <- readFAC(transformpath)
