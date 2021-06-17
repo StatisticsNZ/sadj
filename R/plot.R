@@ -25,7 +25,7 @@ plot.X13Series <- function(x, interactive = FALSE, ...){
 #' @export
 plot.X13SeriesResult <- function(x, type = "B1D11D12", interactive = FALSE, ...){
   if (tolower(type) == "b1d11d12")
-    plot.X13SeriesResult.B1D11D12(x, interactive, ...)
+    plotB1D11D12(x, interactive, ...)
   else if (tolower(type) == "decomp")
     plot.X13SeriesResult.decomp(x, interactive, ...)
   else if (tolower(type) == "d10")
@@ -41,7 +41,15 @@ plot.X13SeriesResult <- function(x, type = "B1D11D12", interactive = FALSE, ...)
   else stop("Unknown plot type.")
 }
 
-plot.X13SeriesResult.B1D11D12 <- function(x, interactive = FALSE, ...) {
+# plot.X13SeriesResult.B1D11D12 <- function(x, interactive = FALSE, ...) {
+#   plotB1D11D12(x, interactive, ...)
+# }
+#
+# plot.X13SummedSeriesResult.B1D11D12 <- function(x, interactive = FALSE, ...) {
+#   plotB1D11D12(x, interactive, ...)
+# }
+
+plotB1D11D12 <- function(x, interactive = FALSE, ...) {
   cols <- colnames(x)
   sa <- if ("d11" %in% cols) "d11" else "s11"
   tr <- if ("d12" %in% cols) "d12" else "s12"
@@ -57,7 +65,9 @@ plot.X13SeriesResult.B1D11D12 <- function(x, interactive = FALSE, ...) {
       aes(x = date, y = value, col = variable)
     ) +
     ggplot2::geom_line() +
-    ggplot2::labs(title = lname(attr(x, "input"))) +
+    # ggplot2::labs(title = ifelse(inherits(x,"X13SeriesResult"),lname(attr(x, "input")),"")) +
+    ggplot2::labs(title = if(inherits(x,"X13SeriesResult")) lname(attr(x, "input")) else
+      if(inherits(x,"X13SummedSeriesResult")) sname(x) else "") +
     ggplot2::xlab("") +
     ggplot2::ylab("") +
     ggplot2::scale_color_discrete(

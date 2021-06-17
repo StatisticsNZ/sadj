@@ -98,3 +98,8 @@ specType <- function(x, ...){
 X13Messages <- function(x, ...){
   UseMethod("X13Messages", x)
 }
+
+#' @export
+Sum <- function(x, ...){
+  UseMethod("Sum", x)
+}

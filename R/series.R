@@ -23,7 +23,7 @@ X13Series <- function(x,
                       lname = sname,
                       type = "x11",
                       speclist,
-                      facfile,
+                      facfile=NULL,
                       spec_fname=NULL,
                       clean_spec=TRUE,
                       ...){
@@ -174,7 +174,13 @@ X13Series <- function(x,
 sname.X13Series <- function(x) attr(x, 'sname')
 
 #' @export
+sname.X13SeriesResult <- function(x) sname(attr(x, "input"))
+
+#' @export
 lname.X13Series <- function(x) attr(x, 'lname')
+
+#' @export
+lname.X13SeriesResult <- function(x) lname(attr(x, "input"))
 
 #' @export
 is.X13Series <- function(x) inherits(x, "X13Series")
