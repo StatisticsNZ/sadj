@@ -430,11 +430,11 @@ getSpecComments.X13SpecList <- function(x){
 #' @param fname The full file name.
 #'
 #' @export
-writeSpecToFile.X13SpecList <- function(x, fname, print_comments=FALSE) {
+writeSpecToFile.X13SpecList <- function(x, fname, comments=FALSE) {
   # if(!inherits(x,"X13SpecList"))
     # stop(sprintf("Object is not of class X13SpecList."))
   sink(file = fname)
-  print(x, print_comments=print_comments)
+  print(x, comments=comments)
   sink()
 }
 
@@ -539,8 +539,8 @@ toString.X13SpecList <- function(x, ...){
 }
 
 #' @export
-print.X13SpecList <- function(x, print_comments=FALSE,...){
-  if(print_comments) print(attr(x,"comments"))
+print.X13SpecList <- function(x, comments=FALSE,...){
+  if(comments) print(attr(x,"comments"))
   cat(toString(x, ...))
 }
 
