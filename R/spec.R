@@ -517,7 +517,7 @@ toString.X13SpecComments <- function(x, ...){
       # if (i < length(x))
       res <- paste0(res, "\n", sep="")
     }
-    res <- paste0(res, "\n", sep="")
+    # res <- paste0(res, "\n", sep="")
   }
   res
 }
@@ -540,7 +540,10 @@ toString.X13SpecList <- function(x, ...){
 
 #' @export
 print.X13SpecList <- function(x, comments=FALSE,...){
-  if(comments) print(attr(x,"comments"))
+  if(comments){
+    print(attr(x,"comments"))
+    cat("\n")
+  }
   cat(toString(x, ...))
 }
 
