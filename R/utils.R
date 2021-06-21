@@ -262,7 +262,11 @@ writeFAC <- function(x, fname){
 #' @export
 readSPC <- function(fname, to_lower=TRUE, sname=stringr::str_remove(basename(fname),"[.]spc$")){
 
+  comments <-SPCparser$readSPCLines(fname) %>% map_chr(SPCparser$getCommentLine) %>%
+    purrr::keep(~.x !="") %>% X13SpecComments()
+
   res <- SPCparser$parseSPC(fname, to_lower=to_lower) %>% parsedSpecToX13SpecList()
+  attr(res,"comments") <- comments
 
   attr(res, "sname") <- sname
   attr(res,"path") <- fname %>% normalizePath() %>% dirname()
