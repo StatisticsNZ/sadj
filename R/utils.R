@@ -201,6 +201,15 @@ facdir <- function(){
   res
 }
 
+#' @keywords internal
+regdir <- function(){
+  res <- sprintf("%s/reg", workdir())
+  if (!dir.exists(res))
+    if(!dir.create(res))
+      stop("Failed to create factor directory.")
+  res
+}
+
 #' Read DAT file.
 #'
 #' @param fname file name
@@ -248,12 +257,36 @@ readFAC <- function(fname){
   read.table(fname)
 }
 
+#' Read Reg files: regression,x11regression.
+#'
+#' @param fname file name
+#'
+#' @export
+readREG <- function(fname) readFAC(fname)
+
+#' Read Model files: estimate, pickmdl.
+#'
+#' @param fname file name
+#'
+#' @export
+readMDL <- function(fname) {}#readFAC(fname)
+
 #' Write FAC file.
 #'
 #' @keywords internal
 writeFAC <- function(x, fname){
   write.table(x, file= fname, row.names = FALSE,col.names = FALSE)
 }
+
+#' Write Reg files: regression,x11regression.
+#'
+#' @keywords internal
+writeREG <- function(x, fname) writeFAC(x, fname)
+
+#' Write Model files: estimate, pickmdl.
+#'
+#' @keywords internal
+writeMDL <- function(x, fname) {}#writeFAC(x, fname)
 
 #' Read SPC file.
 #'
@@ -269,7 +302,7 @@ readSPC <- function(fname, to_lower=TRUE, sname=stringr::str_remove(basename(fna
   attr(res,"comments") <- comments
 
   attr(res, "sname") <- sname
-  attr(res,"path") <- fname %>% normalizePath() %>% dirname()
+  attr(res,"path") <- fname %>% normalizePath() %>% dirname() %>% sub(path.expand("~"),"~",.)
 
 
   # add a fac_name if a `file` argument exists in the `transform` specification

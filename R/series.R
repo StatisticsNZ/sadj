@@ -17,13 +17,14 @@
 #' name-value pairs.
 #'
 #' @export
-X13Series <- function(x,
+X13Series <- function(x=NULL,
                       value = "value",
                       sname = deparse(substitute(x)),
                       lname = sname,
                       type = "x11",
                       speclist,
                       facfile=NULL,
+                      regfile=NULL,
                       spec_fname=NULL,
                       clean_spec=TRUE,
                       ...){
@@ -86,7 +87,7 @@ X13Series <- function(x,
 
   if(missing(lname)) lname <- sname
 
-  if(missing(x)) {
+  if(missing(x) && comp_ser=="series") {
     if(!is.null(dat_path)) {
 
       if (file.exists(dat_path)) {
@@ -155,9 +156,44 @@ X13Series <- function(x,
   }
 
 
-  if (inherits(x, "ts")) res <- tsdf(x)
-  else res <- data.frame(x)[, c("year", "period", value)]
-  res <- cbind(date=date(res),res)
+  # Reg file ---------------------------------------------
+  regpath <- getSpecParameter(speclist, "regression", "file")
+
+  if (missing(regfile)) {
+    if(!is.null(regpath)) {
+      warning(sprintf("%s: No regfile supplied.  Path to REG in the `file` argument of the `transform` spec will be used."
+                      , sname))
+      regpath <- findX13File(regpath,path(speclist))
+      if (file.exists(regpath)) {
+        regfile <- readREG(regpath)
+      }
+      if ((is.null(regfile) || rlang::is_empty(regfile)))
+        warning("Unable to find regression file.")
+    }
+  } else if(!is.null(regpath) && !rlang::is_empty(regpath)) {
+    warning(sprintf("REG file provided, but the `file` argument in the`regression` spec is not empty.
+            Spec argument will be ignored: %s",regpath))
+
+  }
+
+  if(!is.null(getSpecParameter(speclist,"regression","file")) && clean_spec) {
+    setSpecParameter(speclist, "regression","file") <- NULL
+    setSpecParameter(speclist, "regression","format") <- NULL
+  }
+
+
+  #---------------------------------------------------------------------------
+
+
+  if(is.null(x)) {
+    if(comp_ser!="composite") stop(sprintf("%s: No data supplied and series is not composite", sname))
+    res <- data.frame(date=double(),year=integer(),period=integer(),value=double())
+  } else {
+    if (inherits(x, "ts")) res <- tsdf(x)
+    else res <- data.frame(x)[, c("year", "period", value)]
+    res <- cbind(date=date(res),res)
+  }
+
   attr(res, "value") <- value
   attr(res, "SpecList") <- speclist
 
@@ -168,11 +204,23 @@ X13Series <- function(x,
   attr(res, "lname") <- lname
 
 
-  if(!missing(facfile)){
-    if(!is.data.frame(facfile))
-      stop("facfile is not a dataframe")
-    attr(res, "FacFile") <- facfile
-  }
+  # if(!missing(facfile)){
+  #   if(!is.data.frame(facfile) & !is.null(facfile))
+  #     stop("facfile is not a dataframe")
+  #   attr(res, "FacFile") <- facfile
+  # }
+
+
+  if(!is.null(facfile))
+    if(is.data.frame(facfile))
+      attr(res, "FacFile") <- facfile else
+        stop("facfile is not a dataframe")
+
+  if(!is.null(regfile))
+    if(is.data.frame(regfile))
+      attr(res, "regfile") <- regfile else
+        stop("regfile is not a dataframe")
+
 
   class(res) <- c("X13Series", class(res))
   res
@@ -214,6 +262,25 @@ getFacFile.X13Series <- function(x){
 #' @export
 "setFacFile<-.X13Series" <- function(x, value){
   attr(x, "FacFile") <- value
+  x
+}
+
+#' Get a regression file.
+#'
+#' @param x Input object.
+#'
+#' @export
+getRegFile.X13Series <- function(x){
+  attr(x, "regfile")
+}
+
+#' Set a regression file.
+#'
+#' @param x Input object.
+#'
+#' @export
+"setRegFile<-.X13Series" <- function(x, value){
+  attr(x, "regfile") <- value
   x
 }
 
@@ -291,6 +358,10 @@ clean <- function(x){
              dir(workdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
              dir(datdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
              dir(datdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
+             dir(facdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
+             dir(facdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
+             dir(regdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
+             dir(regdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
              dir(outpdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
              dir(outpdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE)))
   }
@@ -310,6 +381,7 @@ writeSpecList <- function(x, ...){
       warning(sprintf("The `file` argument of the `series` spec is not empty:\n%s
     But will be overwritten with supplied X13Series."
                       ,getSpecParameter(spec, "series", "file")))
+
     setSpecParameter(spec, "series", "file") <- datname
     setSpecParameter(spec, "series", "format") <- "datevalue"
     if (!is.null(getSpecParameter(spec, "series", "data"))){
@@ -323,47 +395,53 @@ writeSpecList <- function(x, ...){
   }
 
   # Fac file
-  facfile <- getFacFile(x)
-  transformpath <- getSpecParameter(spec, "transform", "file")
-  facpath <- sprintf("%s/%s.fac",facdir(),sname(x))
 
+  # transformpath <- getSpecParameter(spec, "transform", "file")
 
-  if ((is.null(facfile) || rlang::is_empty(facfile))) {
-    if(!is.null(transformpath)) {
-      # try transform path first
-      if (file.exists(transformpath)) {
-        warning("No facfile attached to X13Series.  Path to fac in the `file` argument of the 'transform' spec will be used.")
-        facfile <- readFAC(transformpath)
-        setFacFile(x) <- facfile
-      } else {
-        warning(sprintf("couldn't find FAC file in:\n%s.
-                        Searching paths relative to:\n%s.", transformpath, getwd()))
-        path_split <- stringr::str_split(transformpath, "/")[[1]] %>% rev()
-        for(i in seq_along(path_split)) {
-          try_path <- paste(path_split[i:1],collapse = "/")
-          if(file.exists(try_path)) {
-            facfile <- readFAC(try_path)
-            setFacFile(x) <- facfile
-            break
-          }
-
-        }
-        # stop("factor file path is not valid")
-      }
-      if ((is.null(facfile) || rlang::is_empty(facfile)))
-        warning("Unable to find factor file.")
-    }
-  }
-
-
-  if(!is.null(facfile) && !rlang::is_empty(facfile)) {
-    if(!is.null(transformpath))
-      warning(sprintf("FAC file provided, but the `file` argument in the`transform` spec is not empty.
-                      Spec argument will be ignored: %s",transformpath))
+  if(!is.null(facfile <- getFacFile(x)) && !rlang::is_empty(facfile)) {
+    facpath <- sprintf("%s/%s.fac",facdir(),sname(x))
     writeFAC(facfile, facpath)
     setSpecParameter(spec, "transform", "file") <- facpath
     setSpecParameter(spec, "transform", "format") <- "datevalue"
   }
+
+  if(!is.null(regfile <- getRegFile(x)) && !rlang::is_empty(regfile)) {
+    regpath <- sprintf("%s/%s.dat",regdir(),sname(x))
+    writeREG(regfile, regpath)
+    setSpecParameter(spec, "regression", "file") <- regpath
+    setSpecParameter(spec, "regression", "format") <- "datevalue"
+  }
+
+
+  # if ((is.null(facfile) || rlang::is_empty(facfile))) {
+  #   if(!is.null(transformpath)) {
+  #     # try transform path first
+  #     if (file.exists(transformpath)) {
+  #       warning("No facfile attached to X13Series.  Path to fac in the `file` argument of the 'transform' spec will be used.")
+  #       facfile <- readFAC(transformpath)
+  #       setFacFile(x) <- facfile
+  #     } else {
+  #       warning(sprintf("couldn't find FAC file in:\n%s.
+  #                       Searching paths relative to:\n%s.", transformpath, getwd()))
+  #       path_split <- stringr::str_split(transformpath, "/")[[1]] %>% rev()
+  #       for(i in seq_along(path_split)) {
+  #         try_path <- paste(path_split[i:1],collapse = "/")
+  #         if(file.exists(try_path)) {
+  #           facfile <- readFAC(try_path)
+  #           setFacFile(x) <- facfile
+  #           break
+  #         }
+  #
+  #       }
+  #       # stop("factor file path is not valid")
+  #     }
+  #     if ((is.null(facfile) || rlang::is_empty(facfile)))
+  #       warning("Unable to find factor file.")
+  #   }
+  # }
+
+
+
 
 
 

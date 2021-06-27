@@ -48,7 +48,7 @@
   regression = c(
     "variables", "print", "save", "savelog", "user", "usertype", "start",
     "data", "aictest", "aicdiff", "tlimit", "chi2test", "chi2testcv",
-    "pvaictest", "b", "centeruser", "eastermeans", "noapply", "tcrate", "file"
+    "pvaictest", "b", "centeruser", "eastermeans", "noapply", "tcrate", "file", "format"
   ),
   seats = c(
     "appendfcst", "finite", "hpcycle", "noadmiss", "qmax", "rmod", "statseas",

@@ -9,6 +9,16 @@ getFacFile <- function(x, ...){
 }
 
 #' @export
+getRegFile <- function(x, ...){
+  UseMethod("getRegFile", x)
+}
+
+#' @export
+"setRegFile<-" <- function(x, ...){
+  UseMethod("setRegFile<-", x)
+}
+
+#' @export
 getSpecParameter <- function(x, ...){
   UseMethod("getSpecParameter", x)
 }
