@@ -4,7 +4,7 @@
 \alias{writeSpecToFile.X13SpecList}
 \title{Write a spec to file}
 \usage{
-\method{writeSpecToFile}{X13SpecList}(x, fname)
+\method{writeSpecToFile}{X13SpecList}(x, fname, comments = FALSE)
 }
 \arguments{
 \item{x}{The spec to write out.}

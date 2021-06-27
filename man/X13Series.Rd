@@ -5,13 +5,14 @@
 \title{Create an object to be adjusted by X13-ARIMA-SEATS.}
 \usage{
 X13Series(
-  x,
+  x = NULL,
   value = "value",
   sname = deparse(substitute(x)),
   lname = sname,
   type = "x11",
   speclist,
-  facfile,
+  facfile = NULL,
+  regfile = NULL,
   spec_fname = NULL,
   clean_spec = TRUE,
   ...
