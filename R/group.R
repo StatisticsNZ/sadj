@@ -83,10 +83,11 @@ adjust.X13SeriesGroup <- function(x, purge = TRUE, ...){
     res_ <- importOutput(x[[i]])
     attr(res_, "input") <- x[[i]]
     res[[sname(x[[i]])]] <- res_
-    if (purge)
-      clean(x[[i]])
+    # if (purge)
+    #   clean(x[[i]])
   }
   if (purge){
+    for(i in 1:length(x)) clean(x[[i]])
     unlink(dir(workdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE))
     unlink(sprintf("%s.mta", specroot.X13SeriesGroup(x)))
   }

@@ -30,7 +30,7 @@ mtaGroups <- function(fname) {
 #' Convert mta group to X13 group
 #'
 #' @keywords internal
-mtaToX13 <- function(mta_grp) {
+mtaToX13Series <- function(mta_grp) {
   # loop through each spec in group and return an X13 Series
   res <- mta_grp %>% map(function(x){
     spec_fname <- strsplit(x, "\\s+")[[1]][[1]] %>% paste0(".spc")
@@ -47,12 +47,20 @@ mtaToX13 <- function(mta_grp) {
 }
 
 #' @keywords internal
-X13ListToGroup <- function(ser_list) {
+X13ListToGroup <- function(ser_list,sname="1") {
 
 
   if(length(ser_list)>1) {
     last_ser <- ser_list[[length(ser_list)]]
+    # Error if first series are not series
+    is_composite <- ser_list[1:(length(ser_list)-1)] %>% map_chr(specType) %>% `==`("composite")
+    if(any(is_composite)) {
+      stop(sprintf("Composite series found inside group: %s.\nOnly one is permitted at the end."
+                   , names(ser_list)[is_composite] %>% paste(collapse=" ")))
+    }
+
     if(specType(last_ser)=="composite") {
+
       comp_vals <- map(ser_list[1:(length(ser_list)-1)], function(x){
         comptype <- attr(x,"SpecList") %>% getSpecParameter("series","comptype")
         if(comptype =="sub")
@@ -68,14 +76,26 @@ X13ListToGroup <- function(ser_list) {
                 ,sname=sname(last_ser)
                 ,lname=lname(last_ser)
                 ,speclist = getSpecList(last_ser)
-                , facfile = getFacFile(last_ser))
+                , facfile = getFacFile(last_ser)
+                , regfile=getRegFile(last_ser))
+
+      ser_list[[length(ser_list)]] <- last_ser
+
     }
-    # ser_list[[attr(last_ser,"sname")]] <- last_ser
+
   }
 
   # create X13Group
-  # ser_list$sname <- x_name
+  ser_list$sname <- sname
   do.call(sadj:::X13SeriesGroup
           ,ser_list)
 
+}
+
+
+#' @keywords internal
+mtaToX13Groups <- function(mta_path){
+  grps <- mtaGroups(mta_path)
+  ser_lists <- grps %>% map(mtaToX13Series)
+  ser_lists %>% map2(names(ser_lists),~X13ListToGroup(ser_list = .x,sname = .y))
 }

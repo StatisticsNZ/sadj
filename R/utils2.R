@@ -1,7 +1,7 @@
 #' @keywords internal
-findX13File <- function(fname, rel_dir=NULL){
+findX13File <- function(fname, rel_dir=getwd()){
 
-  if (file.exists(fname)) return(fname)
+  # if(file.exists(fname)) return(normalizePath(fname) %>% sub(path.expand("~"),"~",.))
   rel_base <- basename(rel_dir)
 
   # we don't want to error if specdir is null or not supplied
@@ -12,10 +12,12 @@ findX13File <- function(fname, rel_dir=NULL){
       on.exit(setwd(userwd), add = TRUE)
 
     } else {
-      warning(sprintf("File directory does not exist:\n%s.  Current working directory will be used to find files.",rel_dir))
+      warning(sprintf("File directory does not exist. Searching:\n%s.",rel_dir))
     }
 
   }
+
+  if(file.exists(fname)) return(normalizePath(fname) %>% sub(path.expand("~"),"~",.))
 
   warning(sprintf("couldn't find file in:\n%s.
                   Searching paths relative to:\n%s.", fname,getwd()))
