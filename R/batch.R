@@ -20,3 +20,19 @@ adjust.X13Batch <- function(x, purge = TRUE, ...) {
   class(res) <- c("X13BatchResult", class(res))
   res
 }
+
+#' Print X13Batch.
+#'
+#' @export
+toString.X13Batch <- function(x, ...){
+  purrr::map2_chr(x,names(x),function(y,z){
+    names(y) %>% paste(collapse=" ") %>% sprintf("%s: %s",z,.)
+  }) %>% paste(collapse="\n") %>% cat()
+}
+
+#' Print X13Batch.
+#'
+#' @export
+print.X13Batch <- function(x, ...){
+  cat(toString(x, ...))
+}
