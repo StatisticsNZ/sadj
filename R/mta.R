@@ -27,7 +27,7 @@ mtaGroups <- function(fname) {
   mta_grps
 }
 
-#' Convert mta group to X13 group
+#' Convert mta group to a list of X13Series
 #'
 #' @keywords internal
 mtaToX13Series <- function(mta_grp) {
@@ -46,6 +46,8 @@ mtaToX13Series <- function(mta_grp) {
   # turn the resulting list into an X13group
 }
 
+#' Convert mta group to a list of X13Series
+#'
 #' @keywords internal
 X13ListToGroup <- function(ser_list,sname="1") {
 
@@ -93,9 +95,3 @@ X13ListToGroup <- function(ser_list,sname="1") {
 }
 
 
-#' @keywords internal
-mtaToX13Groups <- function(mta_path){
-  grps <- mtaGroups(mta_path)
-  ser_lists <- grps %>% map(mtaToX13Series)
-  ser_lists %>% map2(names(ser_lists),~X13ListToGroup(ser_list = .x,sname = .y))
-}

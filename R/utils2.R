@@ -4,34 +4,20 @@ findX13File <- function(fname, rel_dir=getwd()){
   # if(file.exists(fname)) return(normalizePath(fname) %>% sub(path.expand("~"),"~",.))
   rel_base <- basename(rel_dir)
 
-  # we don't want to error if specdir is null or not supplied
-  if(!missing(rel_dir)) {
-    if(dir.exists(rel_dir)) {
-      userwd <- getwd()
-      setwd(rel_dir)
-      on.exit(setwd(userwd), add = TRUE)
+  try_file <- sprintf("%s/%s",rel_dir,fname)
 
-    } else {
-      warning(sprintf("File directory does not exist. Searching:\n%s.",rel_dir))
-    }
-
-  }
-
-  if(file.exists(fname)) return(normalizePath(fname) %>% sub(path.expand("~"),"~",.))
+  if(file.exists(try_file)) return(normalizePath(try_file) %>% sub(path.expand("~"),"~",.))
 
   warning(sprintf("couldn't find file in:\n%s.
-                  Searching paths relative to:\n%s.", fname,getwd()))
+                  Searching paths relative to:\n%s.", dirname(try_file),rel_dir))
 
   path_split <- stringr::str_split(fname, "/")[[1]] %>% rev()
 
   for(i in seq_along(path_split)) {
     if(path_split[[i]]==rel_base) {
-      try_file <- paste(path_split[(i-1):1],collapse = "/")
+      try_file <- paste(path_split[(i-1):1],collapse = "/") %>% sprintf("%s/%s",rel_dir,.)
       if(file.exists(try_file)){
-        try_file <- normalizePath(try_file)
-        # could make this path regex friendly and search beginning only ...
-        try_file <- sub(path.expand("~"),"~",try_file)
-        return(try_file)
+        return(normalizePath(try_file) %>% sub(path.expand("~"),"~",.))
       }
     }
 
