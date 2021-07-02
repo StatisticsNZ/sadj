@@ -1,6 +1,6 @@
 ---
 title: "Quick Start"
-author: "Chris Hansen"
+author: "Chris Hansen, Steve White"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -34,6 +34,56 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE,
                       fig.height = 4, fig.width = 5)
 library(sadj)
 ```
+
+The first thing you might want to do is run seasonal adjustment on your existing `X13-ARIMA-SEATS` file setup.  You can do this in 2 steps. 
+
+1.) Read in the series from a `.mta` file:  
+
+```r
+my_series <- X13BatchFromMTA(mta_path)
+```
+
+2.) Seasonally adjust the series:
+
+```r
+adjusted_series <- adjust(my_series)
+```
+
+Next, it helps to understand the basic structure of the X13 objects.  Everything is organised as lists of lists.  `my_series` is an `X13Batch` object.  `adjusted_series` is an `X13BatchResult` object.  They are broken down in the following way:  
+
+
+```{r listsofliststab, echo = FALSE}
+data.frame(object=c("X13Batch","X13SeriesGroup", "X13BatchResult", "X13SeriesGroupResult"),
+           list_of=c("X13SeriesGroup","X13Series","X13SeriesGroupResult","X13SeriesResult"),
+           comments=c("The groups are created by inserting empty lines in the .mta file between series.",
+                      "There can be zero or one composite series in a group.  The composite must go at the end.",
+                      "adjust produces result objects.",
+                      "")) %>% 
+  knitr::kable(row.names = FALSE, format = "markdown")
+```
+
+`X13Series` is a dataframe with time series input data.  It has attributes that are accessible/mutable with the following functions:  
+
+```{r getsettab, echo = FALSE}
+data.frame(get=c("getSpecList","getSpec","getSpecParameter", "getFacFile", "getRegFile"),
+           set=c("setSpecList","setSpec","setSpecParameter", "setFacFile", "setRegFile"),
+           comments=c("Method gets passed to the X13SpecList object which is attached to X13Series as an attribute",
+                      "Same as comment above",
+                      "Same as comment above",
+                      "get/set the factor file dataframe attached to the the X13Series",
+                      "get/set the regression file dataframe attached to the the X13Series")) %>% 
+  knitr::kable(row.names = FALSE, format = "markdown")
+```
+
+
+(`adjusted_series` is an `X13BatchResult` object and has a similar breakdown.)  
+
+If you are investigating alternate configurations of X13 files, the bulk of your work will sit between steps 1 and 2 and will use the basic functions above for interaction.  
+
+
+You may want to create different scenarios from `my_series` and then make some modification to the spec, transform, and regression files. 
+
+
 
 The `sadj` package allows for relatively flexible use of the underlying
 `X13-ARIMA-SEATS` program.  But results can be produced quickly and easily by

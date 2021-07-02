@@ -30,9 +30,25 @@ toString.X13Batch <- function(x, ...){
   }) %>% paste(collapse="\n") %>% cat()
 }
 
+#' Print X13BatchResult.
+#'
+#' @export
+toString.X13BatchResult <- function(x, ...){
+  purrr::map2_chr(x,names(x),function(y,z){
+    names(y) %>% paste(collapse=" ") %>% sprintf("%s: %s",z,.)
+  }) %>% paste(collapse="\n") %>% cat()
+}
+
 #' Print X13Batch.
 #'
 #' @export
 print.X13Batch <- function(x, ...){
+  cat(toString(x, ...))
+}
+
+#' Print X13BatchResult.
+#'
+#' @export
+print.X13BatchResult <- function(x, ...){
   cat(toString(x, ...))
 }
