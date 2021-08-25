@@ -1,26 +1,38 @@
 #' @export
+"addOutliers<-" <- function(x, ...){
+  UseMethod("addOutliers<-", x)
+}
+
+#' @export
+"addParamVals<-" <- function(x, ...){
+  UseMethod("addParamVals<-", x)
+}
+
+
+#' @export
+"appendSpecComments<-" <- function(x, ...){
+  UseMethod("appendSpecComments<-", x)
+}
+
+#' @export
+correctRegression <- function(x, ...){
+  UseMethod("correctRegression", x)
+}
+
+#' @export
 getFacFile <- function(x, ...){
   UseMethod("getFacFile", x)
 }
 
 #' @export
-"setFacFile<-" <- function(x, ...){
-  UseMethod("setFacFile<-", x)
+getParamVals <- function(x, ...){
+  UseMethod("getParamVals", x)
 }
+
 
 #' @export
 getRegFile <- function(x, ...){
   UseMethod("getRegFile", x)
-}
-
-#' @export
-"setRegFile<-" <- function(x, ...){
-  UseMethod("setRegFile<-", x)
-}
-
-#' @export
-getSpecParameter <- function(x, ...){
-  UseMethod("getSpecParameter", x)
 }
 
 #' @export
@@ -29,13 +41,64 @@ getSpec <- function(x, ...){
 }
 
 #' @export
+getSpecComments <- function(x, ...){
+  UseMethod("getSpecComments", x)
+}
+
+#' @export
 getSpecList <- function(x, ...){
   UseMethod("getSpecList", x)
 }
 
 #' @export
-getSpecComments <- function(x, ...){
-  UseMethod("getSpecComments", x)
+getSpecParameter <- function(x, ...){
+  UseMethod("getSpecParameter", x)
+}
+
+#' @export
+getRegVars <- function(x, ...){
+  UseMethod("getRegVars", x)
+}
+
+
+#' @export
+"removeOutliers<-" <- function(x, ...){
+  UseMethod("removeOutliers<-", x)
+}
+
+#' @export
+"removeParamVals<-" <- function(x, ...){
+  UseMethod("removeParamVals<-", x)
+}
+
+#' @export
+removeFacFile <- function(x, ...){
+  UseMethod("removeFacFile", x)
+}
+
+#' @export
+removeSpec <- function (x, ...){
+  UseMethod("removeSpec", x)
+}
+
+#' @export
+"setFacFile<-" <- function(x, ...){
+  UseMethod("setFacFile<-", x)
+}
+
+#' @export
+"setParamVals<-" <- function(x, ...){
+  UseMethod("setParamVals<-", x)
+}
+
+#' @export
+"setRegFile<-" <- function(x, ...){
+  UseMethod("setRegFile<-", x)
+}
+
+#' @export
+setRegVars <- function(x, ...){
+  UseMethod("setRegVars", x)
 }
 
 #' @export
@@ -43,9 +106,15 @@ getSpecComments <- function(x, ...){
   UseMethod("setSpecParameter<-", x)
 }
 
+
 #' @export
 "setSpec<-" <- function(x, ...){
   UseMethod("setSpec<-", x)
+}
+
+#' @export
+"setSpecComments<-" <- function(x, ...){
+  UseMethod("setSpecComments<-", x)
 }
 
 #' @export
@@ -55,24 +124,10 @@ getSpecComments <- function(x, ...){
 
 
 #' @export
-"setSpecComments<-" <- function(x, ...){
-  UseMethod("setSpecComments<-", x)
-}
-
-#' @export
-"appendSpecComments<-" <- function(x, ...){
-  UseMethod("appendSpecComments<-", x)
-}
-
-#' @export
 writeSpecToFile <- function(x, ...){
   UseMethod("writeSpecToFile", x)
 }
 
-#' @export
-removeSpec <- function (x, ...){
-  UseMethod("removeSpec", x)
-}
 
 #' @export
 adjust <- function(x, ...){

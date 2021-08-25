@@ -244,7 +244,41 @@ is.X13Series <- function(x) inherits(x, "X13Series")
 #' @export
 specType.X13Series <- function(x) getSpecList(x) %>% specType()
 
+#' Add Outliers: ao, ls, tc, so.
+#'
+#' This function needs to be generalised to addParameterVals
+#'
+#' @param x Object.
+#' @param value a character vector of valid ao parameters
+#'
+#' @export
+#'
+"addOutliers<-.X13Series" <- function(x, arima_model,update_save=TRUE, correct_spec=TRUE, values){
+  s <- getSpecList(x)
+  addOutliers(s, arima_model,update_save=TRUE, correct_spec=TRUE) <- values
+  attr(x, "SpecList") <- s
+  x
 
+}
+
+#' Add Parameter Values to a SpecList parameter
+#'
+#' @param x
+#' @param spec
+#' @param parameter
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"addParamVals<-.X13Series" <- function(x, spec, parameter, values){
+
+  s <- getSpecList(x)
+  addParamVals(s, spec, parameter) <- values
+  attr(x, "SpecList") <- s
+  x
+}
 
 #' Get a factor file.
 #'
@@ -255,14 +289,19 @@ getFacFile.X13Series <- function(x){
   attr(x, "FacFile")
 }
 
-#' Set a factor file.
+#' Get Parameter Values
 #'
-#' @param x Input object.
+#' Returns parameter values as a character vector
+#'
+#' @param x Object.
+#' @param spec The spec name.
+#' @param parameter The parameter name.
 #'
 #' @export
-"setFacFile<-.X13Series" <- function(x, value){
-  attr(x, "FacFile") <- value
-  x
+#'
+getParamVals.X13Series <- function(x, spec, parameter){
+  s <- getSpecList(x)
+  getParamVals(s, spec, parameter)
 }
 
 #' Get a regression file.
@@ -274,25 +313,6 @@ getRegFile.X13Series <- function(x){
   attr(x, "regfile")
 }
 
-#' Set a regression file.
-#'
-#' @param x Input object.
-#'
-#' @export
-"setRegFile<-.X13Series" <- function(x, value){
-  attr(x, "regfile") <- value
-  x
-}
-
-
-#' Get a specification list.
-#'
-#' @param x Input object.
-#'
-#' @export
-getSpecList.X13Series <- function(x){
-  attr(x, "SpecList")
-}
 
 #' Get a spec.
 #'
@@ -303,6 +323,15 @@ getSpecList.X13Series <- function(x){
 #' @export
 getSpec.X13Series <- function(x, spec){
   attr(x, "SpecList")[[spec]]
+}
+
+#' Get a specification list.
+#'
+#' @param x Input object.
+#'
+#' @export
+getSpecList.X13Series <- function(x){
+  attr(x, "SpecList")
 }
 
 #' Get a spec parameter.
@@ -318,13 +347,101 @@ getSpecParameter.X13Series <- function(x, spec, parameter){
   attr(x, "SpecList")[[spec]][[parameter]]
 }
 
+#' Remove a factor file.
+#'
+#' @param x Input object.
+#'
 #' @export
-"setSpecParameter<-.X13Series" <- function(x, spec, name, value){
+removeFacFile.X13Series <- function(x){
+  attr(x, "FacFile") <-NULL
   s <- getSpecList(x)
-  setSpecParameter(s, spec, name) <- value
+  setSpecParameter(s,"transform","type") <- NULL
+  setSpecParameter(s,"transform","mode") <- NULL
+  if(rlang::is_empty(getSpec(s,"transform")))
+    s <- removeSpec(s,"transform")
+  attr(x, "SpecList") <- s
+
+  x
+}
+
+#' Remove outlier variables: ao, ls, so, tc
+#'
+#' @param x
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"removeOutliers<-.X13Series" <- function(x,values){
+  s <- getSpecList(x)
+  removeOutliers(s) <- values
   attr(x, "SpecList") <- s
   x
 }
+
+#' Remove parameter values
+#'
+#' @param x
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"removeParamVals<-.X13Series" <- function(x, spec, parameter, values){
+  s <- getSpecList(x)
+  removeParamVals(s, spec, parameter) <- values
+  attr(x, "SpecList") <- s
+  x
+}
+
+#' @export
+removeSpec.X13Series <- function(x, specname){
+  s <- getSpecList(x)
+  s <- removeSpec(s, specname)
+  attr(x, "SpecList") <- s
+  x
+}
+
+#' Set a factor file.
+#'
+#' @param x Input object.
+#'
+#' @export
+"setFacFile<-.X13Series" <- function(x, value){
+  attr(x, "FacFile") <- value
+  x
+}
+
+#' Set Parameter Values.
+#'
+#' Allows the user to set multiple parameter values with a character vector.
+#'
+#' @param x Object to modify.
+#' @param spec The spec name.
+#' @param parameter The parameter name.
+#' @param values A character vector of Regression variables.
+#'
+#' @export
+#'
+"setParamVals<-.X13Series" <- function(x, spec, parameter, values) {
+  s <- getSpecList(x)
+  setParamVals(s, spec, parameter) <- values
+  attr(x, "SpecList") <- s
+  x
+}
+
+#' Set a regression file.
+#'
+#' @param x Input object.
+#'
+#' @export
+"setRegFile<-.X13Series" <- function(x, value){
+  attr(x, "regfile") <- value
+  x
+}
+
 
 #' @export
 "setSpec<-.X13Series" <- function(x, specname, value){
@@ -344,9 +461,9 @@ getSpecParameter.X13Series <- function(x, spec, parameter){
 }
 
 #' @export
-removeSpec.X13Series <- function(x, specname){
+"setSpecParameter<-.X13Series" <- function(x, spec, name, value){
   s <- getSpecList(x)
-  s <- removeSpec(s)
+  setSpecParameter(s, spec, name) <- value
   attr(x, "SpecList") <- s
   x
 }
@@ -396,7 +513,6 @@ writeSpecList <- function(x, ...){
 
   # Fac file
 
-  # transformpath <- getSpecParameter(spec, "transform", "file")
 
   if(!is.null(facfile <- getFacFile(x)) && !rlang::is_empty(facfile)) {
     facpath <- sprintf("%s/%s.fac",facdir(),sname(x))
@@ -411,59 +527,6 @@ writeSpecList <- function(x, ...){
     setSpecParameter(spec, "regression", "file") <- regpath
     setSpecParameter(spec, "regression", "format") <- "datevalue"
   }
-
-
-  # if ((is.null(facfile) || rlang::is_empty(facfile))) {
-  #   if(!is.null(transformpath)) {
-  #     # try transform path first
-  #     if (file.exists(transformpath)) {
-  #       warning("No facfile attached to X13Series.  Path to fac in the `file` argument of the 'transform' spec will be used.")
-  #       facfile <- readFAC(transformpath)
-  #       setFacFile(x) <- facfile
-  #     } else {
-  #       warning(sprintf("couldn't find FAC file in:\n%s.
-  #                       Searching paths relative to:\n%s.", transformpath, getwd()))
-  #       path_split <- stringr::str_split(transformpath, "/")[[1]] %>% rev()
-  #       for(i in seq_along(path_split)) {
-  #         try_path <- paste(path_split[i:1],collapse = "/")
-  #         if(file.exists(try_path)) {
-  #           facfile <- readFAC(try_path)
-  #           setFacFile(x) <- facfile
-  #           break
-  #         }
-  #
-  #       }
-  #       # stop("factor file path is not valid")
-  #     }
-  #     if ((is.null(facfile) || rlang::is_empty(facfile)))
-  #       warning("Unable to find factor file.")
-  #   }
-  # }
-
-
-
-
-
-
-  # value <- x[, attr(x, "value")]
-  #
-  # if (is.null(getSpecParameter(spec, "series", "file")) &
-  #     is.null(getSpecParameter(spec, "series", "data"))) {
-  #   f <- length(unique(x$period))
-  #   d <- "("
-  #   for (i in 1:length(value)){
-  #     if (i%%4 == 1) d <- paste0(d, "\n  ")
-  #     d <- sprintf("%s  %s", d, value[i])
-  #   }
-  #   d <- sprintf("%s)", d)
-  #   setSpecParameter(spec, "series", "data") <- d
-  # }
-
-  # if (is.null(getSpecParameter(spec, "series", "start")))
-  #   setSpecParameter(spec, "series", "start") <-
-  #   sprintf("%04d.%02d", x$year[1], x$period[1])
-
-
 
   specroot <- sprintf("%s/%s", workdir(), sname(x))
   specfile <- sprintf("%s.spc", specroot)

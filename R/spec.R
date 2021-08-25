@@ -241,7 +241,7 @@ sname.X13SpecList <- function(x) attr(x, 'sname')
 
 #' Specification type
 #'
-#' Is the specification `series` or `composite`
+#' Is the specification a "series" or "composite"
 #'
 #'
 #' @export
@@ -258,158 +258,60 @@ specType.X13SpecList <- function(x) {
     spec_type
 }
 
-#' Get a spec.
+#' Add Outliers: ao, ls, tc, so.
 #'
-#' @param x Input object.
-#' @param name Parameter name.
-#' @param value Parameter value.
+#' This function needs to be generalised to addParameterVals
 #'
-#' @export
-getSpec.X13SpecList <- function(x, spec){
-  x[[spec]]
-}
-
-#' Get a spec parameter.
-#'
-#' Get the value of a spec parameter.
-#'
-#' @param x Input object.
-#' @param name Parameter name.
-#' @param value Parameter value.
-#'
-#' @export
-getSpecParameter.X13Spec <- function(x, spec, parameter){
-  x[[parameter]]
-}
-
-#' Get a spec parameter.
-#'
-#' Get the value of a spec parameter.
-#'
-#' @param x Input object.
-#' @param name Parameter name.
-#' @param value Parameter value.
-#'
-#' @export
-getSpecParameter.X13SpecList <- function(x, spec, parameter){
-  x[[spec]][[parameter]]
-}
-
-#' @export
-getSpecComments.X13SpecList <- function(x){
-  attr(x,"comments")
-}
-
-#' Set a spec parameter.
-#'
-#' @param x Object to modify.
-#' @param name Parameter name.
-#' @param value Parameter value.
+#' @param x Object.
+#' @param value a character vector of valid ao parameters
 #'
 #' @export
 #'
-#' @return An updated version of input \code{x}.
-#'
-#' @examples
-#' spec <- X13Spec(
-#'   specname = "x11", mode = "mult", sigmalim = "(1.8,2.8)",
-#'   save = "(d8 d10 d11 d12 d13 c17)"
-#' )
-#'
-#' spec
-#' setSpecParameter(spec, "mode") <- "add"
-#' spec
-#' setSpecParameter(spec, "mode") <- NULL
-#' spec
-"setSpecParameter<-.X13Spec" <- function(x, name, value){
-  name <- tolower(name)
-  if (!name %in% .spec[[attr(x,"name")]])
-    stop(sprintf("Unknown parameter for spec '%s': %s", attr(x,"name"), name))
-  if (is.null(value))
-    x[[name]] <- NULL
-  else
-    x[[name]] <- ifelse(name %in% c("file", "title", "name"),
-                             # sprintf("'%s'", value),
-                             value,
-                             value)
-  x
-}
+"addOutliers<-.X13SpecList" <- function(x, arima_model,update_save=TRUE, correct_spec=TRUE, values){
 
-#' Set a spec parameter.
-#'
-#' @param x Object to modify.
-#' @param name Parameter name.
-#' @param value Parameter value.
-#'
-#' @export
-#'
-#' @return An updated version of input \code{x}.
-"setSpecParameter<-.X13SpecList" <- function(x, spec, name, value){
-  name <- tolower(name)
-  if (!spec %in% names(.spec))
-    stop(sprintf("Unkown spec: %s", spec))
-  if (!name %in% .spec[[spec]])
-    stop(sprintf("Unknown parameter for spec '%s': %s", spec, name))
-  if (!spec %in% names(x))
-    # x %+% do.call("X13Spec", structure(list(spec, value), names = c("specname", name)))
-    setSpec(x,spec) <- structure(as.list(value), names=name)
+  if(!missing(arima_model))
+    setSpecParameter(x, "arima","model") <- arima_model
+
+  values %<>% tolower()
+
+  addParamVals(x, "regression", "variables") <- values
 
 
-  else{
-    if (is.null(value))
-      x[[spec]][[name]] <- NULL
-    else
-      x[[spec]][[name]] <- ifelse(name %in% c("file", "title", "name"),
-                                       # sprintf("'%s'", value),
-                                       value,
-                                       value)
+  if(update_save) {
+
+    save_vals <- getParamVals(x, "regression", "variables") %>% purrr::map(function(x){
+      c("ao","ls", "tc","so") %>% purrr::keep(function(y){
+        stringr::str_detect(x,y)
+      })
+    }) %>% purrr::flatten_chr() %>% unique()
+
+    addParamVals(x, "regression","save") <- save_vals
+
   }
+
+  if(correct_spec) x <- correctRegression(x)
+
   x
+
 }
 
-#' Set a spec.
+
+#' Add Parameter Values to a SpecList parameter
 #'
-#' @param x Object to modify.
-#' @param name Parameter name.
-#' @param value Parameter value.
+#' @param x
+#' @param spec
+#' @param parameter
+#' @param values
 #'
+#' @return
 #' @export
 #'
 #' @examples
-#' specl <- X13SpecList(
-#'   series = list(
-#'     start = "1949.1", period = "12", title = "AirPassengers",
-#'     file = "AirPassengers.dat", format = "datevalue", save = "(b1)"
-#'   )
-#' )
-#'
-#' setSpec(specl, "x11") <- list(
-#'   mode = "mult", sigmalim = "(1.8,2.8)", save = "(d8 d10 d11 d12 d13 c17)"
-#' )
-#'
-#' setSpec(specl) <- X13Spec(specname = "transform", `function`="log")
-#'
-#' specl
-"setSpec<-.X13SpecList" <- function(x, specname, value){
-  if (missing(specname) & inherits(value, "X13Spec")){
-    x[[attr(value,"name")]] <- value
-    return(x)
-  }
-  specname <- tolower(specname)
-  if (is.null(value)) value <- list(NULL)
-  if (!specname %in% names(.spec))
-    stop(sprintf("Unknown spec: %s.", specname))
-  s <- do.call('X13Spec', c(specname = specname, value))
-  x[[specname]] <- s
-  # if(specname =="series" || specname =="composite")
-  x
-}
-
-#' @export
-"setSpecComments<-.X13SpecList" <- function(x, value){
-  res <- X13SpecComments(value)
-  attr(x,"comments") <- res
-  # res <- do.call('X13SpecComments', c(comments = comments))
+"addParamVals<-.X13SpecList" <- function(x, spec, parameter, values){
+  values %<>% tolower()
+  param_vals <- getParamVals(x, spec, parameter)
+  param_vals <- c(param_vals, values) %>% unique()
+  setParamVals(x, spec, parameter) <- param_vals
   x
 
 }
@@ -424,18 +326,124 @@ getSpecComments.X13SpecList <- function(x){
 
 }
 
-#' Write a spec to file
+#' Correct a SpecList.
 #'
-#' @param x The spec to write out.
-#' @param fname The full file name.
+#' For example, if the are regression variables in a multiplicative model,
+#'  then add to transform funciton=log
+#'
+#' @param x The Object to correct.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+correctRegression.X13SpecList <- function(x) {
+  if(!rlang::is_empty(getSpecParameter(x,"regression","variables"))){
+    if(rlang::is_empty(getSpecParameter(x,"transform","function")) &&
+      (rlang::is_empty(mode <- getSpecParameter(x,"x11","mode")) || mode=="mult"))
+      setSpecParameter(x,"transform","function") <- "log"
+
+    if(rlang::is_empty(getSpecParameter(x,"arima","model")))
+      setSpecParameter(x, "arima","model") <- "(0 1 1)(0 1 1)"
+  }
+  x
+}
+
+#' Get Parameter Values
+#'
+#' Returns parameter values as a character vector
+#'
+#' @param x Object.
+#' @param spec The spec name.
+#' @param parameter The parameter name.
 #'
 #' @export
-writeSpecToFile.X13SpecList <- function(x, fname, comments=FALSE) {
-  # if(!inherits(x,"X13SpecList"))
-    # stop(sprintf("Object is not of class X13SpecList."))
-  sink(file = fname)
-  print(x, comments=comments)
-  sink()
+#'
+getParamVals.X13SpecList <- function(x, spec, parameter){
+  res <- getSpecParameter(x,spec, parameter)
+  if(spec=="arima") return(res)
+  if(rlang::is_empty(res)) return(res)
+  expr_paren <- "\\(([^)]+)\\)"
+
+  res %<>% stringr::str_trim()
+  res %<>% {
+    if (stringr::str_detect(res, expr_paren))
+      stringr::str_match(res, expr_paren) %>% .[1, 2]
+    else
+      res
+  }
+
+  res %>% stringr::str_trim() %>% strsplit(split=" ") %>% unlist() %>% stringr::str_trim()
+}
+
+#' Get a spec.
+#'
+#' @param x Input object.
+#' @param spec Parameter name.
+#'
+#' @export
+getSpec.X13SpecList <- function(x, spec){
+  x[[spec]]
+}
+
+#' @export
+getSpecComments.X13SpecList <- function(x){
+  attr(x,"comments")
+}
+
+#' Get a spec parameter.
+#'
+#' Get the value of a spec parameter.
+#'
+#' @param x Input object.
+#' @param parameter Parameter name.
+#'
+#' @export
+getSpecParameter.X13Spec <- function(x, parameter){
+  x[[parameter]]
+}
+
+#' Get a spec parameter.
+#'
+#' Get the value of a spec parameter.
+#'
+#' @param x Input object.
+#' @param spec Parameter name.
+#' @param parameter Parameter value.
+#'
+#' @export
+getSpecParameter.X13SpecList <- function(x, spec, parameter){
+  x[[spec]][[parameter]]
+}
+
+#' Remove outlier variables: ao, ls, so, tc
+#'
+#' @param x
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"removeOutliers<-.X13SpecList" <- function(x,values){
+  removeParamVals(x, "regression","variables") <- values
+  x
+}
+
+#' Remove Parameter Values
+#'
+#' @param x
+#' @param spec
+#' @param parameter
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"removeParamVals<-.X13SpecList" <- function(x, spec, parameter, values){
+  setParamVals(x, spec, parameter) <- setdiff(getParamVals(x, spec, parameter),values)
+  x
 }
 
 #' Remove a spec.
@@ -469,6 +477,154 @@ removeSpec.X13SpecList <- function(x, specname){
     stop(sprintf("Spec %s not found in %s.", specname, deparse(substitute(x))))
   x[[specname]] <- NULL
   x
+}
+
+#' Set Parameter Values.
+#'
+#' Allows the user to set multiple parameter values with a character vector.
+#'
+#' @param x Object to modify.
+#' @param spec The spec name.
+#' @param parameter The parameter name.
+#' @param values A character vector of Regression variables.
+#'
+#' @export
+#'
+"setParamVals<-.X13SpecList" <- function(x, spec, parameter, values) {
+  values %<>% tolower()
+  setSpecParameter(x, spec, parameter) <-{
+    if(length(values)==1) paste(values, collapse = " ")
+    else sprintf("( %s )",paste(values, collapse = " "))
+  }
+  x
+}
+
+#' Set a spec.
+#'
+#' @param x Object to modify.
+#' @param spec Spec name.
+#' @param value Parameter value.
+#'
+#' @export
+#'
+#' @examples
+#' specl <- X13SpecList(
+#'   series = list(
+#'     start = "1949.1", period = "12", title = "AirPassengers",
+#'     file = "AirPassengers.dat", format = "datevalue", save = "(b1)"
+#'   )
+#' )
+#'
+#' setSpec(specl, "x11") <- list(
+#'   mode = "mult", sigmalim = "(1.8,2.8)", save = "(d8 d10 d11 d12 d13 c17)"
+#' )
+#'
+#' setSpec(specl) <- X13Spec(specname = "transform", `function`="log")
+#'
+#' specl
+"setSpec<-.X13SpecList" <- function(x, spec, value){
+  if (missing(spec) & inherits(value, "X13Spec")){
+    x[[attr(value,"name")]] <- value
+    return(x)
+  }
+  spec <- tolower(spec)
+  if (is.null(value)) value <- list(NULL)
+  if (!spec %in% names(.spec))
+    stop(sprintf("Unknown spec: %s.", spec))
+  s <- do.call('X13Spec', c(specname = spec, value))
+  x[[spec]] <- s
+  x
+}
+
+#' @export
+"setSpecComments<-.X13SpecList" <- function(x, value){
+  res <- X13SpecComments(value)
+  attr(x,"comments") <- res
+  # res <- do.call('X13SpecComments', c(comments = comments))
+  x
+
+}
+
+#' Set a spec parameter.
+#'
+#' @param x Object to modify.
+#' @param parameter Parameter name.
+#' @param value Parameter value.
+#'
+#' @export
+#'
+#' @return An updated version of input \code{x}.
+#'
+#' @examples
+#' spec <- X13Spec(
+#'   specname = "x11", mode = "mult", sigmalim = "(1.8,2.8)",
+#'   save = "(d8 d10 d11 d12 d13 c17)"
+#' )
+#'
+#' spec
+#' setSpecParameter(spec, "mode") <- "add"
+#' spec
+#' setSpecParameter(spec, "mode") <- NULL
+#' spec
+"setSpecParameter<-.X13Spec" <- function(x, parameter, value){
+  parameter <- tolower(parameter)
+  if (!parameter %in% .spec[[attr(x,"name")]])
+    stop(sprintf("Unknown parameter for spec '%s': %s", attr(x,"name"), parameter))
+  if (is.null(value))
+    x[[parameter]] <- NULL
+  else
+    x[[parameter]] <- ifelse(parameter %in% c("file", "title", "name"),
+                             # sprintf("'%s'", value),
+                             value,
+                             value)
+  x
+}
+
+#' Set a spec parameter.
+#'
+#' @param x Object to modify.
+#' @param name Spec name.
+#' @param parameter Parameter name
+#' @param value Parameter value.
+#'
+#' @export
+#'
+#' @return An updated version of input \code{x}.
+"setSpecParameter<-.X13SpecList" <- function(x, spec, parameter, value){
+  parameter <- tolower(parameter)
+  if (!spec %in% names(.spec))
+    stop(sprintf("Unkown spec: %s", spec))
+  if (!parameter %in% .spec[[spec]])
+    stop(sprintf("Unknown parameter for spec '%s': %s", spec, parameter))
+  if (!spec %in% names(x))
+    # x %+% do.call("X13Spec", structure(list(spec, value), names = c("specname", name)))
+    setSpec(x,spec) <- structure(as.list(value), names=parameter)
+
+
+  else{
+    if (is.null(value))
+      x[[spec]][[parameter]] <- NULL
+    else
+      x[[spec]][[parameter]] <- ifelse(parameter %in% c("file", "title", "name"),
+                                       # sprintf("'%s'", value),
+                                       value,
+                                       value)
+  }
+  x
+}
+
+#' Write a spec to file
+#'
+#' @param x The spec to write out.
+#' @param fname The full file name.
+#'
+#' @export
+writeSpecToFile.X13SpecList <- function(x, fname, comments=FALSE) {
+  # if(!inherits(x,"X13SpecList"))
+    # stop(sprintf("Object is not of class X13SpecList."))
+  sink(file = fname)
+  print(x, comments=comments)
+  sink()
 }
 
 #' @export
