@@ -9,9 +9,9 @@
 \arguments{
 \item{x}{Input object.}
 
-\item{name}{Parameter name.}
+\item{spec}{Parameter name.}
 
-\item{value}{Parameter value.}
+\item{parameter}{Parameter value.}
 }
 \description{
 Get the value of a spec parameter.

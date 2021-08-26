@@ -4,14 +4,14 @@
 \alias{setSpec<-.X13SpecList}
 \title{Set a spec.}
 \usage{
-\method{setSpec}{X13SpecList}(x, specname) <- value
+\method{setSpec}{X13SpecList}(x, spec) <- value
 }
 \arguments{
 \item{x}{Object to modify.}
 
-\item{value}{Parameter value.}
+\item{spec}{Spec name.}
 
-\item{name}{Parameter name.}
+\item{value}{Parameter value.}
 }
 \description{
 Set a spec.

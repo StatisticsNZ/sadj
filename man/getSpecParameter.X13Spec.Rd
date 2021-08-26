@@ -4,14 +4,12 @@
 \alias{getSpecParameter.X13Spec}
 \title{Get a spec parameter.}
 \usage{
-\method{getSpecParameter}{X13Spec}(x, spec, parameter)
+\method{getSpecParameter}{X13Spec}(x, parameter)
 }
 \arguments{
 \item{x}{Input object.}
 
-\item{name}{Parameter name.}
-
-\item{value}{Parameter value.}
+\item{parameter}{Parameter name.}
 }
 \description{
 Get the value of a spec parameter.

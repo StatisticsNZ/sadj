@@ -9,9 +9,7 @@
 \arguments{
 \item{x}{Input object.}
 
-\item{name}{Parameter name.}
-
-\item{value}{Parameter value.}
+\item{spec}{Parameter name.}
 }
 \description{
 Get a spec.

@@ -7,5 +7,5 @@
 \method{specType}{X13SpecList}(x)
 }
 \description{
-Is the specification `series` or `composite`
+Is the specification a "series" or "composite"
 }
