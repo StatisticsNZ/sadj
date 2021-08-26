@@ -267,9 +267,9 @@ specType.X13SpecList <- function(x) {
 #'
 #' @export
 #'
-"addOutliers<-.X13SpecList" <- function(x, arima_model,update_save=TRUE, correct_spec=TRUE, values){
+"addOutliers<-.X13SpecList" <- function(x, arima_model="(0 1 1)(0 1 1)",update_save=TRUE, correct_spec=TRUE, values){
 
-  if(!missing(arima_model))
+  if(!missing(arima_model) || rlang::is_empty(getSpecParameter(x,"arima","model")))
     setSpecParameter(x, "arima","model") <- arima_model
 
   values %<>% tolower()

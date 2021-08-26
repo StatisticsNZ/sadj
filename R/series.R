@@ -253,9 +253,9 @@ specType.X13Series <- function(x) getSpecList(x) %>% specType()
 #'
 #' @export
 #'
-"addOutliers<-.X13Series" <- function(x, arima_model,update_save=TRUE, correct_spec=TRUE, values){
+"addOutliers<-.X13Series" <- function(x, arima_model,update_save, correct_spec, values){
   s <- getSpecList(x)
-  addOutliers(s, arima_model,update_save=TRUE, correct_spec=TRUE) <- values
+  addOutliers(s, arima_model,update_save, correct_spec) <- values
   attr(x, "SpecList") <- s
   x
 

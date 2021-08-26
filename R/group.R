@@ -23,6 +23,84 @@ lname.X13SeriesGroup <- function(x) attr(x, 'lname')
 #' @export
 is.X13SeriesGroup <- function(x) inherits(x, "X13SeriesGroup")
 
+
+#' Add Outliers to all series in a group
+#'
+#' @param x
+#' @param spec
+#' @param parameter
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"addOutliers<-.X13SeriesGroup" <- function(x, arima_model,update_save, correct_spec, values){
+  x %>% purrr::modify(function(x){
+    addOutliers(x, arima_model,update_save, correct_spec) <- values
+    x
+    })
+}
+
+#' Remove outliers from all series in a group.
+#'
+#' ao, ls, so, tc
+#'
+#' @param x
+#' @param spec
+#' @param parameter
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"removeOutliers<-.X13SeriesGroup" <- function(x, values){
+  x %>% purrr::modify(function(x){
+    removeOutliers(x) <- values
+    x
+  })
+
+}
+
+#' Add parameter values to all series in a group
+#'
+#' @param x
+#' @param spec
+#' @param parameter
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"addParamVals<-.X13SeriesGroup" <- function(x, spec, parameter, values){
+  x %>% purrr::modify(function(x){
+    addParamVals(x,spec, parameter) <- values
+    x
+  })
+}
+
+#' Remove parameter values from all series in a group.
+#'
+#' @param x
+#' @param spec
+#' @param parameter
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"removeParamVals<-.X13SeriesGroup" <- function(x, spec, parameter, values){
+  x %>% purrr::modify(function(x){
+    removeParamVals(x,spec, parameter) <- values
+    x
+  })
+
+}
+
+
 #' @keywords internal
 specroot.X13SeriesGroup <- function(x){
   if (!inherits(x, "X13SeriesGroup"))
