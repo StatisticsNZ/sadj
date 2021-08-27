@@ -258,7 +258,7 @@ specType.X13SpecList <- function(x) {
     spec_type
 }
 
-#' Add Outliers: ao, ls, tc, so.
+#' Add Outliers: ao, ls, tc, so, rp, qi, qd.
 #'
 #' This function needs to be generalised to addParameterVals
 #'
@@ -280,7 +280,7 @@ specType.X13SpecList <- function(x) {
   if(update_save) {
 
     save_vals <- getParamVals(x, "regression", "variables") %>% purrr::map(function(x){
-      c("ao","ls", "tc","so") %>% purrr::keep(function(y){
+      c("ao","ls", "tc","so", "rp", "qi", "qd") %>% purrr::keep(function(y){
         stringr::str_detect(x,y)
       })
     }) %>% purrr::flatten_chr() %>% unique()
