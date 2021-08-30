@@ -2,7 +2,7 @@
 % Please edit documentation in R/spec.R
 \name{addOutliers<-.X13SpecList}
 \alias{addOutliers<-.X13SpecList}
-\title{Add Outliers: ao, ls, tc, so.}
+\title{Add Outliers: ao, ls, tc, so, rp, qi, qd.}
 \usage{
 \method{addOutliers}{X13SpecList}(
   x,

@@ -239,6 +239,9 @@ is.X13SpecComments <- function(x) inherits(x, "X13SpecComments")
 #' @export
 sname.X13SpecList <- function(x) attr(x, 'sname')
 
+#' @export
+lname.X13SpecList <- function(x) attr(x, 'lname')
+
 #' Specification type
 #'
 #' Is the specification a "series" or "composite"

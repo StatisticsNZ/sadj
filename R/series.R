@@ -85,7 +85,10 @@ X13Series <- function(x=NULL,
           }
   }
 
-  if(missing(lname)) lname <- sname
+  if(missing(lname))
+    lname <- {if(!rlang::is_empty(lname(speclist))) lname(speclist)
+                 else sname
+    }
 
   if(missing(x) && comp_ser=="series") {
     if(!is.null(dat_path)) {
