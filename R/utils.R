@@ -302,6 +302,9 @@ readSPC <- function(fname, to_lower=TRUE, sname=stringr::str_remove(basename(fna
   attr(res,"comments") <- comments
 
   attr(res, "sname") <- sname
+  if(!rlang::is_empty(lname <- getSpecParameter(res, specType(res),"title")))
+    attr(res, "lname") <- lname
+
   attr(res,"path") <- fname %>% normalizePath() %>% dirname() %>% sub(path.expand("~"),"~",.)
 
 
