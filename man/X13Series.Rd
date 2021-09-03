@@ -15,6 +15,7 @@ X13Series(
   regfile = NULL,
   spec_fname = NULL,
   clean_spec = TRUE,
+  windows_fp = FALSE,
   ...
 )
 }

@@ -3,9 +3,9 @@
 #' @param mta Path to mta file.
 #'
 #' @export
-X13BatchFromMTA <-function(mta_path) {
+X13BatchFromMTA <-function(mta_path, windows_fp=FALSE) {
   grps <- mtaGroups(mta_path)
-  ser_lists <- grps %>% parallel::mclapply(mtaToX13Series, mc.cores = parallel::detectCores() / 2)
+  ser_lists <- grps %>% parallel::mclapply(mtaToX13Series, windows_fp,mc.cores = parallel::detectCores() / 2)
   res <- ser_lists %>% map2(names(ser_lists),~X13ListToGroup(ser_list = .x,sname = .y))
 
   class(res) <- c("X13Batch", class(res))

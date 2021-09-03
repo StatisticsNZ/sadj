@@ -27,6 +27,7 @@ X13Series <- function(x=NULL,
                       regfile=NULL,
                       spec_fname=NULL,
                       clean_spec=TRUE,
+                      windows_fp =FALSE,
                       ...){
   args <- list(...)
 
@@ -93,21 +94,23 @@ X13Series <- function(x=NULL,
   if(missing(x) && comp_ser=="series") {
     if(!is.null(dat_path)) {
 
+      dat_path <- findX13File(dat_path,path(speclist),windows_fp=windows_fp)
       if (file.exists(dat_path)) {
         x <- readDAT(dat_path)
-      } else {
-        warning(sprintf("couldn't find DAT file in:\n%s.
-                        Searching paths relative to:\n%s.", dat_path,getwd()))
-        path_split <- stringr::str_split(dat_path, "/")[[1]] %>% rev()
-        for(i in seq_along(path_split)) {
-          try_path <- paste(path_split[i:1],collapse = "/")
-          if(file.exists(try_path)) {
-            x <- readDAT(try_path)
-
-            break
-          }
-        }
       }
+      # else {
+      #   warning(sprintf("couldn't find DAT file in:\n%s.
+      #                   Searching paths relative to:\n%s.", dat_path,getwd()))
+      #   path_split <- stringr::str_split(dat_path, "/")[[1]] %>% rev()
+      #   for(i in seq_along(path_split)) {
+      #     try_path <- paste(path_split[i:1],collapse = "/")
+      #     if(file.exists(try_path)) {
+      #       x <- readDAT(try_path)
+      #
+      #       break
+      #     }
+      #   }
+      # }
       if ((is.null(x) || rlang::is_empty(x)))
         stop("Unable to find DAT file.")
     } else stop("No time series supplied and none referenced in the spec file.")
@@ -129,21 +132,23 @@ X13Series <- function(x=NULL,
       warning(sprintf("%s: No facfile supplied.  Path to FAC in the `file` argument of the `transform` spec will be used."
                       , sname))
       # try transform path first
+      transformpath <- findX13File(transformpath,path(speclist),windows_fp=windows_fp)
       if (file.exists(transformpath)) {
         facfile <- readFAC(transformpath)
-      } else {
-        warning(sprintf("couldn't find FAC file in:\n%s.
-                        Searching paths relative to:\n%s.", transformpath, getwd()))
-        path_split <- stringr::str_split(transformpath, "/")[[1]] %>% rev()
-        for(i in seq_along(path_split)) {
-          try_path <- paste(path_split[i:1],collapse = "/")
-          if(file.exists(try_path)) {
-            facfile <- readFAC(try_path)
-            break
-          }
-
-        }
       }
+      # else {
+      #   warning(sprintf("couldn't find FAC file in:\n%s.
+      #                   Searching paths relative to:\n%s.", transformpath, getwd()))
+      #   path_split <- stringr::str_split(transformpath, "/")[[1]] %>% rev()
+      #   for(i in seq_along(path_split)) {
+      #     try_path <- paste(path_split[i:1],collapse = "/")
+      #     if(file.exists(try_path)) {
+      #       facfile <- readFAC(try_path)
+      #       break
+      #     }
+      #
+      #   }
+      # }
       if ((is.null(facfile) || rlang::is_empty(facfile)))
         warning("Unable to find factor file.")
     }
@@ -164,9 +169,9 @@ X13Series <- function(x=NULL,
 
   if (missing(regfile)) {
     if(!is.null(regpath)) {
-      warning(sprintf("%s: No regfile supplied.  Path to REG in the `file` argument of the `transform` spec will be used."
+      warning(sprintf("%s: No regfile supplied.  Path to REG in the `file` argument of the `regression` spec will be used."
                       , sname))
-      regpath <- findX13File(regpath,path(speclist))
+      regpath <- findX13File(regpath,path(speclist),windows_fp=windows_fp)
       if (file.exists(regpath)) {
         regfile <- readREG(regpath)
       }

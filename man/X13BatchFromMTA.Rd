@@ -4,7 +4,7 @@
 \alias{X13BatchFromMTA}
 \title{Create a list of X13SeriesGroup objects from an mta file.}
 \usage{
-X13BatchFromMTA(mta_path)
+X13BatchFromMTA(mta_path, windows_fp = FALSE)
 }
 \arguments{
 \item{mta}{Path to mta file.}
