@@ -4,7 +4,7 @@
 \alias{adjust.X13Batch}
 \title{Adjust an X13Batch.}
 \usage{
-\method{adjust}{X13Batch}(x, purge = TRUE, ...)
+\method{adjust}{X13Batch}(x, purge = TRUE, parallel = TRUE, ...)
 }
 \description{
 Adjust an X13Batch.

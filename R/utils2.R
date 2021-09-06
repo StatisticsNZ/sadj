@@ -1,7 +1,9 @@
 #' @keywords internal
-findX13File <- function(fname, rel_dir=getwd(),windows_fp=FALSE){
+findX13File <- function(fname, rel_dir=getwd()){
 
-  if(windows_fp) dir_delim <- "\\\\" else dir_delim <-"/"
+  if(stringr::str_detect(fname,sprintf("\\\\[^\\\\]+?[.][a-zA-Z]{3}$")))
+    dir_delim <- "\\\\"
+  else dir_delim <-"/"
 
   # if(file.exists(fname)) return(normalizePath(fname) %>% sub(path.expand("~"),"~",.))
   rel_base <- basename(rel_dir)

@@ -27,7 +27,6 @@ X13Series <- function(x=NULL,
                       regfile=NULL,
                       spec_fname=NULL,
                       clean_spec=TRUE,
-                      windows_fp =FALSE,
                       ...){
   args <- list(...)
 
@@ -94,7 +93,7 @@ X13Series <- function(x=NULL,
   if(missing(x) && comp_ser=="series") {
     if(!is.null(dat_path)) {
 
-      dat_path <- findX13File(dat_path,path(speclist),windows_fp=windows_fp)
+      dat_path <- findX13File(dat_path,path(speclist))
       if (file.exists(dat_path)) {
         x <- readDAT(dat_path)
       }
@@ -132,7 +131,7 @@ X13Series <- function(x=NULL,
       warning(sprintf("%s: No facfile supplied.  Path to FAC in the `file` argument of the `transform` spec will be used."
                       , sname))
       # try transform path first
-      transformpath <- findX13File(transformpath,path(speclist),windows_fp=windows_fp)
+      transformpath <- findX13File(transformpath,path(speclist))
       if (file.exists(transformpath)) {
         facfile <- readFAC(transformpath)
       }
@@ -171,7 +170,7 @@ X13Series <- function(x=NULL,
     if(!is.null(regpath)) {
       warning(sprintf("%s: No regfile supplied.  Path to REG in the `file` argument of the `regression` spec will be used."
                       , sname))
-      regpath <- findX13File(regpath,path(speclist),windows_fp=windows_fp)
+      regpath <- findX13File(regpath,path(speclist))
       if (file.exists(regpath)) {
         regfile <- readREG(regpath)
       }

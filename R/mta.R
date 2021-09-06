@@ -30,13 +30,13 @@ mtaGroups <- function(fname) {
 #' Convert mta group to a list of X13Series
 #'
 #' @keywords internal
-mtaToX13Series <- function(mta_grp, windows_fp=FALSE) {
+mtaToX13Series <- function(mta_grp) {
   # loop through each spec in group and return an X13 Series
   res <- mta_grp %>% map(function(x){
     spec_fname <- strsplit(x, "\\s+")[[1]][[1]] %>% paste0(".spc")
-    spec_fname <- findX13File(spec_fname, rel_dir=attr(mta_grp,"path"), windows_fp=windows_fp)
+    spec_fname <- findX13File(spec_fname, rel_dir=attr(mta_grp,"path"))
     # readSPC(spec_fname)
-    X13Series(spec_fname = spec_fname, windows_fp=windows_fp)
+    X13Series(spec_fname = spec_fname)
 
 
   })

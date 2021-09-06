@@ -82,6 +82,11 @@ removeSpec <- function (x, ...){
 }
 
 #' @export
+selectSeries <- function (x, ...){
+  UseMethod("selectSeries", x)
+}
+
+#' @export
 "setFacFile<-" <- function(x, ...){
   UseMethod("setFacFile<-", x)
 }

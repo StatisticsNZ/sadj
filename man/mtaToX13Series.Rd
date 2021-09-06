@@ -4,7 +4,7 @@
 \alias{mtaToX13Series}
 \title{Convert mta group to a list of X13Series}
 \usage{
-mtaToX13Series(mta_grp, windows_fp = FALSE)
+mtaToX13Series(mta_grp)
 }
 \description{
 Convert mta group to a list of X13Series
