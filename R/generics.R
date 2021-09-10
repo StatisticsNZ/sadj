@@ -60,6 +60,15 @@ getRegVars <- function(x, ...){
   UseMethod("getRegVars", x)
 }
 
+#' @export
+hasFac <- function(x, ...){
+  UseMethod("hasFac", x)
+}
+
+#' @export
+hasReg <- function(x, ...){
+  UseMethod("hasReg", x)
+}
 
 #' @export
 "removeOutliers<-" <- function(x, ...){

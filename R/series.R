@@ -246,6 +246,12 @@ lname.X13Series <- function(x) attr(x, 'lname')
 lname.X13SeriesResult <- function(x) lname(attr(x, "input"))
 
 #' @export
+hasFac <- function(x) !rlang::is_empty(attr(x, "FacFile"))
+
+#' @export
+hasReg <- function(x) !rlang::is_empty(attr(x, "regfile"))
+
+#' @export
 is.X13Series <- function(x) inherits(x, "X13Series")
 
 #' @export

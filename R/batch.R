@@ -24,16 +24,27 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
   res
 }
 
+summary.X13Batch <- function(x) {
+  groups <- x %>% map(names) %>% tibble::enframe() %>% tidyr::unnest(cols = c(value)) %>%
+    dplyr::group_by(value) %>% dplyr::summarise(groups=paste(name, collapse="|")) %>%
+    dplyr::rename(sname=value)
+
+  selectSeries(x) %>% purrr::map_dfr(function(x){
+    list(sname=sname(x), last_period=tail(x$date,1), spec_type=specType(x),
+         has_fac=hasFac(x), has_reg=hasReg(x)
+         )
+  }) %>% merge(groups,.,by="sname") %>% dplyr::arrange(sname)
+
+}
+
 #' Print X13Batch.
 #'
 #' @export
 toString.X13Batch <- function(x, ...){
-  # purrr::map2_chr(x,names(x),function(y,z){
-  #   names(y) %>% paste(collapse=" ") %>% sprintf("%s: %s",z,.)
-  # }) %>% paste(collapse="\n") %>% cat()
-  selectSeries(x) %>% purrr::map_dfr(function(x){
-    list(sname=sname(x), end_date=tail(x$date,1))
-  })
+  purrr::map2_chr(x,names(x),function(y,z){
+    names(y) %>% paste(collapse="|") %>% sprintf("%s: %s",z,.) %>%
+      sprintf("%s (%s)", .,specType(y[[length(y)]]))
+  }) %>% paste(collapse="\n")
 
 }
 
@@ -41,12 +52,9 @@ toString.X13Batch <- function(x, ...){
 #'
 #' @export
 toString.X13BatchResult <- function(x, ...){
-  # purrr::map2_chr(x,names(x),function(y,z){
-  #   names(y) %>% paste(collapse=" ") %>% sprintf("%s: %s",z,.)
-  # }) %>% paste(collapse="\n") %>% cat()
-  selectSeries(x) %>% purrr::map_dfr(function(x){
-    list(sname=sname(x), end_date=tail(x$date,1))
-  })
+  purrr::map2_chr(x,names(x),function(y,z){
+    names(y) %>% paste(collapse="|") %>% sprintf("%s: %s",z,.)
+  }) %>% paste(collapse="\n")
 
 }
 
@@ -54,16 +62,14 @@ toString.X13BatchResult <- function(x, ...){
 #'
 #' @export
 print.X13Batch <- function(x, ...){
-  # cat(toString(x, ...))
-  toString(x, ...) %>% print()
+  cat(toString(x, ...))
 }
 
 #' Print X13BatchResult.
 #'
 #' @export
 print.X13BatchResult <- function(x, ...){
-  # cat(toString(x, ...))
-  toString(x, ...) %>% print()
+  cat(toString(x, ...))
 }
 
 #' Select unique series
@@ -76,6 +82,23 @@ print.X13BatchResult <- function(x, ...){
 #'
 #' @examples
 selectSeries.X13Batch <- function(x, snames) {
+  if(missing(snames))
+    flatten(x) %>% .[unique(names(.))]
+  else
+    flatten(x) %>% .[unique(snames)]
+
+}
+
+#' Select unique series
+#'
+#' @param x
+#' @param snames
+#'
+#' @return
+#' @export
+#'
+#' @examples
+selectSeries.X13BatchResult <- function(x, snames) {
   if(missing(snames))
     flatten(x) %>% .[unique(names(.))]
   else
