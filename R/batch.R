@@ -16,11 +16,20 @@ X13BatchFromMTA <-function(mta_path) {
 #'
 #' @export
 adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
+
+  series <- selectSeries(x)
+  if (purge)
+    series %>% purrr::map(clean)
+
   if(parallel)
-    res <- parallel::mclapply(x, adjust, purge, mc.cores = parallel::detectCores() / 2)
+    res <- parallel::mclapply(x, adjust, purge=FALSE, mc.cores = parallel::detectCores() / 2)
   else
-    res <- lapply(x, adjust, purge)
+    res <- lapply(x, adjust, purge=FALSE)
   class(res) <- c("X13BatchResult", class(res))
+
+  if (purge)
+    series %>% purrr::map(clean)
+
   res
 }
 

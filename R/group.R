@@ -173,6 +173,11 @@ adjust.X13SeriesGroup <- function(x, purge = TRUE, ...){
   attr(res,"x13_messages") <- x13_messages
   class(res) <- c("X13SeriesGroupResult")
 
+  for (series in x){
+  if (purge)
+    clean(series)
+  }
+
   res
 }
 
