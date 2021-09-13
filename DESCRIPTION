@@ -25,4 +25,7 @@ Suggests:
     shiny,
     rmarkdown
 Imports: 
-    knitr
+    knitr,
+    tibble,
+    tidyr,
+    

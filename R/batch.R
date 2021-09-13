@@ -34,7 +34,7 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
 }
 
 summary.X13Batch <- function(x) {
-  groups <- x %>% map(names) %>% tibble::enframe() %>% tidyr::unnest(cols = c(value)) %>%
+  groups <- x %>% purrr::map(names) %>% tibble::enframe() %>% tidyr::unnest(cols = c(value)) %>%
     dplyr::group_by(value) %>% dplyr::summarise(groups=paste(name, collapse="|")) %>%
     dplyr::rename(sname=value)
 
