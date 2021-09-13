@@ -293,6 +293,15 @@ specType.X13Series <- function(x) getSpecList(x) %>% specType()
   x
 }
 
+correctSeriesSpec.X13Series <- function(x) {
+  spec_type <- specType(x)
+  # correct span
+  if(!rlang::is_empty(span <- getSpecParameter(x,spec_type,span))){
+    # if span period is less than
+    # period to date?
+  }
+}
+
 #' Get a factor file.
 #'
 #' @param x Input object.

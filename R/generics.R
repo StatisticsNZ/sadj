@@ -20,6 +20,11 @@ correctRegression <- function(x, ...){
 }
 
 #' @export
+correctSeriesSpec <- function(x, ...){
+  UseMethod("correctSeriesSpec", x)
+}
+
+#' @export
 getFacFile <- function(x, ...){
   UseMethod("getFacFile", x)
 }

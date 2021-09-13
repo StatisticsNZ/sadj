@@ -348,6 +348,8 @@ correctRegression.X13SpecList <- function(x) {
 
     if(rlang::is_empty(getSpecParameter(x,"arima","model")))
       setSpecParameter(x, "arima","model") <- "(0 1 1)(0 1 1)"
+
+    # Add a bit that checks series dates against var dates
   }
   x
 }
