@@ -33,6 +33,15 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
   res
 }
 
+#' Summarise an X13 Batch object
+#'
+#' @param x
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
 summary.X13Batch <- function(x, ...) {
   groups <- x %>% purrr::map(names) %>% tibble::enframe() %>% tidyr::unnest(cols = c(value)) %>%
     dplyr::group_by(value) %>% dplyr::summarise(groups=paste(name, collapse="|")) %>%
