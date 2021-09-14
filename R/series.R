@@ -293,13 +293,54 @@ specType.X13Series <- function(x) getSpecList(x) %>% specType()
   x
 }
 
+#' Validates/corrects a series Spec file
+#'
+#' @param x
+#'
+#' @return
+#' @export
+#'
+#' @examples
 correctSeriesSpec.X13Series <- function(x) {
   spec_type <- specType(x)
+  # correct period. applies to series only
+  # 12 is default
+  pd <- unique(x[, "period"]) %>% max() %>% as.numeric()
+  if(spec_type=="series" && rlang::is_empty(getSpecParameter(x,"series","period")) &&
+     pd != 12)
+    setSpecParameter(x,"series","period") <- as.character(pd)
+
+
   # correct span
-  if(!rlang::is_empty(span <- getSpecParameter(x,spec_type,span))){
-    # if span period is less than
-    # period to date?
+  if(!rlang::is_empty(span <- getSpecParameter(x,"series","span"))){
+    if(length(span_vals <- getParamVals(x,"series","span"))!=2)
+      stop(sprintf("The series span parameter is of length: %s.  It should have 2 and only 2 arguments."),
+           length(span_vals))
+    # convert span vals to dates
+    # span_dates <- list()
+    if(span_vals[[1]] !="") {
+      span_date <- span_vals[[1]] %>% strsplit("[.]") %>% unlist() %>% as.numeric() %>% c(.,pd)  %>% as.list() %>%
+        do.call(ypdToDate,.)
+      if(span_date < head(x$date,1)) span_vals[[1]] <- ""
+
+    }
+
+    if(span_vals[[2]] !="") {
+      span_date <- span_vals[[2]] %>% strsplit("[.]") %>% unlist() %>% as.numeric() %>% c(.,pd)  %>% as.list() %>%
+        do.call(ypdToDate,.)
+      if(span_date > tail(x$date,1)) span_vals[[2]] <- ""
+
+    }
+
+    # span_dates <- span_vals %>% strsplit("[.]") %>% map(function(x)as.list(as.numeric(c(x,4)))) %>%
+    #   map(~do.call(ypdToDate,.x))
+    # # compare span dates to series start and end dates
+    # if(span_dates[[1]] < head(x$date,1)) span_vals[[1]] <- ""
+    # if(span_dates[[2]] > tail(x$date,1)) span_vals[[2]] <- ""
+    if(identical(span_vals, c("",""))) setSpecParameter(x,"series","span") <- NULL
+    else setParamVals(x,"series","span") <- span_vals
   }
+  x
 }
 
 #' Get a factor file.
@@ -648,14 +689,15 @@ importOutput <- function(x, ...){
 #' @param x Object on which to perform adjustment.
 #'
 #' @export
-adjust.X13Series <- function(x, purge = TRUE, ...){
+adjust.X13Series <- function(x, purge = TRUE, keep_fixed=FALSE,...){
   #attr(ap,"sname")
   if(sname(x)=="" || rlang::is_empty(sname(x)))
     stop(sprintf("sname is not valid"))
   if (purge)
     clean(x)
+
   writeDAT(x)
-  writeSpecList(x)
+  x %>% correctSeriesSpec() %>% writeSpecList()
   writeMTA.X13Series(x)
   binpath <- sprintf("%s/x13ashtml", paste0(x13binary::x13path()))
   # cmd <- sprintf("%s -m %s -s", binpath, specroot.X13Series(x))

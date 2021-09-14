@@ -119,10 +119,13 @@ writeMTA.X13SeriesGroup <- function(x, ...){
 }
 
 #' @export
-adjust.X13SeriesGroup <- function(x, purge = TRUE, ...){
+adjust.X13SeriesGroup <- function(x, purge = TRUE, keep_fixed=FALSE, ...){
    for (series in x){
      if (purge)
        clean(series)
+
+     series <- correctSeriesSpec(series)
+
      writeDAT(series)
      writeSpecList(series)
    }

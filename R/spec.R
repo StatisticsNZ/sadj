@@ -91,6 +91,9 @@
 )
 
 #' @keywords internal
+.param_comma_delim <- c("span")
+
+#' @keywords internal
 .x11 <- structure(list(
   series=structure(list(save = "(b1)"),class = "X13Spec", name = "series"),
   x11 = structure(list(mode = "mult"
@@ -365,6 +368,7 @@ correctRegression.X13SpecList <- function(x) {
 #' @export
 #'
 getParamVals.X13SpecList <- function(x, spec, parameter){
+  delim <- ifelse(parameter %in% .param_comma_delim,","," ")
   res <- getSpecParameter(x,spec, parameter)
   if(spec=="arima") return(res)
   if(rlang::is_empty(res)) return(res)
@@ -378,7 +382,8 @@ getParamVals.X13SpecList <- function(x, spec, parameter){
       res
   }
 
-  res %>% stringr::str_trim() %>% strsplit(split=" ") %>% unlist() %>% stringr::str_trim()
+  res %>% stringr::str_trim() %>% stringr::str_split(pattern=delim, simplify = FALSE) %>%
+    unlist() %>% stringr::str_trim()
 }
 
 #' Get a spec.
@@ -496,10 +501,11 @@ removeSpec.X13SpecList <- function(x, specname){
 #' @export
 #'
 "setParamVals<-.X13SpecList" <- function(x, spec, parameter, values) {
+  delim <- ifelse(parameter %in% .param_comma_delim,", "," ")
   values %<>% tolower()
   setSpecParameter(x, spec, parameter) <-{
-    if(length(values)==1) paste(values, collapse = " ")
-    else sprintf("( %s )",paste(values, collapse = " "))
+    if(length(values)==1) paste(values, collapse = delim)
+    else sprintf("( %s )",paste(values, collapse = delim))
   }
   x
 }

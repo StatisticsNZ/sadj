@@ -166,6 +166,12 @@ date <- function(x, y = "year", p = "period"){
 }
 
 #' @keywords internal
+ypdToDate <- function(y, p, pd=12){
+  as.Date(sprintf("%04d-%02d-01", y, 12/pd * p), origin = "1970-01-01")
+
+}
+
+#' @keywords internal
 workdir <- function(){
   res <- sprintf("%s/%s", tempdir(), "sadj")
   if (!dir.exists(res))
