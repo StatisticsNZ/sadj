@@ -181,37 +181,37 @@ workdir <- function(){
 }
 
 #' @keywords internal
-outpdir <- function(){
-  res <- sprintf("%s/o", workdir())
+outpdir <- function(grp_num=1L){
+  res <- sprintf("%s/%s/o", workdir(), grp_num)
   if (!dir.exists(res))
-    if(!dir.create(res))
+    if(!dir.create(res, recursive = TRUE))
       stop("Failed to create output directory.")
   res
 }
 
 #' @keywords internal
-datdir <- function(){
-  res <- sprintf("%s/d", workdir())
+datdir <- function(grp_num=1L){
+  res <- sprintf("%s/%s/d", workdir(), grp_num)
   if (!dir.exists(res))
-    if(!dir.create(res))
+    if(!dir.create(res, recursive = TRUE))
       stop("Failed to create data directory.")
   res
 }
 
 #' @keywords internal
-facdir <- function(){
-  res <- sprintf("%s/f", workdir())
+facdir <- function(grp_num=1L){
+  res <- sprintf("%s/%s/f", workdir(), grp_num)
   if (!dir.exists(res))
-    if(!dir.create(res))
+    if(!dir.create(res, recursive = TRUE))
       stop("Failed to create factor directory.")
   res
 }
 
 #' @keywords internal
-regdir <- function(){
-  res <- sprintf("%s/reg", workdir())
+regdir <- function(grp_num=1L){
+  res <- sprintf("%s/%s/reg", workdir(), grp_num)
   if (!dir.exists(res))
-    if(!dir.create(res))
+    if(!dir.create(res, recursive = TRUE))
       stop("Failed to create factor directory.")
   res
 }
@@ -231,8 +231,8 @@ readDAT <- function(fname){
 #' Write DAT file.
 #'
 #' @keywords internal
-writeDAT <- function(x){
-  fname <- sprintf("%s/%s.dat",datdir(),sname(x))
+writeDAT <- function(x, grp_num=1L){
+  fname <- sprintf("%s/%s.dat",datdir(grp_num=grp_num),sname(x))
   if (inherits(x, "X13Series")){
     # x %<>% mutate(value=sprintf("%12s",as.character(value)))
     # x %<>% mutate(period=sprintf("%-2s",as.character(period)))

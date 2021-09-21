@@ -532,28 +532,35 @@ removeSpec.X13Series <- function(x, specname){
 }
 
 #' @keywords internal
-clean <- function(x){
+clean <- function(x, grp_num = 1L){
   if (inherits(x, "X13Series")){
-    unlink(c(dir(workdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
-             dir(workdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
-             dir(datdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
-             dir(datdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
-             dir(facdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
-             dir(facdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
-             dir(regdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
-             dir(regdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
-             dir(outpdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
-             dir(outpdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE)))
+
+    list(sprintf("%s/%s",workdir(),grp_num), datdir(grp_num=grp_num), facdir(grp_num=grp_num)
+         , regdir(grp_num=grp_num), outpdir(grp_num=grp_num)) %>% purrr::walk(function(y){
+      unlink(c(dir(y, pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
+               dir(y, pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE)))
+    })
+
+    # unlink(c(dir(workdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
+    #          dir(workdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
+    #          dir(datdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
+    #          dir(datdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
+    #          dir(facdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
+    #          dir(facdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
+    #          dir(regdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
+    #          dir(regdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE),
+    #          dir(outpdir(), pattern = sprintf("^%s[.].+$", sname(x)), full.names = TRUE),
+    #          dir(outpdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE)))
   }
 }
 
 #' @keywords internal
-writeSpecList <- function(x, ...){
+writeSpecList <- function(x, grp_num=1L, ...){
   if (!inherits(x, "X13Series"))
     stop(sprintf("%s must be of class 'X13Series'.", deparse(substitute(x))))
 
   spec <- getSpecList(x)
-  datname <- sprintf("%s/%s.dat",datdir(),sname(x))
+  datname <- sprintf("%s/%s.dat",datdir(grp_num=grp_num),sname(x))
 
 
   if(specType(spec)=="series"){
@@ -578,20 +585,20 @@ writeSpecList <- function(x, ...){
 
 
   if(!is.null(facfile <- getFacFile(x)) && !rlang::is_empty(facfile)) {
-    facpath <- sprintf("%s/%s.fac",facdir(),sname(x))
+    facpath <- sprintf("%s/%s.fac",facdir(grp_num=grp_num),sname(x))
     writeFAC(facfile, facpath)
     setSpecParameter(spec, "transform", "file") <- facpath
     setSpecParameter(spec, "transform", "format") <- "datevalue"
   }
 
   if(!is.null(regfile <- getRegFile(x)) && !rlang::is_empty(regfile)) {
-    regpath <- sprintf("%s/%s.dat",regdir(),sname(x))
+    regpath <- sprintf("%s/%s.dat",regdir(grp_num=grp_num),sname(x))
     writeREG(regfile, regpath)
     setSpecParameter(spec, "regression", "file") <- regpath
     setSpecParameter(spec, "regression", "format") <- "datevalue"
   }
 
-  specroot <- sprintf("%s/%s", workdir(), sname(x))
+  specroot <- sprintf("%s/%s/%s", workdir(), grp_num, sname(x))
   specfile <- sprintf("%s.spc", specroot)
 
   sink(specfile)
@@ -636,39 +643,39 @@ writeSpecList1 <- function(x, ...){
 }
 
 #' @keywords internal
-specroot.X13Series <- function(x){
+specroot.X13Series <- function(x, grp_num=1L){
   if (!inherits(x, "X13Series"))
     stop(sprintf("%s must be of class 'X13Series'.", deparse(substitute(x))))
-  sprintf("%s/%s", workdir(), sname(x))
+  sprintf("%s/%s/%s", workdir(), grp_num, sname(x))
 }
 
 #' @keywords internal
-writeMTA.X13Series <- function(x, ...){
+writeMTA.X13Series <- function(x, grp_num=1L, ...){
   if (!inherits(x, "X13Series"))
     stop(sprintf("%s must be of class 'X13Series'.", deparse(substitute(x))))
   metafile <- sprintf("%s.mta", specroot.X13Series(x))
   sink(metafile)
-  cat(sprintf("%s %s/%s", specroot.X13Series(x), outpdir(), sname(x)))
+  cat(sprintf("%s %s/%s", specroot.X13Series(x), outpdir(grp_num=grp_num), sname(x)))
   sink()
 }
 
 #' @keywords internal
-importOutput <- function(x, ...){
+importOutput <- function(x, grp_num=1L, ...){
   if (!inherits(x, "X13Series"))
     stop(sprintf("%s must be of class 'X13Series'.", deparse(substitute(x))))
 
   df <- list()
   nondf <- list()
-  outf <- dir(outpdir(), pattern = sprintf("^%s\\.{1}\\w?", attr(x, "sname")))
+  outf <- dir(outpdir(grp_num=grp_num), pattern = sprintf("^%s\\.{1}\\w?", attr(x, "sname")))
   for (f in outf){
     ext <- tail(strsplit(f, '.', fixed = TRUE)[[1]], 1)
     if (!ext %in% c("html", "xdg", "udg"))
-      df[[ext]] <- readOutput(x, outpdir(), ext)
+      df[[ext]] <- readOutput(x, outpdir(grp_num=grp_num), ext)
     else if (ext %in% c("xdg", "udg")){
-      nondf[[ext]] <- readUDG(x, outpdir(), ext)
+      nondf[[ext]] <- readUDG(x, outpdir(grp_num=grp_num), ext)
     }
     else
-      nondf[[ext]] <- readLines(sprintf("%s/%s", outpdir(), f))
+      nondf[[ext]] <- readLines(sprintf("%s/%s", outpdir(grp_num=grp_num), f))
   }
 
   res <- mergeList(df, by = c("year", "period"))
@@ -689,19 +696,19 @@ importOutput <- function(x, ...){
 #' @param x Object on which to perform adjustment.
 #'
 #' @export
-adjust.X13Series <- function(x, purge = TRUE, keep_fixed=FALSE,...){
+adjust.X13Series <- function(x, purge = TRUE, keep_fixed=FALSE, grp_num=1L, ...){
   #attr(ap,"sname")
   if(sname(x)=="" || rlang::is_empty(sname(x)))
     stop(sprintf("sname is not valid"))
   if (purge)
-    clean(x)
+    clean(x,grp_num=grp_num)
 
-  writeDAT(x)
-  x %>% correctSeriesSpec() %>% writeSpecList()
-  writeMTA.X13Series(x)
+  writeDAT(x, grp_num=grp_num)
+  x %>% correctSeriesSpec() %>% writeSpecList(grp_num=grp_num)
+  writeMTA.X13Series(x,grp_num=grp_num)
   binpath <- sprintf("%s/x13ashtml", paste0(x13binary::x13path()))
   # cmd <- sprintf("%s -m %s -s", binpath, specroot.X13Series(x))
-  cmd <- sprintf("cd %s && %s -m %s -s", workdir(), binpath, specroot.X13Series(x))
+  cmd <- sprintf("cd %s && %s -m %s -s", workdir(), binpath, specroot.X13Series(x,grp_num=grp_num))
 
   x13_messages <- system(cmd, intern=TRUE)
 
@@ -713,12 +720,12 @@ adjust.X13Series <- function(x, purge = TRUE, keep_fixed=FALSE,...){
   if(x13ErrorDetected(x13_messages))
     stop(paste(x13_messages, collapse="\n"))
 
-  res <- importOutput(x)
+  res <- importOutput(x, grp_num=grp_num)
   attr(res, "input") <- x
   attr(res,"x13_messages") <- x13_messages
 
   if (purge)
-    clean(x)
+    clean(x,grp_num=grp_num)
   res
 }
 
