@@ -598,7 +598,8 @@ writeSpecList <- function(x, grp_num=1L, ...){
     setSpecParameter(spec, "regression", "format") <- "datevalue"
   }
 
-  specroot <- sprintf("%s/%s/%s", workdir(), grp_num, sname(x))
+  # specroot <- sprintf("%s/%s/%s", workdir(), grp_num, sname(x))
+  specroot <- specroot.X13Series(x, grp_num=grp_num)
   specfile <- sprintf("%s.spc", specroot)
 
   sink(specfile)

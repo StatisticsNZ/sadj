@@ -18,33 +18,32 @@ X13BatchFromMTA <-function(mta_path) {
 adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
 
   # series <- selectSeries(x)
-  if (purge) {
-    # series %>% purrr::map(clean)
-    x %>% purrr::walk2(as.integer(names(x)),function(x,y){
-      x %>% purrr::walk(clean,grp_num=y)
-    })
-  }
+  # if (purge) {
+  #   # series %>% purrr::map(clean)
+  #   x %>% purrr::walk2(as.integer(names(x)),function(x,y){
+  #     x %>% purrr::walk(clean,grp_num=y)
+  #   })
+  # }
 
 
   if(parallel)
-    res <- parallel::mcmapply(function(x,y) adjust(x, grp_num=y,purge=FALSE)
+    res <- parallel::mcmapply(function(x,y) adjust(x, grp_num=y,purge=purge)
                               , x, as.integer(names(x))
                               , mc.cores = parallel::detectCores() / 2)
     # res <- x %>% parallel::mclapply(adjust, purge=FALSE, mc.cores = parallel::detectCores() / 2)
   else
-    res <- mapply(function(x,y) adjust(x, grp_num=y,purge=FALSE)
+    res <- mapply(function(x,y) adjust(x, grp_num=y,purge=purge)
                               , x, as.integer(names(x)))
     # res <- lapply(x, adjust, purge=FALSE)
   class(res) <- c("X13BatchResult", class(res))
 
   # if (purge)
   #   series %>% purrr::map(clean)
-  if (purge) {
-    # series %>% purrr::map(clean)
-    x %>% purrr::walk2(as.integer(names(x)),function(x,y){
-      x %>% purrr::walk(clean,grp_num=y)
-    })
-  }
+  # if (purge) {
+  #   x %>% purrr::walk2(as.integer(names(x)),function(x,y){
+  #     x %>% purrr::walk(clean,grp_num=y)
+  #   })
+  # }
 
   res
 }

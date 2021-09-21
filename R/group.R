@@ -121,19 +121,21 @@ writeMTA.X13SeriesGroup <- function(x, grp_num=1L, ...){
 
 #' @export
 adjust.X13SeriesGroup <- function(x, purge = TRUE, keep_fixed=FALSE, grp_num=1L, ...){
+
+  if (purge){
+    unlink(c(dir(sprintf("%s/%s",workdir(),grp_num)
+                 , pattern = sprintf("^%s[.].+$", grp_num), full.names = TRUE),
+             dir(sprintf("%s/%s",workdir(),grp_num)
+                 , pattern = sprintf("^%s[_].+[.].+$", grp_num), full.names = TRUE)))
+    x %>% walk(clean, grp_num=grp_num)
+  }
+
    for (series in x){
-     if (purge)
-       clean(series,grp_num=grp_num)
-
      series <- correctSeriesSpec(series)
-
      writeDAT(series, grp_num=grp_num)
      writeSpecList(series,grp_num=grp_num)
    }
-  # if (purge){
-  #   unlink(dir(workdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE))
-  #   unlink(sprintf("%s.mta", specroot.X13SeriesGroup(x)))
-  # }
+
   writeMTA.X13SeriesGroup(x, grp_num=grp_num)
   binpath <- sprintf("%s/x13ashtml", paste0(x13binary::x13path()))
   # cmd <- sprintf("%s -m %s -s", binpath, specroot.X13SeriesGroup(x))
@@ -168,19 +170,18 @@ adjust.X13SeriesGroup <- function(x, purge = TRUE, keep_fixed=FALSE, grp_num=1L,
     # if (purge)
     #   clean(x[[i]])
   }
-  # if (purge){
-  #   for(i in 1:length(x)) clean(x[[i]])
-  #   unlink(dir(workdir(), pattern = sprintf("^%s[_].+[.].+$", sname(x)), full.names = TRUE))
-  #   unlink(sprintf("%s.mta", specroot.X13SeriesGroup(x)))
-  # }
+  if (purge){
+    unlink(c(dir(sprintf("%s/%s",workdir(),grp_num)
+                 , pattern = sprintf("^%s[.].+$", grp_num), full.names = TRUE),
+             dir(sprintf("%s/%s",workdir(),grp_num)
+                 , pattern = sprintf("^%s[_].+[.].+$", grp_num), full.names = TRUE)))
+    x %>% walk(clean, grp_num=grp_num)
+  }
 
   attr(res,"x13_messages") <- x13_messages
   class(res) <- c("X13SeriesGroupResult")
 
-  for (series in x){
-  if (purge)
-    clean(series)
-  }
+
 
   res
 }
