@@ -1,9 +1,9 @@
 Package: sadj
 Type: Package
 Title: Seasonal adjustment with X13-ARIMA-SEATS.
-Version: 0.2.18
+Version: 0.3.0
 Author: Chris Hansen
-Maintainer: Chris Hansen <chris.hansen@stats.govt.nz>
+Maintainer: Steve White <steve.white@stats.govt.nz>
 Description: Seasonal adjustment with X13-ARIMA-SEATS.
 License: GPL
 Encoding: UTF-8
