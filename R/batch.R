@@ -3,9 +3,13 @@
 #' @param mta Path to mta file.
 #'
 #' @export
-X13BatchFromMTA <-function(mta_path) {
+X13BatchFromMTA <-function(mta_path, parallel=TRUE) {
   grps <- mtaGroups(mta_path)
-  ser_lists <- grps %>% parallel::mclapply(mtaToX13Series,mc.cores = parallel::detectCores() / 2)
+  if(parallel)
+    ser_lists <- grps %>% parallel::mclapply(mtaToX13Series,mc.cores = parallel::detectCores() / 2)
+  else
+    ser_lists <- grps %>% lapply(mtaToX13Series)
+
   res <- ser_lists %>% map2(names(ser_lists),~X13ListToGroup(ser_list = .x,sname = .y))
 
   class(res) <- c("X13Batch", class(res))
@@ -29,11 +33,13 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
   if(parallel)
     res <- parallel::mcmapply(function(x,y) adjust(x, grp_num=y,purge=purge)
                               , x, as.integer(names(x))
+                              , SIMPLIFY = FALSE
                               , mc.cores = parallel::detectCores() / 2)
     # res <- x %>% parallel::mclapply(adjust, purge=FALSE, mc.cores = parallel::detectCores() / 2)
   else
     res <- mapply(function(x,y) adjust(x, grp_num=y,purge=purge)
-                              , x, as.integer(names(x)))
+                  , x, as.integer(names(x))
+                  , SIMPLIFY = FALSE)
     # res <- lapply(x, adjust, purge=FALSE)
   class(res) <- c("X13BatchResult", class(res))
 
