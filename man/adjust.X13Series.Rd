@@ -4,7 +4,7 @@
 \alias{adjust.X13Series}
 \title{Perform seasonal adjustment.}
 \usage{
-\method{adjust}{X13Series}(x, purge = TRUE, keep_fixed = FALSE, ...)
+\method{adjust}{X13Series}(x, purge = TRUE, keep_fixed = FALSE, grp_num = 1L, ...)
 }
 \arguments{
 \item{x}{Object on which to perform adjustment.}
