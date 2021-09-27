@@ -1,3 +1,13 @@
+#' @export
+`[.X13Batch` <- function(x, ..., drop=TRUE) {
+  structure(NextMethod(), class=class(x))
+}
+
+#' @export
+`[.X13BatchResult` <- function(x, ..., drop=TRUE) {
+  structure(NextMethod(), class=class(x))
+}
+
 #' Create a list of X13SeriesGroup objects from an mta file.
 #'
 #' @param mta Path to mta file.

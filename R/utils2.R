@@ -14,8 +14,8 @@ findX13File <- function(fname, rel_dir=getwd()){
 
   if(file.exists(try_file)) return(normalizePath(try_file) %>% sub(path.expand("~"),"~",.))
 
-  warning(sprintf("couldn't find file in:\n%s.
-                  Searching paths relative to:\n%s.", dirname(try_file),rel_dir))
+  # warning(sprintf("couldn't find file in:\n%s.
+  #                 Searching paths relative to:\n%s.", dirname(try_file),rel_dir))
 
   path_split <- stringr::str_split(fname, dir_delim)[[1]] %>% rev()
 
@@ -23,21 +23,13 @@ findX13File <- function(fname, rel_dir=getwd()){
     if(path_split[[i]]==rel_base) {
       try_file <- paste(path_split[(i-1):1],collapse = "/") %>% sprintf("%s/%s",rel_dir,.)
       if(file.exists(try_file)){
-        return(normalizePath(try_file) %>% sub(path.expand("~"),"~",.))
+        warning(sprintf("Couldn't find file:\n%s.\nFound file:\n%s.", fname
+                        , (found_file <- sub(path.expand("~"),"~",normalizePath(try_file)))))
+        return(found_file)
       }
     }
 
   }
-
-  # for(i in seq_along(path_split)) {
-  #   try_file <- paste(path_split[i:1],collapse = dir_delim)
-  #   if(file.exists(try_file)){
-  #     try_file <- normalizePath(try_file)
-  #     # could make this path regex friendly and search beginning only ...
-  #     try_file <- sub(path.expand("~"),"~",try_file)
-  #     return(try_file)
-  #   }
-  # }
 
   stop(sprintf("Unable to find file:\n%s.", fname))
 

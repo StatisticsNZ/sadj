@@ -74,6 +74,10 @@ X13ListToGroup <- function(ser_list,sname="1") {
       comp_dat <- data.frame(date = ser_list[[1]]$date, year = ser_list[[1]]$year
                              , period = ser_list[[1]]$period, value = sum_vals)
 
+      # comp_dat <- ser_list[[1]][names(ser_list[[1]])!="value"]
+      # comp_dat$value <- sum_vals
+      # attr(comp_dat, "class") <-"data.frame"
+
       last_ser <- X13Series(x=comp_dat
                 ,sname=sname(last_ser)
                 ,lname=lname(last_ser)
