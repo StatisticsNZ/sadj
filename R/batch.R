@@ -140,11 +140,16 @@ print.X13BatchResult <- function(x, ...){
 #' @export
 #'
 #' @examples
-selectSeries.X13Batch <- function(x, snames) {
+selectSeries.X13Batch <- function(x, snames, simplify=TRUE) {
   if(missing(snames))
-    flatten(x) %>% .[unique(names(.))]
+    res <- flatten(x) %>% .[unique(names(.))]
   else
-    flatten(x) %>% .[unique(snames)]
+    res <- flatten(x) %>% .[unique(snames)]
+
+  if(simplify && length(res) == 1)
+    res[[1]]
+  else
+    res
 
 }
 
@@ -157,10 +162,15 @@ selectSeries.X13Batch <- function(x, snames) {
 #' @export
 #'
 #' @examples
-selectSeries.X13BatchResult <- function(x, snames) {
+selectSeries.X13BatchResult <- function(x, snames, simplify=TRUE) {
   if(missing(snames))
-    flatten(x) %>% .[unique(names(.))]
+    res <- flatten(x) %>% .[unique(names(.))]
   else
-    flatten(x) %>% .[unique(snames)]
+    res <- flatten(x) %>% .[unique(snames)]
+
+  if(simplify && length(res) == 1)
+    res[[1]]
+  else
+    res
 
 }
