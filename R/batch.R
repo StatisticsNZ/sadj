@@ -64,6 +64,14 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
   res
 }
 
+# #' @keywords internal
+# format.x13grp_name <- function(x) x[[1]] %>% purrr::reduce(paste,sep="|")
+
+# #' @keywords internal
+# pillar_shaft.x13grp_name <- function(x, ...) {
+#   pillar::new_pillar_shaft_simple(format(x))
+# }
+
 #' Summarise an X13 Batch object
 #'
 #' @param x
@@ -75,14 +83,16 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
 #' @examples
 summary.X13Batch <- function(x, ...) {
   groups <- x %>% purrr::map(names) %>% tibble::enframe() %>% tidyr::unnest(cols = c(value)) %>%
-    dplyr::group_by(value) %>% dplyr::summarise(groups=paste(name, collapse="|")) %>%
+    dplyr::group_by(value) %>%
+    dplyr::summarise(groups=vctrs::new_vctr(list(name), class = character())) %>%
+    # dplyr::summarise(groups=paste(name, collapse="|")) %>%
     dplyr::rename(sname=value)
 
   selectSeries(x) %>% purrr::map_dfr(function(x){
     list(sname=sname(x), last_period=tail(x$date,1), spec_type=specType(x),
          has_fac=hasFac(x), has_reg=hasReg(x)
          )
-  }) %>% merge(groups,.,by="sname") %>% dplyr::arrange(sname)
+  }) %>% dplyr::inner_join(groups,.,by="sname") %>% dplyr::arrange(sname)
 
 }
 
