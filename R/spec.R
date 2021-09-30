@@ -345,8 +345,11 @@ specType.X13SpecList <- function(x) {
 #' @examples
 correctRegression.X13SpecList <- function(x) {
   if(!rlang::is_empty(getSpecParameter(x,"regression","variables"))){
-    if(rlang::is_empty(getSpecParameter(x,"transform","function")) &&
-      (rlang::is_empty(mode <- getSpecParameter(x,"x11","mode")) || mode=="mult"))
+    if(
+      (rlang::is_empty(mode <- getSpecParameter(x,"x11","mode")) || mode=="mult") &&
+      (rlang::is_empty(getSpecParameter(x,"transform","function")) ||
+       getSpecParameter(x,"transform","function") !="log")
+      )
       setSpecParameter(x,"transform","function") <- "log"
 
     if(rlang::is_empty(getSpecParameter(x,"arima","model")))
