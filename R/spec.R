@@ -314,6 +314,7 @@ specType.X13SpecList <- function(x) {
 #'
 #' @examples
 "addParamVals<-.X13SpecList" <- function(x, spec, parameter, values){
+  if(rlang::is_empty(values)) return(x)
   values %<>% tolower()
   param_vals <- getParamVals(x, spec, parameter)
   param_vals <- c(param_vals, values) %>% unique()
@@ -507,8 +508,9 @@ removeSpec.X13SpecList <- function(x, specname){
   delim <- ifelse(parameter %in% .param_comma_delim,", "," ")
   values %<>% tolower()
   setSpecParameter(x, spec, parameter) <-{
-    if(length(values)==1) paste(values, collapse = delim)
-    else sprintf("( %s )",paste(values, collapse = delim))
+    # if(length(values)==1) paste(values, collapse = delim)
+    # else
+    sprintf("( %s )",paste(values, collapse = delim))
   }
   x
 }
