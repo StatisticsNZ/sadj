@@ -1,3 +1,13 @@
+#' @export
+`[.X13SeriesGroup` <- function(x, ..., drop=TRUE) {
+  structure(NextMethod(), class=class(x))
+}
+
+#' @export
+`[.X13SeriesGroupResult` <- function(x, ..., drop=TRUE) {
+  structure(NextMethod(), class=class(x))
+}
+
 #' Create an object to be adjusted by X13-ARIMA-SEATS.
 #'
 #' @param sname A short name for the series.
