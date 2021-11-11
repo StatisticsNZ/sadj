@@ -1,5 +1,15 @@
-# How to create composites...
-# should comp = TRUE be an arg to simplify this?
+# #' @export
+# `[.X13Series` <- function(x, ..., drop=TRUE) {
+#   structure(NextMethod()
+#             , class = class(x)
+#             , sname = sname(x)
+#             , lname = lname(x)
+#             , SpecList = getSpecList(x)
+#             , FacFile = getFacFile(x)
+#             , regfile = getRegFile(x)
+#             )
+# }
+
 
 #' Create an object to be adjusted by X13-ARIMA-SEATS.
 #'

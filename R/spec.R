@@ -314,6 +314,7 @@ specType.X13SpecList <- function(x) {
 #'
 #' @examples
 "addParamVals<-.X13SpecList" <- function(x, spec, parameter, values){
+  if(rlang::is_empty(values)) return(x)
   values %<>% tolower()
   param_vals <- getParamVals(x, spec, parameter)
   param_vals <- c(param_vals, values) %>% unique()
@@ -345,8 +346,11 @@ specType.X13SpecList <- function(x) {
 #' @examples
 correctRegression.X13SpecList <- function(x) {
   if(!rlang::is_empty(getSpecParameter(x,"regression","variables"))){
-    if(rlang::is_empty(getSpecParameter(x,"transform","function")) &&
-      (rlang::is_empty(mode <- getSpecParameter(x,"x11","mode")) || mode=="mult"))
+    if(
+      (rlang::is_empty(mode <- getSpecParameter(x,"x11","mode")) || mode=="mult") &&
+      (rlang::is_empty(getSpecParameter(x,"transform","function")) ||
+       getSpecParameter(x,"transform","function") !="log")
+      )
       setSpecParameter(x,"transform","function") <- "log"
 
     if(rlang::is_empty(getSpecParameter(x,"arima","model")))
@@ -504,8 +508,9 @@ removeSpec.X13SpecList <- function(x, specname){
   delim <- ifelse(parameter %in% .param_comma_delim,", "," ")
   values %<>% tolower()
   setSpecParameter(x, spec, parameter) <-{
-    if(length(values)==1) paste(values, collapse = delim)
-    else sprintf("( %s )",paste(values, collapse = delim))
+    # if(length(values)==1) paste(values, collapse = delim)
+    # else
+    sprintf("( %s )",paste(values, collapse = delim))
   }
   x
 }

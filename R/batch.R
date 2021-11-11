@@ -1,3 +1,13 @@
+#' @export
+`[.X13Batch` <- function(x, ..., drop=TRUE) {
+  structure(NextMethod(), class=class(x))
+}
+
+#' @export
+`[.X13BatchResult` <- function(x, ..., drop=TRUE) {
+  structure(NextMethod(), class=class(x))
+}
+
 #' Create a list of X13SeriesGroup objects from an mta file.
 #'
 #' @param mta Path to mta file.
@@ -54,6 +64,14 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
   res
 }
 
+# #' @keywords internal
+# format.x13grp_name <- function(x) x[[1]] %>% purrr::reduce(paste,sep="|")
+
+# #' @keywords internal
+# pillar_shaft.x13grp_name <- function(x, ...) {
+#   pillar::new_pillar_shaft_simple(format(x))
+# }
+
 #' Summarise an X13 Batch object
 #'
 #' @param x
@@ -65,14 +83,16 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
 #' @examples
 summary.X13Batch <- function(x, ...) {
   groups <- x %>% purrr::map(names) %>% tibble::enframe() %>% tidyr::unnest(cols = c(value)) %>%
-    dplyr::group_by(value) %>% dplyr::summarise(groups=paste(name, collapse="|")) %>%
+    dplyr::group_by(value) %>%
+    dplyr::summarise(groups=vctrs::new_vctr(list(name), class = character())) %>%
+    # dplyr::summarise(groups=paste(name, collapse="|")) %>%
     dplyr::rename(sname=value)
 
   selectSeries(x) %>% purrr::map_dfr(function(x){
     list(sname=sname(x), last_period=tail(x$date,1), spec_type=specType(x),
          has_fac=hasFac(x), has_reg=hasReg(x)
          )
-  }) %>% merge(groups,.,by="sname") %>% dplyr::arrange(sname)
+  }) %>% dplyr::inner_join(groups,.,by="sname") %>% dplyr::arrange(sname)
 
 }
 
@@ -120,11 +140,16 @@ print.X13BatchResult <- function(x, ...){
 #' @export
 #'
 #' @examples
-selectSeries.X13Batch <- function(x, snames) {
+selectSeries.X13Batch <- function(x, snames, simplify=TRUE) {
   if(missing(snames))
-    flatten(x) %>% .[unique(names(.))]
+    res <- flatten(x) %>% .[unique(names(.))]
   else
-    flatten(x) %>% .[unique(snames)]
+    res <- flatten(x) %>% .[unique(snames)]
+
+  if(simplify && length(res) == 1)
+    res[[1]]
+  else
+    res
 
 }
 
@@ -137,10 +162,15 @@ selectSeries.X13Batch <- function(x, snames) {
 #' @export
 #'
 #' @examples
-selectSeries.X13BatchResult <- function(x, snames) {
+selectSeries.X13BatchResult <- function(x, snames, simplify=TRUE) {
   if(missing(snames))
-    flatten(x) %>% .[unique(names(.))]
+    res <- flatten(x) %>% .[unique(names(.))]
   else
-    flatten(x) %>% .[unique(snames)]
+    res <- flatten(x) %>% .[unique(snames)]
+
+  if(simplify && length(res) == 1)
+    res[[1]]
+  else
+    res
 
 }

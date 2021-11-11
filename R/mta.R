@@ -67,12 +67,17 @@ X13ListToGroup <- function(ser_list,sname="1") {
         comptype <- attr(x,"SpecList") %>% getSpecParameter("series","comptype")
         if(comptype =="sub")
           x$value <- x$value * -1
-        x$value
+        x %>% dplyr::select(date, year, period, value)
       })
 
-      sum_vals <- reduce(comp_vals, `+`)
-      comp_dat <- data.frame(date = ser_list[[1]]$date, year = ser_list[[1]]$year
-                             , period = ser_list[[1]]$period, value = sum_vals)
+      join_vals <- comp_vals %>% reduce(function(x,y){
+        inner_join(x,y, by=c("date", "year", "period"))
+
+      })
+
+      comp_dat <- join_vals %>%
+        transmute(date=date, year=year, period=period
+                  , value = rowSums(across(starts_with("value"))))
 
       last_ser <- X13Series(x=comp_dat
                 ,sname=sname(last_ser)
