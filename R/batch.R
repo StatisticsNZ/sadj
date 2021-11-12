@@ -8,6 +8,31 @@
   structure(NextMethod(), class=class(x))
 }
 
+#' Add Outliers
+#'
+#' @param x
+#' @param arima_model if missing and spec parameter is empty, (0 1 1)(0 1 1) will be used.
+#' @param update_save Update the regression-save parameter?
+#' @param correct_spec Automatically fix a spec to run with outlier regression?
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"addOutliers<-.X13Batch" <- function(x, arima_model, update_save = TRUE, correct_spec = TRUE, values){
+  missing_arima <- missing(arima_model)
+  x %>% purrr::modify(function(x){
+    if(missing_arima)
+      addOutliers(x, update_save = update_save
+                  , correct_spec = correct_spec) <- values
+    else
+      addOutliers(x, arima_model = arima_model, update_save = update_save
+                  , correct_spec = correct_spec) <- values
+    x
+  })
+}
+
 #' Create a list of X13SeriesGroup objects from an mta file.
 #'
 #' @param mta Path to mta file.
@@ -62,6 +87,21 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
   # }
 
   res
+}
+
+#' Get Regression Variables
+#'
+#' @param x
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getRegVars.X13Batch <- function(x) {
+  x %>% selectSeries() %>% map_chr(function(x){
+    res <- getSpecParameter(x,"regression", "variables")
+    if(is.null(res)) NA_character_ else res
+  })
 }
 
 # #' @keywords internal
@@ -172,5 +212,28 @@ selectSeries.X13BatchResult <- function(x, snames, simplify=TRUE) {
     res[[1]]
   else
     res
+
+}
+tvals.X13BatchResult <- function(x, variables) {
+  if(missing(variables)) {
+    variables <- x %>% selectSeries() %>% map(function(x) {
+      x %>% attr("udg") %>% names() %>% grep(rex::rex(start, "Outlier$"),., value=TRUE) %>%
+        stringr::str_remove(rex::rex(start, "Outlier$"))
+    }) %>% purrr::flatten_chr() %>% unique() %>% sort()
+  }
+  res <- x %>% selectSeries() %>% map(tvals, variables)
+  res %>% bind_rows(.id="series")
+}
+
+#' Is the x-11 method additive or multiplicative?
+#'
+#' @param x
+#'
+#' @return "add", "mult", or NA
+#' @export
+#'
+#' @examples
+X11AddMult.X13Batch <- function(x) {
+  x %>% selectSeries() %>% purrr::map_chr(X11AddMult)
 
 }

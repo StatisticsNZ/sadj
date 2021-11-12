@@ -41,6 +41,11 @@ getRegFile <- function(x, ...){
 }
 
 #' @export
+getRegVars <- function(x, ...){
+  UseMethod("getRegVars", x)
+}
+
+#' @export
 getSpec <- function(x, ...){
   UseMethod("getSpec", x)
 }
@@ -58,11 +63,6 @@ getSpecList <- function(x, ...){
 #' @export
 getSpecParameter <- function(x, ...){
   UseMethod("getSpecParameter", x)
-}
-
-#' @export
-getRegVars <- function(x, ...){
-  UseMethod("getRegVars", x)
 }
 
 #' @export
@@ -179,6 +179,11 @@ specType <- function(x, ...){
 }
 
 #' @export
+tvals <- function(x, ...){
+  UseMethod("tvals", x)
+}
+
+#' @export
 X13Messages <- function(x, ...){
   UseMethod("X13Messages", x)
 }
@@ -191,4 +196,9 @@ Sum <- function(x, ...){
 #' @export
 path <- function(x, ...){
   UseMethod("path", x)
+}
+
+#' @export
+X11AddMult <- function(x, ...){
+  UseMethod("X11AddMult", x)
 }

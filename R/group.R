@@ -34,20 +34,27 @@ lname.X13SeriesGroup <- function(x) attr(x, 'lname')
 is.X13SeriesGroup <- function(x) inherits(x, "X13SeriesGroup")
 
 
-#' Add Outliers to all series in a group
+#' Add Outliers
 #'
 #' @param x
-#' @param spec
-#' @param parameter
+#' @param arima_model if missing and spec parameter is empty, (0 1 1)(0 1 1) will be used.
+#' @param update_save Update the regression-save parameter?
+#' @param correct_spec Automatically fix a spec to run with outlier regression?
 #' @param values
 #'
 #' @return
 #' @export
 #'
 #' @examples
-"addOutliers<-.X13SeriesGroup" <- function(x, arima_model,update_save, correct_spec, values){
+"addOutliers<-.X13SeriesGroup" <- function(x, arima_model, update_save = TRUE, correct_spec = TRUE, values){
+  missing_arima <- missing(arima_model)
   x %>% purrr::modify(function(x){
-    addOutliers(x, arima_model,update_save, correct_spec) <- values
+    if(missing_arima)
+      addOutliers(x, update_save = update_save
+                , correct_spec = correct_spec) <- values
+    else
+      addOutliers(x, arima_model = arima_model, update_save = update_save
+                  , correct_spec = correct_spec) <- values
     x
     })
 }
