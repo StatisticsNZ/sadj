@@ -205,6 +205,17 @@ selectSeries.X13BatchResult <- function(x, snames, simplify=TRUE) {
     res
 
 }
+
+
+#' Extract t-vals from regression variables
+#'
+#' @param x
+#' @param variables
+#'
+#' @return
+#' @export
+#'
+#' @examples
 tvals.X13BatchResult <- function(x, variables) {
   if(missing(variables)) {
     variables <- x %>% selectSeries(simplify=FALSE) %>% map(function(x) {

@@ -875,6 +875,15 @@ X11AddMult.X13Series <- function(x) {
 
 }
 
+#' Extract t-vals from regression variables
+#'
+#' @param x
+#' @param variables
+#'
+#' @return
+#' @export
+#'
+#' @examples
 tvals.X13SeriesResult <- function(x, variables) {
   udg <- x %>% attr("udg")
   # fix case
