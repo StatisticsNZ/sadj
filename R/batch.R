@@ -56,15 +56,6 @@ X13BatchFromMTA <-function(mta_path, parallel=TRUE) {
 #' @export
 adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
 
-  # series <- selectSeries(x)
-  # if (purge) {
-  #   # series %>% purrr::map(clean)
-  #   x %>% purrr::walk2(as.integer(names(x)),function(x,y){
-  #     x %>% purrr::walk(clean,grp_num=y)
-  #   })
-  # }
-
-
   if(parallel)
     res <- parallel::mcmapply(function(x,y) adjust(x, grp_num=y,purge=purge)
                               , x, as.integer(names(x))
@@ -98,7 +89,7 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
 #'
 #' @examples
 getRegVars.X13Batch <- function(x) {
-  x %>% selectSeries() %>% map_chr(function(x){
+  x %>% selectSeries(simplify=FALSE) %>% map_chr(function(x){
     res <- getSpecParameter(x,"regression", "variables")
     if(is.null(res)) NA_character_ else res
   })
@@ -128,7 +119,7 @@ summary.X13Batch <- function(x, ...) {
     # dplyr::summarise(groups=paste(name, collapse="|")) %>%
     dplyr::rename(sname=value)
 
-  selectSeries(x) %>% purrr::map_dfr(function(x){
+  selectSeries(x, simplify=FALSE) %>% purrr::map_dfr(function(x){
     list(sname=sname(x), last_period=tail(x$date,1), spec_type=specType(x),
          has_fac=hasFac(x), has_reg=hasReg(x)
          )
@@ -216,12 +207,12 @@ selectSeries.X13BatchResult <- function(x, snames, simplify=TRUE) {
 }
 tvals.X13BatchResult <- function(x, variables) {
   if(missing(variables)) {
-    variables <- x %>% selectSeries() %>% map(function(x) {
+    variables <- x %>% selectSeries(simplify=FALSE) %>% map(function(x) {
       x %>% attr("udg") %>% names() %>% grep(rex::rex(start, "Outlier$"),., value=TRUE) %>%
         stringr::str_remove(rex::rex(start, "Outlier$"))
     }) %>% purrr::flatten_chr() %>% unique() %>% sort()
   }
-  res <- x %>% selectSeries() %>% map(tvals, variables)
+  res <- x %>% selectSeries(simplify=FALSE) %>% map(tvals, variables)
   res %>% bind_rows(.id="series")
 }
 
@@ -234,6 +225,6 @@ tvals.X13BatchResult <- function(x, variables) {
 #'
 #' @examples
 X11AddMult.X13Batch <- function(x) {
-  x %>% selectSeries() %>% purrr::map_chr(X11AddMult)
+  x %>% selectSeries(simplify=FALSE) %>% purrr::map_chr(X11AddMult)
 
 }
