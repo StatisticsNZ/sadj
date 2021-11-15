@@ -34,6 +34,10 @@ getParamVals <- function(x, ...){
   UseMethod("getParamVals", x)
 }
 
+#' @export
+getPeriod <- function(x, ...){
+  UseMethod("getPeriod", x)
+}
 
 #' @export
 getRegFile <- function(x, ...){

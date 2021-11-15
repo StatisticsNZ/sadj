@@ -280,6 +280,9 @@ specType.X13Series <- function(x) getSpecList(x) %>% specType()
 #'
 #' @examples
 "addOutliers<-.X13Series" <- function(x, arima_model, update_save = TRUE, correct_spec = TRUE, values){
+
+  # check dates here for new ao's - values
+
   s <- getSpecList(x)
   if(missing(arima_model))
     addOutliers(s, update_save = update_save, correct_spec = correct_spec) <- values
@@ -350,6 +353,8 @@ correctSeriesSpec.X13Series <- function(x) {
 
     }
 
+    # Check outlier stuff here
+
     # span_dates <- span_vals %>% strsplit("[.]") %>% map(function(x)as.list(as.numeric(c(x,4)))) %>%
     #   map(~do.call(ypdToDate,.x))
     # # compare span dates to series start and end dates
@@ -394,6 +399,17 @@ getRegFile.X13Series <- function(x){
   attr(x, "regfile")
 }
 
+#' Return Period
+#'
+#' @param x
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getPeriod.X13Series <- function(x) {
+  unique(x[, "period"]) %>% max() %>% as.numeric()
+}
 
 #' Get a spec.
 #'
