@@ -282,13 +282,19 @@ specType.X13Series <- function(x) getSpecList(x) %>% specType()
 "addOutliers<-.X13Series" <- function(x, arima_model, update_save = TRUE, correct_spec = TRUE, values){
 
   # check dates here for new ao's - values
+  values_mod <- removeRegAfterEnd(reg_vars = values, s_period = getPeriod(x), s_end_date = tail(x$date,1))
+  if(!rlang::is_empty(values_removed <- setdiff(values,values_mod)))
+    warning(sprintf("Some regression variables not added b/c their periods occur after the end of the series:
+                    %s", paste(values_removed, collapse = ", ")))
+
+  if(rlang::is_empty(values_mod)) return(x)
 
   s <- getSpecList(x)
   if(missing(arima_model))
-    addOutliers(s, update_save = update_save, correct_spec = correct_spec) <- values
+    addOutliers(s, update_save = update_save, correct_spec = correct_spec) <- values_mod
   else
     addOutliers(s, arima_model = arima_model
-                , update_save = update_save, correct_spec = correct_spec) <- values
+                , update_save = update_save, correct_spec = correct_spec) <- values_mod
 
   attr(x, "SpecList") <- s
   x

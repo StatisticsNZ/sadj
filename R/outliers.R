@@ -8,7 +8,8 @@
 #' @export
 #'
 #' @examples
-removeOutOfSpanReg <- function(reg_vars, s_period, s_end_date) {
+removeRegAfterEnd <- function(reg_vars, s_period, s_end_date) {
+  pfac <- if_else(s_period==4,3,1)
   # reg_vars <- c("Ao.")
   reg_vars %<>% tolower()
 
@@ -23,13 +24,25 @@ removeOutOfSpanReg <- function(reg_vars, s_period, s_end_date) {
   } else
     stop(sprintf("Non-valid period: %s", s_period))
 
-
   regvar_regex <- sprintf("^(?:ao|ls|tc|so)%s$",period_regex)
   # need to add (aos|lss|rp|qd|qi|tl)date-date see page 150 of X13 manual
-  stringr::str_match(reg_vars, regvar_regex) #%>% table(useNA = "always") %>% as_tibble()
-  # could check if match wrong period
 
-  # Parse the reg variables using s_period to get dates for reg variables
-  # filter out the variable that are past the end date
+  res <- stringr::str_match(reg_vars, regvar_regex) %>% t() %>% as.data.frame(stringsAsFactors = FALSE)
 
+  # For non-NA entries in column 1, use the year and period to make dates
+  res <- res %>% map_dbl(function(x){
+    if(!is.na(x[[1]])){
+      as.Date(sprintf("%s-%s-01"
+                      ,as.numeric(x[[2]])
+                      , pfac * as.numeric(x[[3]])
+      ))
+      # "hello"
+    } else as.Date(NA_character_)
+  }) %>% lubridate::as_date()
+
+  res <- tibble(reg_vars = reg_vars, date = res, s_end_date = s_end_date)
+
+  # Compare dates to end of series
+  # Keep if NA and if less than or equal to s_end_date
+  res %>% filter(is.na(date) | (date <= s_end_date)) %>% pull(reg_vars)
 }
