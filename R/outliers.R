@@ -9,6 +9,23 @@
 #'
 #' @examples
 removeRegAfterEnd <- function(reg_vars, s_period, s_end_date) {
+
+  regvar_date <- regvarsToDates(reg_vars = reg_vars, s_period = s_period)
+  res <- tibble(reg_vars = reg_vars, date = regvar_date, s_end_date = s_end_date)
+  res %>% filter(is.na(date) | (date <= s_end_date)) %>% pull(reg_vars)
+}
+
+#' regvars to dates
+#'
+#' @param reg_vars
+#' @param s_period
+#'
+#' @return
+#'@keywords internal
+#'
+#' @examples
+regvarsToDates <- function(reg_vars, s_period) {
+
   pfac <- if_else(s_period==4,3,1)
   # reg_vars <- c("Ao.")
   reg_vars %<>% tolower()
@@ -30,19 +47,13 @@ removeRegAfterEnd <- function(reg_vars, s_period, s_end_date) {
   res <- stringr::str_match(reg_vars, regvar_regex) %>% t() %>% as.data.frame(stringsAsFactors = FALSE)
 
   # For non-NA entries in column 1, use the year and period to make dates
-  res <- res %>% map_dbl(function(x){
+  res %>% map_dbl(function(x){
     if(!is.na(x[[1]])){
       as.Date(sprintf("%s-%s-01"
                       ,as.numeric(x[[2]])
                       , pfac * as.numeric(x[[3]])
       ))
-      # "hello"
     } else as.Date(NA_character_)
-  }) %>% lubridate::as_date()
+  }) %>% lubridate::as_date() %>% unname()
 
-  res <- tibble(reg_vars = reg_vars, date = res, s_end_date = s_end_date)
-
-  # Compare dates to end of series
-  # Keep if NA and if less than or equal to s_end_date
-  res %>% filter(is.na(date) | (date <= s_end_date)) %>% pull(reg_vars)
 }
