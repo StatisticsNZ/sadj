@@ -33,6 +33,8 @@
   })
 }
 
+
+
 #' Create a list of X13SeriesGroup objects from an mta file.
 #'
 #' @param mta Path to mta file.
@@ -153,6 +155,27 @@ print.X13Batch <- function(x, ...){
 #' @export
 print.X13BatchResult <- function(x, ...){
   cat(toString(x, ...))
+}
+
+#' Remove outliers from all groups in a batch
+#'
+#' ao, ls, so, tc
+#'
+#' @param x
+#' @param spec
+#' @param parameter
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"removeOutliers<-.X13Batch" <- function(x, values){
+  x %>% purrr::modify(function(x){
+    removeOutliers(x) <- values
+    x
+  })
+
 }
 
 #' Select unique series
