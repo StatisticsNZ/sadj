@@ -4,7 +4,7 @@
 \alias{selectSeries.X13Batch}
 \title{Select unique series}
 \usage{
-\method{selectSeries}{X13Batch}(x, snames, simplify = TRUE)
+\method{selectSeries}{X13Batch}(x, snames, simplify = if_else(missing(snames), FALSE, TRUE))
 }
 \arguments{
 \item{snames}{}

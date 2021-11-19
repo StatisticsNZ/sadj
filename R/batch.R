@@ -61,22 +61,24 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
                               , x, as.integer(names(x))
                               , SIMPLIFY = FALSE
                               , mc.cores = parallel::detectCores() / 2)
-    # res <- x %>% parallel::mclapply(adjust, purge=FALSE, mc.cores = parallel::detectCores() / 2)
   else
     res <- mapply(function(x,y) adjust(x, grp_num=y,purge=purge)
                   , x, as.integer(names(x))
                   , SIMPLIFY = FALSE)
-    # res <- lapply(x, adjust, purge=FALSE)
+
+
+  # get the res's that are not group res's
+  is_groupres <- (map_chr(res, ~class(.x)[[1]])) == "X13SeriesGroupResult"
+  # These get 2 list elements: message, snames. nmaes come from
+  err_grps <- x[!is_groupres] %>% purrr::map2(res[!is_groupres], function(x, y){
+    list(message = y, snames = names(x))
+  })
+
+  res <- res[is_groupres]
+  if(!rlang::is_empty(err_grps))
+    attr(res,"x13_group_result_errors") <- err_grps
+
   class(res) <- c("X13BatchResult", class(res))
-
-  # if (purge)
-  #   series %>% purrr::map(clean)
-  # if (purge) {
-  #   x %>% purrr::walk2(as.integer(names(x)),function(x,y){
-  #     x %>% purrr::walk(clean,grp_num=y)
-  #   })
-  # }
-
   res
 }
 
@@ -95,14 +97,6 @@ getRegVars.X13Batch <- function(x) {
   })
 }
 
-# #' @keywords internal
-# format.x13grp_name <- function(x) x[[1]] %>% purrr::reduce(paste,sep="|")
-
-# #' @keywords internal
-# pillar_shaft.x13grp_name <- function(x, ...) {
-#   pillar::new_pillar_shaft_simple(format(x))
-# }
-
 #' Summarise an X13 Batch object
 #'
 #' @param x
@@ -116,7 +110,6 @@ summary.X13Batch <- function(x, ...) {
   groups <- x %>% purrr::map(names) %>% tibble::enframe() %>% tidyr::unnest(cols = c(value)) %>%
     dplyr::group_by(value) %>%
     dplyr::summarise(groups=vctrs::new_vctr(list(name), class = character())) %>%
-    # dplyr::summarise(groups=paste(name, collapse="|")) %>%
     dplyr::rename(sname=value)
 
   selectSeries(x, simplify=FALSE) %>% purrr::map_dfr(function(x){
@@ -171,7 +164,7 @@ print.X13BatchResult <- function(x, ...){
 #' @export
 #'
 #' @examples
-selectSeries.X13Batch <- function(x, snames, simplify=TRUE) {
+selectSeries.X13Batch <- function(x, snames, simplify=if_else(missing(snames), FALSE, TRUE)) {
   if(missing(snames))
     res <- flatten(x) %>% .[unique(names(.))]
   else

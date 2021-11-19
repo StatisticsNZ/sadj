@@ -165,8 +165,11 @@ adjust.X13SeriesGroup <- function(x, purge = TRUE, keep_fixed=FALSE, grp_num=1L,
   options(warning.length = 8000L)
   on.exit(options(warning.length = saved_option_warn_len), add = TRUE)
 
-  if(x13ErrorDetected(x13_messages))
+  if(x13ErrorDetected(x13_messages)) {
+    # class(x13_messages) <- c("X13GroupError", class(x13_messages))
     stop(paste(x13_messages, collapse="\n"))
+  }
+
 
 
   # tryCatch(
