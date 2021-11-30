@@ -189,9 +189,9 @@ print.X13BatchResult <- function(x, ...){
 #' @examples
 selectSeries.X13Batch <- function(x, snames, simplify=if_else(missing(snames), FALSE, TRUE)) {
   if(missing(snames))
-    res <- flatten(x) %>% .[unique(names(.))]
+    res <- purrr::flatten(x) %>% .[unique(names(.))]
   else
-    res <- flatten(x) %>% .[unique(snames)]
+    res <- purrr::flatten(x) %>% .[unique(snames)]
 
   if(simplify && length(res) == 1)
     res[[1]]
