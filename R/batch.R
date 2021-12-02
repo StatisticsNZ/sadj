@@ -115,8 +115,11 @@ summary.X13Batch <- function(x, ...) {
     dplyr::rename(sname=value)
 
   selectSeries(x, simplify=FALSE) %>% purrr::map_dfr(function(x){
+    type_summ <- getSpecParameter(x, "x11", "type")
+    type_summ <- ifelse(rlang::is_empty(type_summ),FALSE, ifelse(type_summ == "summary",TRUE,FALSE))
     list(sname=sname(x), last_period=tail(x$date,1), spec_type=specType(x),
-         has_fac=hasFac(x), has_reg=hasReg(x)
+         has_fac=hasFac(x), has_reg=hasReg(x),
+         type_summary = type_summ
          )
   }) %>% dplyr::inner_join(groups,.,by="sname") %>% dplyr::arrange(sname)
 
