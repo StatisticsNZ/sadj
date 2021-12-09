@@ -124,6 +124,27 @@ summary.X13Batch <- function(x, ...) {
   }) %>% dplyr::inner_join(groups,.,by="sname") %>% dplyr::arrange(sname)
 
 }
+#' Summarise an X13 BatchResult object
+#'
+#' @param x
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+summary.X13BatchResult <- function(x, ...) {
+  groups <- x %>% purrr::map(names) %>% tibble::enframe() %>% tidyr::unnest(cols = c(value)) %>%
+    dplyr::group_by(value) %>%
+    dplyr::summarise(groups=vctrs::new_vctr(list(name), class = character())) %>%
+    dplyr::rename(sname=value)
+
+  selectSeries(x, simplify=FALSE) %>% purrr::map_dfr(function(x){
+    list(sname=sname(x), last_period=tail(x$date,1)
+    )
+  }) %>% dplyr::inner_join(groups,.,by="sname") %>% dplyr::arrange(sname)
+
+}
 
 #' Print X13Batch.
 #'
@@ -212,18 +233,10 @@ selectSeries.X13Batch <- function(x, snames, simplify=if_else(missing(snames), F
 #' @export
 #'
 #' @examples
-selectSeries.X13BatchResult <- function(x, snames, simplify=TRUE) {
-  if(missing(snames))
-    res <- purrr::flatten(x) %>% .[unique(names(.))]
-  else
-    res <- purrr::flatten(x) %>% .[unique(snames)]
-
-  if(simplify && length(res) == 1)
-    res[[1]]
-  else
-    res
-
+selectSeries.X13BatchResult <- function(...) {
+  selectSeries.X13Batch(...)
 }
+
 
 
 #' Extract t-vals from regression variables
