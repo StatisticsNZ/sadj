@@ -28,5 +28,6 @@ Imports:
     knitr,
     tibble (>= 3.1.1),
     tidyr (>= 1.1.3),
-    vctrs (>= 0.3.8)
+    vctrs (>= 0.3.8),
+    rex (>= 1.2.0)
     

@@ -8,6 +8,33 @@
   structure(NextMethod(), class=class(x))
 }
 
+#' Add Outliers
+#'
+#' @param x
+#' @param arima_model if missing and spec parameter is empty, (0 1 1)(0 1 1) will be used.
+#' @param update_save Update the regression-save parameter?
+#' @param correct_spec Automatically fix a spec to run with outlier regression?
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"addOutliers<-.X13Batch" <- function(x, arima_model, update_save = TRUE, correct_spec = TRUE, values){
+  missing_arima <- missing(arima_model)
+  x %>% purrr::modify(function(x){
+    if(missing_arima)
+      addOutliers(x, update_save = update_save
+                  , correct_spec = correct_spec) <- values
+    else
+      addOutliers(x, arima_model = arima_model, update_save = update_save
+                  , correct_spec = correct_spec) <- values
+    x
+  })
+}
+
+
+
 #' Create a list of X13SeriesGroup objects from an mta file.
 #'
 #' @param mta Path to mta file.
@@ -31,46 +58,46 @@ X13BatchFromMTA <-function(mta_path, parallel=TRUE) {
 #' @export
 adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
 
-  # series <- selectSeries(x)
-  # if (purge) {
-  #   # series %>% purrr::map(clean)
-  #   x %>% purrr::walk2(as.integer(names(x)),function(x,y){
-  #     x %>% purrr::walk(clean,grp_num=y)
-  #   })
-  # }
-
-
   if(parallel)
     res <- parallel::mcmapply(function(x,y) adjust(x, grp_num=y,purge=purge)
                               , x, as.integer(names(x))
                               , SIMPLIFY = FALSE
                               , mc.cores = parallel::detectCores() / 2)
-    # res <- x %>% parallel::mclapply(adjust, purge=FALSE, mc.cores = parallel::detectCores() / 2)
   else
     res <- mapply(function(x,y) adjust(x, grp_num=y,purge=purge)
                   , x, as.integer(names(x))
                   , SIMPLIFY = FALSE)
-    # res <- lapply(x, adjust, purge=FALSE)
+
+
+  # get the res's that are not group res's
+  is_groupres <- (map_chr(res, ~class(.x)[[1]])) == "X13SeriesGroupResult"
+  # These get 2 list elements: message, snames. nmaes come from
+  err_grps <- x[!is_groupres] %>% purrr::map2(res[!is_groupres], function(x, y){
+    list(message = y, snames = names(x))
+  })
+
+  res <- res[is_groupres]
+  if(!rlang::is_empty(err_grps))
+    attr(res,"x13_group_result_errors") <- err_grps
+
   class(res) <- c("X13BatchResult", class(res))
-
-  # if (purge)
-  #   series %>% purrr::map(clean)
-  # if (purge) {
-  #   x %>% purrr::walk2(as.integer(names(x)),function(x,y){
-  #     x %>% purrr::walk(clean,grp_num=y)
-  #   })
-  # }
-
   res
 }
 
-# #' @keywords internal
-# format.x13grp_name <- function(x) x[[1]] %>% purrr::reduce(paste,sep="|")
-
-# #' @keywords internal
-# pillar_shaft.x13grp_name <- function(x, ...) {
-#   pillar::new_pillar_shaft_simple(format(x))
-# }
+#' Get Regression Variables
+#'
+#' @param x
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getRegVars.X13Batch <- function(x) {
+  x %>% selectSeries(simplify=FALSE) %>% map_chr(function(x){
+    res <- getSpecParameter(x,"regression", "variables")
+    if(is.null(res)) NA_character_ else res
+  })
+}
 
 #' Summarise an X13 Batch object
 #'
@@ -85,13 +112,36 @@ summary.X13Batch <- function(x, ...) {
   groups <- x %>% purrr::map(names) %>% tibble::enframe() %>% tidyr::unnest(cols = c(value)) %>%
     dplyr::group_by(value) %>%
     dplyr::summarise(groups=vctrs::new_vctr(list(name), class = character())) %>%
-    # dplyr::summarise(groups=paste(name, collapse="|")) %>%
     dplyr::rename(sname=value)
 
-  selectSeries(x) %>% purrr::map_dfr(function(x){
+  selectSeries(x, simplify=FALSE) %>% purrr::map_dfr(function(x){
+    type_summ <- getSpecParameter(x, "x11", "type")
+    type_summ <- ifelse(rlang::is_empty(type_summ),FALSE, ifelse(type_summ == "summary",TRUE,FALSE))
     list(sname=sname(x), last_period=tail(x$date,1), spec_type=specType(x),
-         has_fac=hasFac(x), has_reg=hasReg(x)
+         has_fac=hasFac(x), has_reg=hasReg(x),
+         type_summary = type_summ
          )
+  }) %>% dplyr::inner_join(groups,.,by="sname") %>% dplyr::arrange(sname)
+
+}
+#' Summarise an X13 BatchResult object
+#'
+#' @param x
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+summary.X13BatchResult <- function(x, ...) {
+  groups <- x %>% purrr::map(names) %>% tibble::enframe() %>% tidyr::unnest(cols = c(value)) %>%
+    dplyr::group_by(value) %>%
+    dplyr::summarise(groups=vctrs::new_vctr(list(name), class = character())) %>%
+    dplyr::rename(sname=value)
+
+  selectSeries(x, simplify=FALSE) %>% purrr::map_dfr(function(x){
+    list(sname=sname(x), last_period=tail(x$date,1)
+    )
   }) %>% dplyr::inner_join(groups,.,by="sname") %>% dplyr::arrange(sname)
 
 }
@@ -131,6 +181,27 @@ print.X13BatchResult <- function(x, ...){
   cat(toString(x, ...))
 }
 
+#' Remove outliers from all groups in a batch
+#'
+#' ao, ls, so, tc
+#'
+#' @param x
+#' @param spec
+#' @param parameter
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"removeOutliers<-.X13Batch" <- function(x, values){
+  x %>% purrr::modify(function(x){
+    removeOutliers(x) <- values
+    x
+  })
+
+}
+
 #' Select unique series
 #'
 #' @param x
@@ -140,11 +211,11 @@ print.X13BatchResult <- function(x, ...){
 #' @export
 #'
 #' @examples
-selectSeries.X13Batch <- function(x, snames, simplify=TRUE) {
+selectSeries.X13Batch <- function(x, snames, simplify=if_else(missing(snames), FALSE, TRUE)) {
   if(missing(snames))
-    res <- flatten(x) %>% .[unique(names(.))]
+    res <- purrr::flatten(x) %>% .[unique(names(.))]
   else
-    res <- flatten(x) %>% .[unique(snames)]
+    res <- purrr::flatten(x) %>% .[unique(snames)]
 
   if(simplify && length(res) == 1)
     res[[1]]
@@ -162,15 +233,41 @@ selectSeries.X13Batch <- function(x, snames, simplify=TRUE) {
 #' @export
 #'
 #' @examples
-selectSeries.X13BatchResult <- function(x, snames, simplify=TRUE) {
-  if(missing(snames))
-    res <- flatten(x) %>% .[unique(names(.))]
-  else
-    res <- flatten(x) %>% .[unique(snames)]
+selectSeries.X13BatchResult <- function(...) {
+  selectSeries.X13Batch(...)
+}
 
-  if(simplify && length(res) == 1)
-    res[[1]]
-  else
-    res
+
+
+#' Extract t-vals from regression variables
+#'
+#' @param x
+#' @param variables
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tvals.X13BatchResult <- function(x, variables) {
+  if(missing(variables)) {
+    variables <- x %>% selectSeries(simplify=FALSE) %>% map(function(x) {
+      x %>% attr("udg") %>% names() %>% grep(rex::rex(start, "Outlier$"),., value=TRUE) %>%
+        stringr::str_remove(rex::rex(start, "Outlier$"))
+    }) %>% purrr::flatten_chr() %>% unique() %>% sort()
+  }
+  res <- x %>% selectSeries(simplify=FALSE) %>% map(tvals, variables)
+  res %>% bind_rows(.id="series")
+}
+
+#' Is the x-11 method additive or multiplicative?
+#'
+#' @param x
+#'
+#' @return "add", "mult", or NA
+#' @export
+#'
+#' @examples
+X11AddMult.X13Batch <- function(x) {
+  x %>% selectSeries(simplify=FALSE) %>% purrr::map_chr(X11AddMult)
 
 }

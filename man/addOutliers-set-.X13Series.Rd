@@ -2,15 +2,22 @@
 % Please edit documentation in R/series.R
 \name{addOutliers<-.X13Series}
 \alias{addOutliers<-.X13Series}
-\title{Add Outliers: ao, ls, tc, so.}
+\title{Add Outliers}
 \usage{
-\method{addOutliers}{X13Series}(x, arima_model, update_save, correct_spec, values) <- value
+\method{addOutliers}{X13Series}(x, arima_model, update_save = TRUE, correct_spec = TRUE, values) <- value
 }
 \arguments{
-\item{x}{Object.}
+\item{arima_model}{if missing and spec parameter is empty, (0 1 1)(0 1 1) will be used.}
 
-\item{value}{a character vector of valid ao parameters}
+\item{update_save}{Update the regression-save parameter?}
+
+\item{correct_spec}{Automatically fix a spec to run with outlier regression?}
+
+\item{values}{}
+}
+\value{
+
 }
 \description{
-This function needs to be generalised to addParameterVals
+Add Outliers
 }

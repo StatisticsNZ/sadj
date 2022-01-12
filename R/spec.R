@@ -264,16 +264,23 @@ specType.X13SpecList <- function(x) {
     spec_type
 }
 
-#' Add Outliers: ao, ls, tc, so, rp, qi, qd.
+
+#' Add Outliers
 #'
-#' This function needs to be generalised to addParameterVals
+#' @param x
+#' @param arima_model if missing and spec parameter is empty, (0 1 1)(0 1 1) will be used.
+#' @param update_save Update the regression-save parameter?
+#' @param correct_spec Automatically fix a spec to run with outlier regression?
+#' @param values
 #'
-#' @param x Object.
-#' @param value a character vector of valid ao parameters
-#'
+#' @return
 #' @export
 #'
-"addOutliers<-.X13SpecList" <- function(x, arima_model="(0 1 1)(0 1 1)",update_save=TRUE, correct_spec=TRUE, values){
+#' @examples
+"addOutliers<-.X13SpecList" <- function(x, arima_model, update_save=TRUE, correct_spec=TRUE, values){
+
+  if(missing(arima_model))
+    arima_model = "(0 1 1)(0 1 1)"
 
   if(!missing(arima_model) || rlang::is_empty(getSpecParameter(x,"arima","model")))
     setSpecParameter(x, "arima","model") <- arima_model

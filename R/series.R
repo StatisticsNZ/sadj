@@ -267,18 +267,35 @@ is.X13Series <- function(x) inherits(x, "X13Series")
 #' @export
 specType.X13Series <- function(x) getSpecList(x) %>% specType()
 
-#' Add Outliers: ao, ls, tc, so.
+#' Add Outliers
 #'
-#' This function needs to be generalised to addParameterVals
+#' @param x
+#' @param arima_model if missing and spec parameter is empty, (0 1 1)(0 1 1) will be used.
+#' @param update_save Update the regression-save parameter?
+#' @param correct_spec Automatically fix a spec to run with outlier regression?
+#' @param values
 #'
-#' @param x Object.
-#' @param value a character vector of valid ao parameters
-#'
+#' @return
 #' @export
 #'
-"addOutliers<-.X13Series" <- function(x, arima_model,update_save, correct_spec, values){
+#' @examples
+"addOutliers<-.X13Series" <- function(x, arima_model, update_save = TRUE, correct_spec = TRUE, values){
+
+  # check dates here for new ao's - values
+  values_mod <- removeRegAfterEnd(reg_vars = values, s_period = getPeriod(x), s_end_date = tail(x$date,1))
+  if(!rlang::is_empty(values_removed <- setdiff(values,values_mod)))
+    warning(sprintf("Some regression variables not added b/c their periods occur after the end of the series:
+                    %s", paste(values_removed, collapse = ", ")))
+
+  if(rlang::is_empty(values_mod)) return(x)
+
   s <- getSpecList(x)
-  addOutliers(s, arima_model,update_save, correct_spec) <- values
+  if(missing(arima_model))
+    addOutliers(s, update_save = update_save, correct_spec = correct_spec) <- values_mod
+  else
+    addOutliers(s, arima_model = arima_model
+                , update_save = update_save, correct_spec = correct_spec) <- values_mod
+
   attr(x, "SpecList") <- s
   x
 
@@ -342,6 +359,8 @@ correctSeriesSpec.X13Series <- function(x) {
 
     }
 
+    # Check outlier stuff here
+
     # span_dates <- span_vals %>% strsplit("[.]") %>% map(function(x)as.list(as.numeric(c(x,4)))) %>%
     #   map(~do.call(ypdToDate,.x))
     # # compare span dates to series start and end dates
@@ -386,6 +405,17 @@ getRegFile.X13Series <- function(x){
   attr(x, "regfile")
 }
 
+#' Return Period
+#'
+#' @param x
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getPeriod.X13Series <- function(x) {
+  unique(x[, "period"]) %>% max() %>% as.numeric()
+}
 
 #' Get a spec.
 #'
@@ -833,5 +863,43 @@ summary.X13SeriesResult <- function(x, html = FALSE, stringsAsFactors = FALSE, .
   return(d)
 }
 
+#' Is the x-11 method additive or multiplicative?
+#'
+#' @param x
+#'
+#' @return "add", "mult", or NA
+#' @export
+#'
+#' @examples
+X11AddMult.X13Series <- function(x) {
+  if(!rlang::is_empty(getSpec(x,"x11"))) {
+    if(rlang::is_empty(mode <- getSpecParameter(x,"x11","mode")) || mode=="mult")
+      "mult"
+    else "add"
+  } else NA_character_
+
+
+}
+
+#' Extract t-vals from regression variables
+#'
+#' @param x
+#' @param variables
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tvals.X13SeriesResult <- function(x, variables) {
+  udg <- x %>% attr("udg")
+  # fix case
+  variables %>% purrr::set_names(.,tolower(.)) %>% purrr::map_dbl(function(x){
+    otl <- udg %>% .[[sprintf("Outlier$%s",x)]]
+    if(!rlang::is_empty(otl))
+      otl %>% strsplit(split=" ") %>% unlist() %>% .[[3]] %>% as.numeric()
+    else
+      NA_real_
+  })
+}
 
 X13Messages.X13SeriesResult <- function(x) cat(paste(attr(x,"x13_messages"), collapse="\n"))
