@@ -30,11 +30,16 @@ findX13File <- function(fname, rel_dir=getwd()){
           grep(rex::rex(start, end_bit, end), . ,value=TRUE, ignore.case = TRUE)
 
         try_file <- end_bit %>% sprintf("%s/%s",rel_dir,.)
-        if(file.exists(try_file)){
+
+        if(rlang::is_empty(try_file)) {
+          stop(sprintf("Couldn't find file:\n%s.", fname))
+        } else if(file.exists(try_file)){
+
           warning(sprintf("Couldn't find file:\n%s.\nFound file:\n%s.", fname
                           , (found_file <- sub(path.expand("~"),"~",normalizePath(try_file)))))
           return(found_file)
         }
+
       }
     }
 
