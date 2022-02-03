@@ -1,6 +1,6 @@
 ---
 title: "`sadj`"
-author: "Chris Hansen"
+author: "Chris Hansen, Steve White"
 date: "`r Sys.Date()`"
 output:
   md_document:
@@ -11,6 +11,24 @@ vignette: >
   %\usepackage[utf8]{inputenc}
 ---
   
+<style type="text/css">
+  .section.level1 h1 {
+    font-size: 25px;
+    line-height: 30px;
+    margin-top: 20px;
+    border-bottom: 6px solid #f7f7f7;
+  }
+
+.figure img{
+  max-width: 80%;
+}
+
+.plotly.html-widget{
+  width: 700px !important;
+  padding-bottom: 10px;
+}
+</style>
+  
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE,
                       message = FALSE, comment = NA, 
@@ -19,36 +37,55 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE,
 library(sadj)
 ```
 
-# `sadj`
+The first thing you might want to do is run seasonal adjustment on your existing `X13-ARIMA-SEATS` file setup.  You can do this in 2 steps. 
 
-Conduct seasonal adjustment using X13-ARIMA-SEATS from R.  Almost all X13-ARIMA-SEATS functionality is supported, including the use of composite adjustments.
-
-# Installation
-
-If you have a public SSH key set up correctly with [GitLab](https://gitlabstats-prd):
+1.) Read in the series from a `.mta` file:  
 
 ```r
-library(git2r)
-library(devtools)
-
-install_git(
-  "git@gitlabstats-prd:cxhansen/sadj.git",
-  credentials = cred_ssh_key(),
-  build_vignettes = TRUE
-)
+my_series <- X13BatchFromMTA(mta_path)
 ```
 
-Using HTTPS:
+2.) Seasonally adjust the series:
 
 ```r
-library(git2r)
-library(devtools)
-
-ssl_cert_locations(filename = "/etc/ssl/certs/ca-certificates.crt")
-install_git("https://gitlabstats-prd/cxhansen/sadj.git", build_vignettes = TRUE)
+adjusted_series <- adjust(my_series)
 ```
 
-# Basic Usage
+Next, it helps to understand the basic structure of the X13 objects.  Everything is organised as lists of lists.  `my_series` is an `X13Batch` object.  `adjusted_series` is an `X13BatchResult` object.  They are broken down in the following way:  
+
+
+```{r listsofliststab, echo = FALSE}
+data.frame(object=c("X13Batch","X13SeriesGroup", "X13BatchResult", "X13SeriesGroupResult"),
+           list_of=c("X13SeriesGroup","X13Series","X13SeriesGroupResult","X13SeriesResult"),
+           comments=c("The groups are created by inserting empty lines in the .mta file between series.",
+                      "There can be zero or one composite series in a group.  The composite must go at the end.",
+                      "adjust produces result objects.",
+                      "")) %>% 
+  knitr::kable(row.names = FALSE, format = "markdown")
+```
+
+`X13Series` is a dataframe with time series input data.  It has attributes that are accessible/mutable with the following functions:  
+
+```{r getsettab, echo = FALSE}
+data.frame(get=c("getSpecList","getSpec","getSpecParameter", "getFacFile", "getRegFile"),
+           set=c("setSpecList","setSpec","setSpecParameter", "setFacFile", "setRegFile"),
+           comments=c("Method gets passed to the X13SpecList object which is attached to X13Series as an attribute",
+                      "Same as comment above",
+                      "Same as comment above",
+                      "get/set the factor file dataframe attached to the the X13Series",
+                      "get/set the regression file dataframe attached to the the X13Series")) %>% 
+  knitr::kable(row.names = FALSE, format = "markdown")
+```
+
+
+(`adjusted_series` is an `X13BatchResult` object and has a similar breakdown.)  
+
+If you are investigating alternate configurations of X13 files, the bulk of your work will sit between steps 1 and 2 and will use the basic functions above for interaction.  
+
+
+You may want to create different scenarios from `my_series` and then make some modification to the spec, transform, and regression files. 
+
+
 
 The `sadj` package allows for relatively flexible use of the underlying
 `X13-ARIMA-SEATS` program.  But results can be produced quickly and easily by
@@ -169,21 +206,7 @@ plot(ap.res)
 ```
 
 ```{r simpleex.res.plot2}
-plot(ap.res, type = "seasonal")
+plot(ap.res, type = "d10")
 ```
 
-A simple result viewer is also provided as a Shiny app.  For example, to view the `ap.res` object above, simply run:
 
-```r
-view(ap.res)
-```
-
-(Note the lower case 'v'.)  This will yield:
-
-![img/viewer01.png](img/viewer01.png)
-
-It will also work with grouped adjustments, for example:
-
-![img/viewer02.png](img/viewer02.png)
-
-Again, these are very simple interfaces, but they serve as a reasonable proof of concept which could easily be extended.
