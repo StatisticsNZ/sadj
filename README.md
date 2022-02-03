@@ -23,12 +23,12 @@ object. `adjusted_series` is an `X13BatchResult` object. They are broken
 down in the following
 way:
 
-| object               | list\_of             | comments                                                                                |
-| :------------------- | :------------------- | :-------------------------------------------------------------------------------------- |
-| X13Batch             | X13SeriesGroup       | The groups are created by inserting empty lines in the .mta file between series.        |
-| X13SeriesGroup       | X13Series            | There can be zero or one composite series in a group. The composite must go at the end. |
-| X13BatchResult       | X13SeriesGroupResult | adjust produces result objects.                                                         |
-| X13SeriesGroupResult | X13SeriesResult      |                                                                                         |
+| object               | is.a.list.of                 | comments                                                                                |
+| :------------------- | :--------------------------- | :-------------------------------------------------------------------------------------- |
+| X13Batch             | X13SeriesGroup objects       | The groups are created by inserting empty lines in the .mta file between series.        |
+| X13SeriesGroup       | X13Series objects            | There can be zero or one composite series in a group. The composite must go at the end. |
+| X13BatchResult       | X13SeriesGroupResult objects | adjust produces result objects.                                                         |
+| X13SeriesGroupResult | X13SeriesResult objects      |                                                                                         |
 
 `X13Series` is a dataframe with time series input data. It has
 attributes that are accessible/mutable with the following

@@ -42,7 +42,7 @@ Next, it helps to understand the basic structure of the X13 objects.  Everything
 
 ```{r listsofliststab, echo = FALSE}
 data.frame(object=c("X13Batch","X13SeriesGroup", "X13BatchResult", "X13SeriesGroupResult"),
-           list_of=c("X13SeriesGroup","X13Series","X13SeriesGroupResult","X13SeriesResult"),
+           `is a list of`=c("X13SeriesGroup objects","X13Series objects","X13SeriesGroupResult objects","X13SeriesResult objects"),
            comments=c("The groups are created by inserting empty lines in the .mta file between series.",
                       "There can be zero or one composite series in a group.  The composite must go at the end.",
                       "adjust produces result objects.",
