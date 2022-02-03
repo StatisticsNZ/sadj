@@ -211,8 +211,8 @@ print.X13BatchResult <- function(x, ...){
 #' @export
 #'
 #' @examples
-selectSeries.X13Batch <- function(x, snames, simplify=if_else(missing(snames), FALSE, TRUE)) {
-  if(missing(snames))
+selectSeries.X13Batch <- function(x, snames = NULL, simplify=if_else(rlang::is_empty(snames), FALSE, TRUE)) {
+  if(rlang::is_empty(snames))
     res <- purrr::flatten(x) %>% .[unique(names(.))]
   else
     res <- purrr::flatten(x) %>% .[unique(snames)]
@@ -271,3 +271,26 @@ X11AddMult.X13Batch <- function(x) {
   x %>% selectSeries(simplify=FALSE) %>% purrr::map_chr(X11AddMult)
 
 }
+
+#' @export
+getSpecParameter.X13Batch <- function(x, spec, parameter, snames = NULL
+                                      , simplify=if_else(rlang::is_empty(snames), FALSE, TRUE)){
+  x13series <- x %>% selectSeries(snames = snames, simplify = FALSE)
+
+  res <- x13series %>% purrr:::map(function(y){
+    getSpecParameter(y, spec, parameter)
+  })
+
+  if(simplify && length(res) == 1)
+    res[[1]]
+  else
+    res
+
+}
+
+
+#' #' @export
+#' "setSpecParameter<-.X13Batch" <- function(x, spec, name, value, snames){
+#'   x13series <- x %>% selectSeries(snames = rlang::maybe_missing(snames), simplify=FALSE)
+#'
+#' }
