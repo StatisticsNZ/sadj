@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE,
 library(sadj)
 ```
 
-# Basic Use
+# Basic Use (WIP)
 The first thing you might want to do is run seasonal adjustment on your existing `X13-ARIMA-SEATS` file setup.  You can do this in 2 steps. 
 
 1.) Read in the series from a `.mta` file:  
@@ -36,7 +36,7 @@ my_series <- X13BatchFromMTA(mta_path)
 adjusted_series <- adjust(my_series)
 ```
 
-# Sadj objects
+# Sadj objects (WIP)
 Next, it helps to understand the basic structure of the X13 objects.  Everything is organised as lists of lists.  `my_series` is an `X13Batch` object.  `adjusted_series` is an `X13BatchResult` object.  They are broken down in the following way:  
 
 
@@ -71,6 +71,8 @@ If you are investigating alternate configurations of X13 files, the bulk of your
 
 You may want to create different scenarios from `my_series` and then make some modification to the spec, transform, and regression files. 
 
+
+# Orginal Documentation
 
 
 The `sadj` package allows for relatively flexible use of the underlying

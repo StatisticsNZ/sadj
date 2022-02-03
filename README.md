@@ -1,4 +1,4 @@
-# Basic Use
+# Basic Use (WIP)
 
 The first thing you might want to do is run seasonal adjustment on your
 existing `X13-ARIMA-SEATS` file setup. You can do this in 2 steps.
@@ -15,7 +15,7 @@ my_series <- X13BatchFromMTA(mta_path)
 adjusted_series <- adjust(my_series)
 ```
 
-# Sadj objects
+# Sadj objects (WIP)
 
 Next, it helps to understand the basic structure of the X13 objects.
 Everything is organised as lists of lists. `my_series` is an `X13Batch`
@@ -51,6 +51,8 @@ functions above for interaction.
 
 You may want to create different scenarios from `my_series` and then
 make some modification to the spec, transform, and regression files.
+
+# Orginal Documentation
 
 The `sadj` package allows for relatively flexible use of the underlying
 `X13-ARIMA-SEATS` program. But results can be produced quickly and
