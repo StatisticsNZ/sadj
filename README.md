@@ -1,20 +1,4 @@
-<style type="text/css">
-  .section.level1 h1 {
-    font-size: 25px;
-    line-height: 30px;
-    margin-top: 20px;
-    border-bottom: 6px solid #f7f7f7;
-  }
-
-.figure img{
-  max-width: 80%;
-}
-
-.plotly.html-widget{
-  width: 700px !important;
-  padding-bottom: 10px;
-}
-</style>
+# Basic Use
 
 The first thing you might want to do is run seasonal adjustment on your
 existing `X13-ARIMA-SEATS` file setup. You can do this in 2 steps.
@@ -30,6 +14,8 @@ my_series <- X13BatchFromMTA(mta_path)
 ``` r
 adjusted_series <- adjust(my_series)
 ```
+
+# Sadj objects
 
 Next, it helps to understand the basic structure of the X13 objects.
 Everything is organised as lists of lists. `my_series` is an `X13Batch`
