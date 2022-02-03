@@ -23,10 +23,22 @@ view.X13SeriesResult <- function(x) {
              )
             ),
             shiny::tabPanel(
+              "Decomposition",
+              plotly::plotlyOutput(
+                "decomp", height = "700px"
+              )
+            ),
+            shiny::tabPanel(
              "Seasonal Factors",
              plotly::plotlyOutput(
                "factors", height = "700px"
              )
+            ),
+            shiny::tabPanel(
+              "S-I Ratios",
+              plotly::plotlyOutput(
+                "si_ratios", height = "700px"
+              )
             ),
             shiny::tabPanel(
              "Diagnostics",
@@ -40,8 +52,16 @@ view.X13SeriesResult <- function(x) {
           plotly::ggplotly(plot(x))
         })
 
+        output$decomp <- plotly::renderPlotly({
+          plotly::ggplotly(plot(x, type = "decomp"))
+        })
+
         output$factors <- plotly::renderPlotly({
-          plotly::ggplotly(plot(x, type = "seasonal"))
+          plotly::ggplotly(plot(x, type = "D10"))
+        })
+
+        output$si_ratios <- plotly::renderPlotly({
+          plotly::ggplotly(plot(x, type = "D10D8"))
         })
 
         output$summary <- shiny::renderTable(
