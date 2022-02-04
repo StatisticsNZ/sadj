@@ -1,4 +1,16 @@
-# Basic Use (WIP)
+# Overview
+
+## Introduction
+
+## Goals of sadj
+
+## Function Help pages
+
+### list of functions
+
+## Vignettes
+
+# Basic Use Example
 
 The first thing you might want to do is run seasonal adjustment on your
 existing `X13-ARIMA-SEATS` file setup. You can do this in 2 steps.
@@ -9,26 +21,39 @@ existing `X13-ARIMA-SEATS` file setup. You can do this in 2 steps.
 my_series <- X13BatchFromMTA(mta_path)
 ```
 
-2.) Seasonally adjust the series:
+2.) Seasonally adjust the
+series:
 
 ``` r
 adjusted_series <- adjust(my_series)
 ```
 
-# Sadj objects (WIP)
+# Sadj objects Summary
 
-Next, it helps to understand the basic structure of the X13 objects.
-Everything is organised as lists of lists. `my_series` is an `X13Batch`
-object. `adjusted_series` is an `X13BatchResult` object. They are broken
-down in the following
-way:
+## Input Objects
 
-| object               | is.a.list.of                 | comments                                                                                |
-| :------------------- | :--------------------------- | :-------------------------------------------------------------------------------------- |
-| X13Batch             | X13SeriesGroup objects       | The groups are created by inserting empty lines in the .mta file between series.        |
-| X13SeriesGroup       | X13Series objects            | There can be zero or one composite series in a group. The composite must go at the end. |
-| X13BatchResult       | X13SeriesGroupResult objects | adjust produces result objects.                                                         |
-| X13SeriesGroupResult | X13SeriesResult objects      |                                                                                         |
+| Object         | Structure                        | Comments                                                                                                                                                                                                          |
+| :------------- | :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| X13Batch       | A list of X13SeriesGroup objects | A batch of X13Series objects as specified by an MTA file.                                                                                                                                                         |
+| X13SeriesGroup | A list of X13Series objects      | X13Series object groupings which are delineated by empty spaces inside an MTA file (see note). Either 0 or 1 composites are allowed at the end of a group and nowhere else.                                       |
+| X13Series      | A dataframe of time series data  | Can have several attributes to represent the following X13 files that can be associated with a single series: spc, fac, regression. Read the X13Series section to learn how to access and modify these attributes |
+
+## Output Objects
+
+| Object               | Structure                                           | Comments                                                                                                                                                                          |
+| :------------------- | :-------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| X13SeriesResult      | A dataframe of seasonally adjusted time series data | Has attributes that represent quality diagnostics and calculated modelling parameters                                                                                             |
+| X13SeriesGroupResult | A list of X13SeriesResult objects                   | X13SeriesResult object groupings which are delineated by empty spaces inside an MTA file (see note). Either 0 or 1 composites are allowed at the end of a group and nowhere else. |
+| X13BatchResult       | A list of X13SeriesGroupResult objects              | A batch of X13SeriesResult objects as specified by an MTA file.                                                                                                                   |
+
+**Note: Empty lines in an MTA file do not mean anything to the X13
+program. They are a Statistics NZ convention and they do mean something
+to the sadj package - The groupings are run as submitted as their own
+batches to X13.**
+
+# Interacting with Objects
+
+## Modifying Seasonal Adjustment Congfigurations (SPC files)
 
 `X13Series` is a dataframe with time series input data. It has
 attributes that are accessible/mutable with the following
@@ -42,15 +67,9 @@ functions:
 | getFacFile       | setFacFile       | get/set the factor file dataframe attached to the the X13Series                             |
 | getRegFile       | setRegFile       | get/set the regression file dataframe attached to the the X13Series                         |
 
-(`adjusted_series` is an `X13BatchResult` object and has a similar
-breakdown.)
+## X13Batch Objects
 
-If you are investigating alternate configurations of X13 files, the bulk
-of your work will sit between steps 1 and 2 and will use the basic
-functions above for interaction.
-
-You may want to create different scenarios from `my_series` and then
-make some modification to the spec, transform, and regression files.
+-----
 
 # Orginal Documentation
 
