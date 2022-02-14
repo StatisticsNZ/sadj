@@ -18,7 +18,7 @@ Depends:
     magrittr,
     stringr
 VignetteBuilder: knitr
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Suggests: 
     testthat,
     plotly,
@@ -30,4 +30,3 @@ Imports:
     tidyr (>= 1.1.3),
     vctrs (>= 0.3.8),
     rex (>= 1.2.0)
-    
