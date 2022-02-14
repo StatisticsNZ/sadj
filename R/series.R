@@ -417,6 +417,18 @@ getPeriod.X13Series <- function(x) {
   unique(x[, "period"]) %>% max() %>% as.numeric()
 }
 
+#' Return Period
+#'
+#' @param x
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getPeriod.X13SeriesResult <- function(x) {
+  unique(x[, "period"]) %>% max() %>% as.numeric()
+}
+
 #' Get a spec.
 #'
 #' @param x Input object.

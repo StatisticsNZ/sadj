@@ -86,7 +86,7 @@ data.frame(object=c("X13SeriesResult","X13SeriesGroupResult", "X13BatchResult"),
   knitr::kable(row.names = FALSE, format = "markdown", col.names = c("Object", "Structure", "Comments"))
 ```
 
-**Note: Empty lines in an MTA file do not mean anything to the X13 program.  They are a Statistics NZ convention and they do mean something to the sadj package - The groupings are run as submitted as their own batches to X13.**
+**Note: Empty lines in an MTA file do not mean anything to the X13 program.  They are a Statistics NZ convention and they do mean something to the sadj package - The groupings are submitted to X13 as their own batches.**
 
 # Interacting with Objects
 
