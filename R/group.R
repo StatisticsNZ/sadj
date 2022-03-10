@@ -118,6 +118,36 @@ is.X13SeriesGroup <- function(x) inherits(x, "X13SeriesGroup")
 }
 
 
+#' Set parameter value for all series in a group.
+#'
+#' @param x
+#' @param spec
+#' @param parameter
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"setSpecParameter<-.X13SeriesGroup" <- function(x, spec, parameter, snames = NULL, value){
+  if(rlang::is_empty(snames)) {
+    x %>% purrr::modify(function(x){
+      setSpecParameter(x,spec, parameter) <- value
+      x
+    })
+  } else {
+    x %>% purrr::modify(function(x){
+      if(sname(x) %in% snames)
+        setSpecParameter(x,spec, parameter) <- value
+      x
+    })
+
+  }
+
+
+}
+
+
 #' @keywords internal
 specroot.X13SeriesGroup <- function(x, grp_num=1L){
   if (!inherits(x, "X13SeriesGroup"))

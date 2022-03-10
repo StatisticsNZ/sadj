@@ -111,6 +111,26 @@ getPeriod.X13BatchResult <- function(...) {
   getPeriod.X13Batch(...)
 }
 
+#' Get Spec Parameter of Batch
+#'
+#' @param x
+#'
+#' @return
+#' @export
+getSpecParameter.X13Batch <- function(x, spec, parameter, snames = NULL
+                                      , simplify=if_else(rlang::is_empty(snames), FALSE, TRUE)){
+  x13series <- x %>% selectSeries(snames = snames, simplify = FALSE)
+
+  res <- x13series %>% purrr:::map(function(y){
+    getSpecParameter(y, spec, parameter)
+  })
+
+  if(simplify && length(res) == 1)
+    res[[1]]
+  else
+    res
+
+}
 
 #' Get Regression Variables
 #'
@@ -265,6 +285,25 @@ selectSeries.X13BatchResult <- function(...) {
   selectSeries.X13Batch(...)
 }
 
+#' Set parameter value for all series in a group.
+#'
+#' @param x
+#' @param spec
+#' @param parameter
+#' @param values
+#'
+#' @return
+#' @export
+#'
+#' @examples
+"setSpecParameter<-.X13Batch" <- function(x, spec, parameter, snames = NULL, value){
+  x %>% purrr::modify(function(x){
+    setSpecParameter(x,spec, parameter, snames) <- value
+    x
+  })
+
+}
+
 
 
 #' Extract t-vals from regression variables
@@ -300,25 +339,14 @@ X11AddMult.X13Batch <- function(x) {
 
 }
 
+
+
+
 #' @export
-getSpecParameter.X13Batch <- function(x, spec, parameter, snames = NULL
-                                      , simplify=if_else(rlang::is_empty(snames), FALSE, TRUE)){
-  x13series <- x %>% selectSeries(snames = snames, simplify = FALSE)
-
-  res <- x13series %>% purrr:::map(function(y){
-    getSpecParameter(y, spec, parameter)
-  })
-
-  if(simplify && length(res) == 1)
-    res[[1]]
-  else
-    res
-
-}
-
-
-#' #' @export
-#' "setSpecParameter<-.X13Batch" <- function(x, spec, name, value, snames){
-#'   x13series <- x %>% selectSeries(snames = rlang::maybe_missing(snames), simplify=FALSE)
 #'
-#' }
+
+# "setSpecParameter<-.X13Batch" <- function(x, spec, name, value, snames){
+#   x13series <- x %>% selectSeries(snames = snames, simplify = FALSE)
+#
+#
+# }
