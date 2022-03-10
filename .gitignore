@@ -12,3 +12,7 @@ test_scripts/
 tests/test_spec/full_sets
 /doc/
 /Meta/
+vignettes/*.html
+vignettes/groups_files/
+vignettes/quickstart_files/
+vignettes/*.R

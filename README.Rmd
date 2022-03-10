@@ -1,6 +1,6 @@
 ---
 title: "`sadj`"
-author: "Chris Hansen"
+author: "Chris Hansen, Steve White"
 date: "`r Sys.Date()`"
 output:
   md_document:
@@ -11,44 +11,109 @@ vignette: >
   %\usepackage[utf8]{inputenc}
 ---
   
+
+  
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE}
 knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE,
                       message = FALSE, comment = NA, 
                       fig.align = "center", 
                       fig.height = 4, fig.width = 5)
 library(sadj)
+library(kableExtra)
 ```
 
-# `sadj`
+# Overview
 
-Conduct seasonal adjustment using X13-ARIMA-SEATS from R.  Almost all X13-ARIMA-SEATS functionality is supported, including the use of composite adjustments.
+## Introduction
+## Goals of sadj
+## Function Help pages
+### list of functions
+## Vignettes
 
-# Installation
 
-If you have a public SSH key set up correctly with [GitLab](https://gitlabstats-prd):
+# Basic Use Example
+The first thing you might want to do is run seasonal adjustment on your existing `X13-ARIMA-SEATS` file setup.  You can do this in 2 steps. 
+
+1.) Read in the series from a `.mta` file:  
 
 ```r
-library(git2r)
-library(devtools)
-
-install_git(
-  "git@gitlabstats-prd:cxhansen/sadj.git",
-  credentials = cred_ssh_key(),
-  build_vignettes = TRUE
-)
+my_series <- X13BatchFromMTA(mta_path)
 ```
 
-Using HTTPS:
+2.) Seasonally adjust the series:
 
 ```r
-library(git2r)
-library(devtools)
-
-ssl_cert_locations(filename = "/etc/ssl/certs/ca-certificates.crt")
-install_git("https://gitlabstats-prd/cxhansen/sadj.git", build_vignettes = TRUE)
+adjusted_series <- adjust(my_series)
 ```
 
-# Basic Usage
+
+
+# Sadj objects Summary
+ 
+
+## Input Objects  
+
+```{r input_objects, echo = FALSE}
+data.frame(object=c("X13Batch", "X13SeriesGroup", "X13Series"),
+           structure=c(
+             "A list of X13SeriesGroup objects",
+             "A list of X13Series objects",
+             "A dataframe of time series data"
+             ),
+           comments = c(
+             "A batch of X13Series objects as specified by an MTA file.",
+             "X13Series object groupings which are delineated by empty spaces inside an MTA file (see note). Either 0 or 1 composites are allowed at the end of a group and nowhere else.",
+             "Can have several attributes to represent the following X13 files that can be associated with a single series: spc, fac, regression.  Read the X13Series section to learn how to access and modify these attributes"
+                        )
+           ) %>% 
+  knitr::kable(row.names = FALSE, format = "markdown", col.names = c("Object", "Structure", "Comments"))
+```
+
+## Output Objects  
+
+```{r output_objects, echo = FALSE}
+data.frame(object=c("X13SeriesResult","X13SeriesGroupResult", "X13BatchResult"),
+           structure=c(
+             "A dataframe of seasonally adjusted time series data",
+             "A list of X13SeriesResult objects",
+             "A list of X13SeriesGroupResult objects"),
+           comments = c(
+             "Has attributes that represent quality diagnostics and calculated modelling parameters",
+             "X13SeriesResult object groupings which are delineated by empty spaces inside an MTA file (see note). Either 0 or 1 composites are allowed at the end of a group and nowhere else.",
+             "A batch of X13SeriesResult objects as specified by an MTA file." 
+                        )
+           ) %>% 
+  knitr::kable(row.names = FALSE, format = "markdown", col.names = c("Object", "Structure", "Comments"))
+```
+
+**Note: Empty lines in an MTA file do not mean anything to the X13 program.  They are a Statistics NZ convention and they do mean something to the sadj package - The groupings are submitted to X13 as their own batches.**
+
+# Interacting with Objects
+
+## Modifying Seasonal Adjustment Congfigurations (SPC files)
+`X13Series` is a dataframe with time series input data.  It has attributes that are accessible/mutable with the following functions:  
+
+```{r getsettab, echo = FALSE}
+data.frame(get=c("getSpecList","getSpec","getSpecParameter", "getFacFile", "getRegFile"),
+           set=c("setSpecList","setSpec","setSpecParameter", "setFacFile", "setRegFile"),
+           comments=c("Method gets passed to the X13SpecList object which is attached to X13Series as an attribute",
+                      "Same as comment above",
+                      "Same as comment above",
+                      "get/set the factor file dataframe attached to the the X13Series",
+                      "get/set the regression file dataframe attached to the the X13Series")) %>% 
+  knitr::kable(row.names = FALSE, format = "markdown")
+```
+
+
+
+
+
+## X13Batch Objects
+
+---
+
+# Orginal Documentation
+
 
 The `sadj` package allows for relatively flexible use of the underlying
 `X13-ARIMA-SEATS` program.  But results can be produced quickly and easily by
@@ -169,21 +234,7 @@ plot(ap.res)
 ```
 
 ```{r simpleex.res.plot2}
-plot(ap.res, type = "seasonal")
+plot(ap.res, type = "d10")
 ```
 
-A simple result viewer is also provided as a Shiny app.  For example, to view the `ap.res` object above, simply run:
 
-```r
-view(ap.res)
-```
-
-(Note the lower case 'v'.)  This will yield:
-
-![img/viewer01.png](img/viewer01.png)
-
-It will also work with grouped adjustments, for example:
-
-![img/viewer02.png](img/viewer02.png)
-
-Again, these are very simple interfaces, but they serve as a reasonable proof of concept which could easily be extended.

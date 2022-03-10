@@ -1,36 +1,77 @@
-# `sadj`
+# Overview
 
-Conduct seasonal adjustment using X13-ARIMA-SEATS from R. Almost all
-X13-ARIMA-SEATS functionality is supported, including the use of
-composite adjustments.
+## Introduction
 
-# Installation
+## Goals of sadj
 
-If you have a public SSH key set up correctly with
-[GitLab](https://gitlabstats-prd):
+## Function Help pages
 
-``` r
-library(git2r)
-library(devtools)
+### list of functions
 
-install_git(
-  "git@gitlabstats-prd:cxhansen/sadj.git",
-  credentials = cred_ssh_key(),
-  build_vignettes = TRUE
-)
-```
+## Vignettes
 
-Using HTTPS:
+# Basic Use Example
+
+The first thing you might want to do is run seasonal adjustment on your
+existing `X13-ARIMA-SEATS` file setup. You can do this in 2 steps.
+
+1.) Read in the series from a `.mta` file:
 
 ``` r
-library(git2r)
-library(devtools)
-
-ssl_cert_locations(filename = "/etc/ssl/certs/ca-certificates.crt")
-install_git("https://gitlabstats-prd/cxhansen/sadj.git", build_vignettes = TRUE)
+my_series <- X13BatchFromMTA(mta_path)
 ```
 
-# Basic Usage
+2.) Seasonally adjust the
+series:
+
+``` r
+adjusted_series <- adjust(my_series)
+```
+
+# Sadj objects Summary
+
+## Input Objects
+
+| Object         | Structure                        | Comments                                                                                                                                                                                                          |
+| :------------- | :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| X13Batch       | A list of X13SeriesGroup objects | A batch of X13Series objects as specified by an MTA file.                                                                                                                                                         |
+| X13SeriesGroup | A list of X13Series objects      | X13Series object groupings which are delineated by empty spaces inside an MTA file (see note). Either 0 or 1 composites are allowed at the end of a group and nowhere else.                                       |
+| X13Series      | A dataframe of time series data  | Can have several attributes to represent the following X13 files that can be associated with a single series: spc, fac, regression. Read the X13Series section to learn how to access and modify these attributes |
+
+## Output Objects
+
+| Object               | Structure                                           | Comments                                                                                                                                                                          |
+| :------------------- | :-------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| X13SeriesResult      | A dataframe of seasonally adjusted time series data | Has attributes that represent quality diagnostics and calculated modelling parameters                                                                                             |
+| X13SeriesGroupResult | A list of X13SeriesResult objects                   | X13SeriesResult object groupings which are delineated by empty spaces inside an MTA file (see note). Either 0 or 1 composites are allowed at the end of a group and nowhere else. |
+| X13BatchResult       | A list of X13SeriesGroupResult objects              | A batch of X13SeriesResult objects as specified by an MTA file.                                                                                                                   |
+
+**Note: Empty lines in an MTA file do not mean anything to the X13
+program. They are a Statistics NZ convention and they do mean something
+to the sadj package - The groupings are run as submitted as their own
+batches to X13.**
+
+# Interacting with Objects
+
+## Modifying Seasonal Adjustment Congfigurations (SPC files)
+
+`X13Series` is a dataframe with time series input data. It has
+attributes that are accessible/mutable with the following
+functions:
+
+| get              | set              | comments                                                                                    |
+| :--------------- | :--------------- | :------------------------------------------------------------------------------------------ |
+| getSpecList      | setSpecList      | Method gets passed to the X13SpecList object which is attached to X13Series as an attribute |
+| getSpec          | setSpec          | Same as comment above                                                                       |
+| getSpecParameter | setSpecParameter | Same as comment above                                                                       |
+| getFacFile       | setFacFile       | get/set the factor file dataframe attached to the the X13Series                             |
+| getRegFile       | setRegFile       | get/set the regression file dataframe attached to the the X13Series                         |
+
+## X13Batch Objects
+
+-----
+
+# Orginal Documentation
 
 The `sadj` package allows for relatively flexible use of the underlying
 `X13-ARIMA-SEATS` program. But results can be produced quickly and
@@ -50,18 +91,18 @@ follows:
 head(ap, 10)
 ```
 
-| year | period | value |
-| ---: | -----: | ----: |
-| 1949 |      1 |   112 |
-| 1949 |      2 |   118 |
-| 1949 |      3 |   132 |
-| 1949 |      4 |   129 |
-| 1949 |      5 |   121 |
-| 1949 |      6 |   135 |
-| 1949 |      7 |   148 |
-| 1949 |      8 |   148 |
-| 1949 |      9 |   136 |
-| 1949 |     10 |   119 |
+| date       | year | period | value |
+| :--------- | ---: | -----: | ----: |
+| 1949-01-01 | 1949 |      1 |   112 |
+| 1949-02-01 | 1949 |      2 |   118 |
+| 1949-03-01 | 1949 |      3 |   132 |
+| 1949-04-01 | 1949 |      4 |   129 |
+| 1949-05-01 | 1949 |      5 |   121 |
+| 1949-06-01 | 1949 |      6 |   135 |
+| 1949-07-01 | 1949 |      7 |   148 |
+| 1949-08-01 | 1949 |      8 |   148 |
+| 1949-09-01 | 1949 |      9 |   136 |
+| 1949-10-01 | 1949 |     10 |   119 |
 
 In fact, while we provide the ability to create an `X13Series` object
 directly from a `ts` object because it is a commonly used type in R, we
@@ -141,18 +182,18 @@ columns:
 head(ap.res, 10)
 ```
 
-| year | period | value |  b1 | c17 |       d10 |      d11 |      d12 |       d13 |        d8 |
-| ---: | -----: | ----: | --: | --: | --------: | -------: | -------: | --------: | --------: |
-| 1949 |      1 |   112 | 112 |   1 | 0.9032879 | 123.9915 | 125.1880 | 0.9904425 | 0.8958401 |
-| 1949 |      2 |   118 | 118 |   1 | 0.9387842 | 125.6945 | 125.5189 | 1.0013992 | 0.9411153 |
-| 1949 |      3 |   132 | 132 |   1 | 1.0588508 | 124.6635 | 125.7773 | 0.9911445 | 1.0499907 |
-| 1949 |      4 |   129 | 129 |   1 | 0.9942750 | 129.7428 | 125.9183 | 1.0303728 | 1.0246508 |
-| 1949 |      5 |   121 | 121 |   1 | 0.9767154 | 123.8846 | 125.9227 | 0.9838144 | 0.9610430 |
-| 1949 |      6 |   135 | 135 |   1 | 1.0717429 | 125.9630 | 125.9575 | 1.0000438 | 1.0720059 |
-| 1949 |      7 |   148 | 148 |   1 | 1.1789500 | 125.5354 | 126.2282 | 0.9945114 | 1.1724746 |
-| 1949 |      8 |   148 | 148 |   1 | 1.1760639 | 125.8435 | 126.6648 | 0.9935162 | 1.1677522 |
-| 1949 |      9 |   136 | 136 |   1 | 1.0638393 | 127.8389 | 127.2535 | 1.0045996 | 1.0672713 |
-| 1949 |     10 |   119 | 119 |   1 | 0.9167217 | 129.8104 | 127.9213 | 1.0147676 | 0.9288268 |
+| date       | year | period | value |  b1 | c17 |       d10 |      d11 |      d12 |       d13 |        d8 |
+| :--------- | ---: | -----: | ----: | --: | --: | --------: | -------: | -------: | --------: | --------: |
+| 1949-01-01 | 1949 |      1 |   112 | 112 |   1 | 0.9032879 | 123.9915 | 125.1880 | 0.9904425 | 0.8958401 |
+| 1949-02-01 | 1949 |      2 |   118 | 118 |   1 | 0.9387842 | 125.6945 | 125.5189 | 1.0013992 | 0.9411153 |
+| 1949-03-01 | 1949 |      3 |   132 | 132 |   1 | 1.0588508 | 124.6635 | 125.7773 | 0.9911445 | 1.0499907 |
+| 1949-04-01 | 1949 |      4 |   129 | 129 |   1 | 0.9942750 | 129.7428 | 125.9183 | 1.0303728 | 1.0246508 |
+| 1949-05-01 | 1949 |      5 |   121 | 121 |   1 | 0.9767154 | 123.8846 | 125.9227 | 0.9838144 | 0.9610430 |
+| 1949-06-01 | 1949 |      6 |   135 | 135 |   1 | 1.0717429 | 125.9630 | 125.9575 | 1.0000438 | 1.0720059 |
+| 1949-07-01 | 1949 |      7 |   148 | 148 |   1 | 1.1789500 | 125.5354 | 126.2282 | 0.9945114 | 1.1724746 |
+| 1949-08-01 | 1949 |      8 |   148 | 148 |   1 | 1.1760639 | 125.8435 | 126.6648 | 0.9935162 | 1.1677522 |
+| 1949-09-01 | 1949 |      9 |   136 | 136 |   1 | 1.0638393 | 127.8389 | 127.2535 | 1.0045996 | 1.0672713 |
+| 1949-10-01 | 1949 |     10 |   119 | 119 |   1 | 0.9167217 | 129.8104 | 127.9213 | 1.0147676 | 0.9288268 |
 
 In fact, any output produced by `X13-ARIMA-SEATS` that is a time series
 is added as a column to the output data frame. The columns can vary
@@ -200,25 +241,26 @@ or:
 summary(ap.res)
 ```
 
-| stat   | value      |
-| :----- | :--------- |
-| f2.mcd | 3          |
-| f2.ic  | 1.34       |
-| f2.is  | 3.10       |
-| f2.msf | 2.705 0.38 |
-| f3.m01 | 0.106      |
-| f3.m02 | 0.104      |
-| f3.m03 | 0.169      |
-| f3.m04 | 0.643      |
-| f3.m05 | 0.315      |
-| f3.m06 | 0.362      |
-| f3.m07 | 0.202      |
-| f3.m08 | 0.354      |
-| f3.m09 | 0.309      |
-| f3.m10 | 0.379      |
-| f3.m11 | 0.346      |
-| f3.q   | 0.27       |
-| f3.qm2 | 0.29       |
+| stat    | value        |
+| :------ | :----------- |
+| f2.mcd  | 3            |
+| f2.ic   | 1.34         |
+| f2.is   | 3.10         |
+| f2.fsd8 | 186.047 0.00 |
+| f2.msf  | 2.705 0.38   |
+| f3.m01  | 0.106        |
+| f3.m02  | 0.104        |
+| f3.m03  | 0.169        |
+| f3.m04  | 0.643        |
+| f3.m05  | 0.315        |
+| f3.m06  | 0.362        |
+| f3.m07  | 0.202        |
+| f3.m08  | 0.354        |
+| f3.m09  | 0.309        |
+| f3.m10  | 0.379        |
+| f3.m11  | 0.346        |
+| f3.q    | 0.27         |
+| f3.qm2  | 0.29         |
 
 There are a range of built-in plotting functions provided to visualise
 the
@@ -231,25 +273,7 @@ plot(ap.res)
 <img src="README_files/figure-gfm/simpleex.res.plot1-1.png" style="display: block; margin: auto;" />
 
 ``` r
-plot(ap.res, type = "seasonal")
+plot(ap.res, type = "d10")
 ```
 
 <img src="README_files/figure-gfm/simpleex.res.plot2-1.png" style="display: block; margin: auto;" />
-
-A simple result viewer is also provided as a Shiny app. For example, to
-view the `ap.res` object above, simply run:
-
-``` r
-view(ap.res)
-```
-
-(Note the lower case ‘v’.) This will yield:
-
-![img/viewer01.png](img/viewer01.png)
-
-It will also work with grouped adjustments, for example:
-
-![img/viewer02.png](img/viewer02.png)
-
-Again, these are very simple interfaces, but they serve as a reasonable
-proof of concept which could easily be extended.

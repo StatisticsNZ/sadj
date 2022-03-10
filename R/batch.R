@@ -84,6 +84,34 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
   res
 }
 
+#' Get period of series in the batch
+#'
+#' @param x
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getPeriod.X13Batch <-function(x){
+  res <- x %>% selectSeries(simplify = FALSE) %>% map_dbl(getPeriod) %>% unique()
+  if(length(res) > 1)
+    stop(sprintf("More than one periods detected:\n", paste(length(res), collapse = ", ")))
+  else res
+}
+
+#' Get period of series in the batch
+#'
+#' @param x
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getPeriod.X13BatchResult <- function(...) {
+  getPeriod.X13Batch(...)
+}
+
+
 #' Get Regression Variables
 #'
 #' @param x
