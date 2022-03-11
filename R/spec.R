@@ -463,7 +463,11 @@ getSpecParameter.X13SpecList <- function(x, spec, parameter){
 #'
 #' @examples
 "removeParamVals<-.X13SpecList" <- function(x, spec, parameter, values){
-  setParamVals(x, spec, parameter) <- setdiff(getParamVals(x, spec, parameter),values)
+  res <- setdiff(getParamVals(x, spec, parameter), values)
+  if(!rlang::is_empty(res))
+    setParamVals(x, spec, parameter) <- res
+  else
+    setSpecParameter(x, spec, parameter) <- NULL
   x
 }
 
