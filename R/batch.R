@@ -304,6 +304,14 @@ selectSeries.X13BatchResult <- function(...) {
 
 }
 
+#' @export
+correctARIMA.X13Batch <- function(x){
+  x %>% purrr::modify(function(x){
+    correctARIMA(x)
+  })
+
+}
+
 
 
 #' Extract t-vals from regression variables

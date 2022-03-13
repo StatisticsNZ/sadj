@@ -302,7 +302,7 @@ specType.X13SpecList <- function(x) {
 
   }
 
-  if(correct_spec) x <- correctRegression(x)
+  if(correct_spec) x <- correctARIMA(x)
 
   x
 
@@ -351,8 +351,9 @@ specType.X13SpecList <- function(x) {
 #' @export
 #'
 #' @examples
-correctRegression.X13SpecList <- function(x) {
-  if(!rlang::is_empty(getSpecParameter(x,"regression","variables"))){
+correctARIMA.X13SpecList <- function(x) {
+  if(!rlang::is_empty(getSpec(x,"regression")) ||
+     !rlang::is_empty(getSpec(x,"outlier"))){
     if(
       (rlang::is_empty(mode <- getSpecParameter(x,"x11","mode")) || mode=="mult") &&
       (rlang::is_empty(getSpecParameter(x,"transform","function")) ||
@@ -362,6 +363,8 @@ correctRegression.X13SpecList <- function(x) {
 
     if(rlang::is_empty(getSpecParameter(x,"arima","model")))
       setSpecParameter(x, "arima","model") <- "(0 1 1)(0 1 1)"
+    else if(!rlang::is_empty(getSpec(x, "transform")) && !rlang::is_empty(mode) && mode == "add")
+      setSpecParameter(x,"transform","function") <- NULL
 
     # Add a bit that checks series dates against var dates
   }

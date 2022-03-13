@@ -15,8 +15,8 @@
 }
 
 #' @export
-correctRegression <- function(x, ...){
-  UseMethod("correctRegression", x)
+correctARIMA <- function(x, ...){
+  UseMethod("correctARIMA", x)
 }
 
 #' @export

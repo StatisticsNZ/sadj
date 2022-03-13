@@ -98,6 +98,14 @@ is.X13SeriesGroup <- function(x) inherits(x, "X13SeriesGroup")
   })
 }
 
+#' @export
+#'
+correctARIMA.X13SeriesGroup <- function(x){
+  x %>% purrr::modify(function(x){
+    correctARIMA(x)
+  })
+}
+
 #' Remove parameter values from all series in a group.
 #'
 #' @param x
