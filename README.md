@@ -35,7 +35,7 @@ print(hlfs_res)
 summary(hlfs_res)
 
 # Print T-vals of regressors
-hlfs_res %>% tvals()
+tvals(hlfs_res)
 ```
 
 3.) Interrogate specific series from the batch
