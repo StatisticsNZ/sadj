@@ -13,7 +13,8 @@
 # Basic Use
 
 The first thing you might want to do is run seasonal adjustment on your
-existing `X13-ARIMA-SEATS` file setup. You can do this in 2 steps.
+existing `X13-ARIMA-SEATS` file setup and evaluate the results. You
+might do something like the following:
 
 1.) Read the series batch in from an `.mta` file:
 
@@ -28,7 +29,7 @@ hlfs <- X13BatchFromMTA(mta_path)
 hlfs_res <- adjust(hlfs)
 ```
 
-4.) View summary information of the result:
+3.) View summary information of the result:
 
 ``` r
 print(hlfs_res)
@@ -38,7 +39,7 @@ summary(hlfs_res)
 tvals(hlfs_res)
 ```
 
-3.) Interrogate specific series from the batch
+4.) Interrogate specific series from the batch
 
 ``` r
 library(magrittr) # for pipes
