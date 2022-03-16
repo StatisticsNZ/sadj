@@ -188,7 +188,7 @@ summary.X13BatchResult <- function(x, ...) {
     dplyr::rename(sname=value)
 
   selectSeries(x, simplify=FALSE) %>% purrr::map_dfr(function(x){
-    list(sname=sname(x), last_period=tail(x$date,1)
+    list(sname=sname(x), first_period=head(x$date,1), last_period=tail(x$date,1)
     )
   }) %>% dplyr::inner_join(groups,.,by="sname") %>% dplyr::arrange(sname)
 

@@ -139,16 +139,18 @@ correctARIMA.X13SeriesGroup <- function(x){
 #' @examples
 "setSpecParameter<-.X13SeriesGroup" <- function(x, spec, parameter, snames = NULL, value){
   if(rlang::is_empty(snames)) {
-    x %>% purrr::modify(function(x){
-      setSpecParameter(x,spec, parameter) <- value
-      x
+    res <- x %>% purrr::modify(function(y){
+      setSpecParameter(y,spec, parameter) <- value
+      y
     })
   } else {
-    x %>% purrr::modify(function(x){
-      if(sname(x) %in% snames)
-        setSpecParameter(x,spec, parameter) <- value
-      x
+    res <- x %>% purrr::modify(function(y){
+      if(sname(y) %in% snames)
+        setSpecParameter(y,spec, parameter) <- value
+      y
     })
+
+    return(res)
 
   }
 
