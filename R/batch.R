@@ -132,6 +132,27 @@ getSpecParameter.X13Batch <- function(x, spec, parameter, snames = NULL
 
 }
 
+#' Get Spec Parameter Values of Batch
+#'
+#' @param x
+#'
+#' @return
+#' @export
+getParamVals.X13Batch <- function(x, spec, parameter, snames = NULL
+                                      , simplify=if_else(rlang::is_empty(snames), FALSE, TRUE)){
+  x13series <- x %>% selectSeries(snames = snames, simplify = FALSE)
+
+  res <- x13series %>% purrr:::map(function(y){
+    getParamVals(y, spec, parameter)
+  })
+
+  if(simplify && length(res) == 1)
+    res[[1]]
+  else
+    res
+
+}
+
 #' Get Regression Variables
 #'
 #' @param x

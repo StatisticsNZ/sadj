@@ -861,6 +861,20 @@ print.X13SeriesResult <- function(x, ...){
   NextMethod(x)
 }
 
+spanStartDate.X13Series <- function(x) {
+  the_span <- getParamVals(x, "series", "span")
+  if(rlang::is_empty(the_span))
+    return(NULL)
+  else {
+    span_start <- the_span[[1]]
+    if(rlang::is_empty(span_start)) return(NULL)
+    start_span_split <- span_start %>% strsplit("[.]") %>% .[[1]]
+    the_year <- start_span_split[[1]] %>% as.numeric()
+    the_pd <- start_span_split[[2]] %>% as.numeric()
+    return(ypdToDate(y = the_year, p = the_pd, pd= getPeriod(x)))
+  }
+}
+
 #'
 #' @export
 summary.X13SeriesResult <- function(x, html = FALSE, stringsAsFactors = FALSE, ...){

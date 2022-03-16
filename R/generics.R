@@ -23,6 +23,9 @@ correctARIMA <- function(x, ...){
 correctSeriesSpec <- function(x, ...){
   UseMethod("correctSeriesSpec", x)
 }
+spanStartDate <- function(x, ...){
+  UseMethod("spanStartDate", x)
+}
 
 #' @export
 getFacFile <- function(x, ...){
