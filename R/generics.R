@@ -23,6 +23,8 @@ correctARIMA <- function(x, ...){
 correctSeriesSpec <- function(x, ...){
   UseMethod("correctSeriesSpec", x)
 }
+
+#' @export
 spanStartDate <- function(x, ...){
   UseMethod("spanStartDate", x)
 }
