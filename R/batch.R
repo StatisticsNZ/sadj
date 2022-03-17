@@ -185,8 +185,17 @@ summary.X13Batch <- function(x, ...) {
 
   selectSeries(x, simplify=FALSE) %>% purrr::map_dfr(function(x){
     type_summ <- getSpecParameter(x, "x11", "type")
-    type_summ <- ifelse(rlang::is_empty(type_summ),FALSE, ifelse(type_summ == "summary",TRUE,FALSE))
-    list(sname=sname(x), last_period=tail(x$date,1), spec_type=specType(x),
+    type_summ <- ifelse(rlang::is_empty(type_summ)
+                        ,FALSE, ifelse(type_summ == "summary",TRUE,FALSE))
+    span_start <- spanDate(x, "start") %>% lubridate::as_date()
+    span_end <- spanDate(x, "end") %>% lubridate::as_date()
+    list(
+      sname=sname(x)
+      , first_period=head(x$date,1)
+      , last_period=tail(x$date,1)
+      , span_start = span_start
+      , span_end = span_end
+      , spec_type=specType(x),
          has_fac=hasFac(x), has_reg=hasReg(x),
          type_summary = type_summ
          )
@@ -209,7 +218,19 @@ summary.X13BatchResult <- function(x, ...) {
     dplyr::rename(sname=value)
 
   selectSeries(x, simplify=FALSE) %>% purrr::map_dfr(function(x){
-    list(sname=sname(x), first_period=head(x$date,1), last_period=tail(x$date,1)
+    type_summ <- getSpecParameter(attr(x,"input"), "x11", "type")
+    type_summ <- ifelse(rlang::is_empty(type_summ)
+                        ,FALSE, ifelse(type_summ == "summary",TRUE,FALSE))
+    span_start <- spanDate(attr(x,"input"), "start") %>% lubridate::as_date()
+    span_end <- spanDate(attr(x,"input"), "end") %>% lubridate::as_date()
+
+    list(
+      sname=sname(x)
+      , first_period=head(x$date,1)
+      , last_period=tail(x$date,1)
+      , span_start = span_start
+      , span_end = span_end
+      , type_summary = type_summ
     )
   }) %>% dplyr::inner_join(groups,.,by="sname") %>% dplyr::arrange(sname)
 
