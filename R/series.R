@@ -864,10 +864,10 @@ print.X13SeriesResult <- function(x, ...){
 spanStartDate.X13Series <- function(x) {
   the_span <- getParamVals(x, "series", "span")
   if(rlang::is_empty(the_span))
-    return(NULL)
+    return(NA_real_)
   else {
     span_start <- the_span[[1]]
-    if(rlang::is_empty(span_start)) return(NULL)
+    if(rlang::is_empty(span_start)) return(NA_real_)
     start_span_split <- span_start %>% strsplit("[.]") %>% .[[1]]
     the_year <- start_span_split[[1]] %>% as.numeric()
     the_pd <- start_span_split[[2]] %>% as.numeric()
