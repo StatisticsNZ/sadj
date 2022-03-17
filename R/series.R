@@ -861,6 +861,8 @@ print.X13SeriesResult <- function(x, ...){
   NextMethod(x)
 }
 
+#' Get the start date of the span parameter
+#'
 #' @export
 spanStartDate.X13Series <- function(x) {
   the_span <- getParamVals(x, "series", "span")
