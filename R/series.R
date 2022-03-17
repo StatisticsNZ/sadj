@@ -861,6 +861,7 @@ print.X13SeriesResult <- function(x, ...){
   NextMethod(x)
 }
 
+#' @export
 spanStartDate.X13Series <- function(x) {
   the_span <- getParamVals(x, "series", "span")
   if(rlang::is_empty(the_span))
