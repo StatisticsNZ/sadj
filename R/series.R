@@ -878,6 +878,32 @@ spanStartDate.X13Series <- function(x) {
   }
 }
 
+#' Get the start or end date of the span parameter
+#'
+#' @export
+spanDate.X13Series <- function(x, value = c("start", "end")) {
+  the_span <- getParamVals(x, "series", "span")
+  if(rlang::is_empty(the_span))
+    return(NA_real_)
+  else {
+    res <- the_span %>% map(function(span_val){
+      if(rlang::is_empty(span_val) || span_val == "") return(NA_real_)
+      start_span_split <- span_val %>% strsplit("[.]") %>% .[[1]]
+      the_year <- start_span_split[[1]] %>% as.numeric()
+      the_pd <- start_span_split[[2]] %>% as.numeric()
+      return(ypdToDate(y = the_year, p = the_pd, pd= getPeriod(x)))
+
+    })
+    if(value == "start")
+      return(res[[1]])
+    else if(value == "end")
+      return(res[[2]])
+    else
+      stop(sprintf("%s is not a valid value. 'start' or 'end' expected.", value))
+
+  }
+}
+
 #'
 #' @export
 summary.X13SeriesResult <- function(x, html = FALSE, stringsAsFactors = FALSE, ...){

@@ -30,6 +30,11 @@ spanStartDate <- function(x, ...){
 }
 
 #' @export
+spanDate <- function(x, ...){
+  UseMethod("spanDate", x)
+}
+
+#' @export
 getFacFile <- function(x, ...){
   UseMethod("getFacFile", x)
 }
