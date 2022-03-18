@@ -50,6 +50,7 @@ X13BatchFromMTA <-function(mta_path, parallel=TRUE) {
   res <- ser_lists %>% map2(names(ser_lists),~X13ListToGroup(ser_list = .x,sname = .y))
 
   class(res) <- c("X13Batch", class(res))
+  attr(res, "mta_path") <- mta_path
   res
 }
 

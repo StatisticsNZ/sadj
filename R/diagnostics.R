@@ -29,7 +29,9 @@ readUDG <- function(x, outpdir, ext = "udg"){
     s <- strsplit(rmdups(ltrim(rtrim(f_line))), ':')[[1]]
     for (j in 1:length(s))
       s[j] <- rmdups(ltrim(rtrim(s[j])))
+
     n <- s[1]
+
     if (!n%in%c("date", "time", "version", "build", "span", "startspec", "srstit")){
       v <- s[2:length(s)]
       o[[pos]] <- v
