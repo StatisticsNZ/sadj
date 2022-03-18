@@ -82,6 +82,7 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
     attr(res,"x13_group_result_errors") <- err_grps
 
   class(res) <- c("X13BatchResult", class(res))
+  attr(res, "mta_path") <- attr(x, "mta_path")
   res
 }
 
