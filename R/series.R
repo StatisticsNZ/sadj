@@ -321,9 +321,9 @@ specType.X13Series <- function(x) getSpecList(x) %>% specType()
 }
 
 #' @export
-correctARIMA.X13Series <- function(x) {
+correctARIMA.X13Series <- function(x, force_transform = FALSE) {
   s <- getSpecList(x)
-  attr(x, "SpecList") <- correctARIMA(s)
+  attr(x, "SpecList") <- correctARIMA(s, force_transform = force_transform)
   x
 }
 

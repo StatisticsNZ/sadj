@@ -340,34 +340,55 @@ specType.X13SpecList <- function(x) {
 
 }
 
-#' Correct a SpecList.
+#' Correct ARIMA specifications
 #'
+#' If ARIMA spec is missing, then specify airline model.
+#' If regression or outlier specs are present (or force_transform = TRUE), then ensure the correct transformation.
+#' (See page 212 of the X13 handbook)
 #' For example, if the are regression variables in a multiplicative model,
-#'  then add to transform funciton=log
+#'  then ensure that either transform function=log or transform power = 0
 #'
 #' @param x The Object to correct.
+#' @param force_transform Force logic to change transform for regressors even if none are specified
 #'
 #' @return
 #' @export
 #'
 #' @examples
-correctARIMA.X13SpecList <- function(x) {
+correctARIMA.X13SpecList <- function(x, force_transform = FALSE) {
+
+  mode <- getSpecParameter(x,"x11","mode")
+  trans_func <- getSpecParameter(x,"transform","function")
+  trans_power <- getSpecParameter(x,"transform","power")
+
+  if(!rlang::is_empty(trans_func) && !rlang::is_empty(trans_power))
+    stop("function AND power arguments were specified where only one is allowed.")
+
   if(!rlang::is_empty(getSpec(x,"regression")) ||
-     !rlang::is_empty(getSpec(x,"outlier"))){
-    if(
-      (rlang::is_empty(mode <- getSpecParameter(x,"x11","mode")) || mode=="mult") &&
-      (rlang::is_empty(getSpecParameter(x,"transform","function")) ||
-       getSpecParameter(x,"transform","function") !="log")
-      )
+     !rlang::is_empty(getSpec(x,"outlier")) ||
+     force_transform){
+
+    if(rlang::is_empty(trans_func) && rlang::is_empty(trans_power))
+      if(rlang::is_empty(mode) || mode=="mult" || mode == "logadd")
+        setSpecParameter(x,"transform","function") <- "log"
+
+    if(!rlang::is_empty(trans_func) && rlang::is_empty(trans_power))
+      if(!rlang::is_empty(mode) && mode=="add" )
+        setSpecParameter(x,"transform","function") <- "none"
+    else if(rlang::is_empty(mode) || mode=="mult" || mode == "logadd")
       setSpecParameter(x,"transform","function") <- "log"
 
-    if(rlang::is_empty(getSpecParameter(x,"arima","model")))
-      setSpecParameter(x, "arima","model") <- "(0 1 1)(0 1 1)"
-    else if(!rlang::is_empty(getSpec(x, "transform")) && !rlang::is_empty(mode) && mode == "add")
-      setSpecParameter(x,"transform","function") <- NULL
+    if(rlang::is_empty(trans_func) && !rlang::is_empty(trans_power))
+      if(!rlang::is_empty(mode) && mode=="add" )
+        setSpecParameter(x,"transform","power") <- "1"
+    else if(rlang::is_empty(mode) || mode=="mult" || mode == "logadd")
+      setSpecParameter(x,"transform","power") <- "0"
 
-    # Add a bit that checks series dates against var dates
   }
+
+  if(rlang::is_empty(getSpecParameter(x,"arima","model")))
+    setSpecParameter(x, "arima","model") <- "(0 1 1)(0 1 1)"
+
   x
 }
 

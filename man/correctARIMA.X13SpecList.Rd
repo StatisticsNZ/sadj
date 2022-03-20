@@ -2,17 +2,22 @@
 % Please edit documentation in R/spec.R
 \name{correctARIMA.X13SpecList}
 \alias{correctARIMA.X13SpecList}
-\title{Correct a SpecList.}
+\title{Correct ARIMA specifications}
 \usage{
-\method{correctARIMA}{X13SpecList}(x)
+\method{correctARIMA}{X13SpecList}(x, force_transform = FALSE)
 }
 \arguments{
 \item{x}{The Object to correct.}
+
+\item{force_transform}{Force logic to change transform for regressors even if none are specified}
 }
 \value{
 
 }
 \description{
+If ARIMA spec is missing, then specify airline model.
+If regression or outlier specs are present (or force_transform = TRUE), then ensure the correct transformation.
+(See page 212 of the X13 handbook)
 For example, if the are regression variables in a multiplicative model,
- then add to transform funciton=log
+ then ensure that either transform function=log or transform power = 0
 }

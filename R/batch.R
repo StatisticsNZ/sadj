@@ -349,8 +349,8 @@ selectSeries.X13BatchResult <- function(...) {
 }
 
 #' @export
-correctARIMA.X13Batch <- function(x){
-  x %>% purrr::modify(function(x){
+correctARIMA.X13Batch <- function(x, force_transform = FALSE){
+  x %>% purrr::modify(function(x, force_transform = force_transform){
     correctARIMA(x)
   })
 

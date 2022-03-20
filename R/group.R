@@ -100,8 +100,8 @@ is.X13SeriesGroup <- function(x) inherits(x, "X13SeriesGroup")
 
 #' @export
 #'
-correctARIMA.X13SeriesGroup <- function(x){
-  x %>% purrr::modify(function(x){
+correctARIMA.X13SeriesGroup <- function(x, force_transform = FALSE){
+  x %>% purrr::modify(function(x, force_transform = force_transform){
     correctARIMA(x)
   })
 }
