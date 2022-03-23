@@ -487,6 +487,7 @@ getSpecParameter.X13SpecList <- function(x, spec, parameter){
 #'
 #' @examples
 "removeParamVals<-.X13SpecList" <- function(x, spec, parameter, values){
+  values <- tolower(values)
   setParamVals(x, spec, parameter) <- setdiff(getParamVals(x, spec, parameter), values)
   x
 }

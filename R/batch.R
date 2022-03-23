@@ -83,6 +83,7 @@ adjust.X13Batch <- function(x, purge = TRUE, parallel=TRUE, ...) {
 
   class(res) <- c("X13BatchResult", class(res))
   attr(res, "mta_path") <- attr(x, "mta_path")
+  attr(res, "input") <- x
   res
 }
 
