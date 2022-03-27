@@ -410,14 +410,3 @@ X11AddMult.X13Batch <- function(x) {
 
 }
 
-
-
-
-#' @export
-#'
-
-# "setSpecParameter<-.X13Batch" <- function(x, spec, name, value, snames){
-#   x13series <- x %>% selectSeries(snames = snames, simplify = FALSE)
-#
-#
-# }
