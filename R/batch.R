@@ -379,6 +379,24 @@ tvals.X13BatchResult <- function(x, variables) {
   res %>% bind_rows(.id="series")
 }
 
+#' Return UDG's of series in a batch.
+#'
+#' @param x
+#'
+#' @return
+#' @export
+udg.X13BatchResult <- function(x, snames = NULL
+                                      , simplify=if_else(rlang::is_empty(snames), FALSE, TRUE)){
+  x13series <- x %>% selectSeries(snames = snames, simplify = FALSE)
+  res <- x13series %>% purrr:::map(function(y){
+    udg(y)
+  })
+  if(simplify && length(res) == 1)
+    res[[1]]
+  else
+    res
+}
+
 #' Is the x-11 method additive or multiplicative?
 #'
 #' @param x

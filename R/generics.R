@@ -213,6 +213,11 @@ path <- function(x, ...){
 }
 
 #' @export
+udg <- function(x, ...){
+  UseMethod("udg", x)
+}
+
+#' @export
 X11AddMult <- function(x, ...){
   UseMethod("X11AddMult", x)
 }

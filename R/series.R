@@ -965,4 +965,15 @@ tvals.X13SeriesResult <- function(x, variables) {
   })
 }
 
+#' Get the UDG (summary diagnostics)
+#'
+#' @param x
+#'
+#' @return A list representing the values in the UDG file
+#' @export
+#'
+udg.X13SeriesResult <- function(x) {
+  return(attr(x, "udg"))
+}
+
 X13Messages.X13SeriesResult <- function(x) cat(paste(attr(x,"x13_messages"), collapse="\n"))
