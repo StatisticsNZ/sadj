@@ -864,25 +864,32 @@ print.X13SeriesResult <- function(x, ...){
 #' Get the start date of the span parameter
 #'
 #' @export
-spanStartDate.X13Series <- function(x) {
-  the_span <- getParamVals(x, "series", "span")
-  if(rlang::is_empty(the_span))
-    return(NA_real_)
-  else {
-    span_start <- the_span[[1]]
-    if(rlang::is_empty(span_start)) return(NA_real_)
-    start_span_split <- span_start %>% strsplit("[.]") %>% .[[1]]
-    the_year <- start_span_split[[1]] %>% as.numeric()
-    the_pd <- start_span_split[[2]] %>% as.numeric()
-    return(ypdToDate(y = the_year, p = the_pd, pd= getPeriod(x)))
-  }
+spanStartDate.X13Series <- function(x, spec = "series") {
+  spanDate.X13Series(x = x, value = c("start"), spec = spec)
+  # spec <- tolower(spec)
+  # the_span <- getParamVals(x, spec, "span")
+  # if(rlang::is_empty(the_span))
+  #   return(NA_real_)
+  # else {
+  #   span_start <- the_span[[1]]
+  #   if(rlang::is_empty(span_start)) return(NA_real_)
+  #   start_span_split <- span_start %>% strsplit("[.]") %>% .[[1]]
+  #   the_year <- start_span_split[[1]] %>% as.numeric()
+  #   the_pd <- start_span_split[[2]] %>% as.numeric()
+  #   return(ypdToDate(y = the_year, p = the_pd, pd= getPeriod(x)))
+  # }
 }
 
 #' Get the start or end date of the span parameter
 #'
+#' @param  value Can take "start" or "end"
+#'
 #' @export
-spanDate.X13Series <- function(x, value = c("start", "end")) {
-  the_span <- getParamVals(x, "series", "span")
+spanDate.X13Series <- function(x, value = c("start"), spec = "series") {
+  spec <- tolower(spec)
+  if(specType(x) == "composite" && spec =="series")
+    return(NA_real_)
+  the_span <- getParamVals(x, spec, "span")
   if(rlang::is_empty(the_span))
     return(NA_real_)
   else {
