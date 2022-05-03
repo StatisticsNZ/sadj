@@ -57,6 +57,7 @@ summary(hlfs_res)
 tvals(hlfs_res)
 
 ```
+## Interrogate  
 
 4.) Interrogate specific series from the batch
 
@@ -84,7 +85,49 @@ munemp_res %>% plot(type="D10D8")
 # How about an interactive plot?
 munemp_res %>% plot(type="D10D8", interactive = TRUE)
 
+
 ```
+5.) Interrogate an entire batch
+
+```r
+# Query Specs
+
+# getParamVals.X13Batch
+res <- getParamVals(hlfs,"series","span") %>% map( ~.x[[1]])
+
+# getSpecParameter.X13Batch
+# Same as getParamVals but it doesn't try to parse individual values
+# Example of querying documenation
+?sadj:::getSpecParameter.X13Batch 
+
+```
+
+
+## Update/Modify
+
+6.) Update/Modify an entire batch
+
+```r
+# Modify Specs
+
+# Add/remove outliers
+# Add a Level shift to all series in a batch
+# (Try querying to verify this)
+addOutliers(hlfs) <- "LS2020.2"
+
+# Remove the level shift
+removeOutliers(hlfs) <- "LS2020.2"
+# By default, removeOutliers does not clear out the save argument
+# That is something to be fixed, but for now:
+setSpecParameter(hlfs, "regression", "save") <- NULL
+
+# Add outliers to a subset of series:
+setSpecParameter(hlfs
+                 , snames = c("munemp", "funemp")
+                 ,"regression", "variables") <- c("LS1980.3")
+
+```
+
 
 # Sadj objects Summary
  
