@@ -10,22 +10,60 @@
 
 ## Vignettes
 
-# Basic Use Example
+# Basic Use
 
 The first thing you might want to do is run seasonal adjustment on your
-existing `X13-ARIMA-SEATS` file setup. You can do this in 2 steps.
+existing `X13-ARIMA-SEATS` file setup and evaluate the results. You
+might do something like the following:
 
-1.) Read in the series from a `.mta` file:
+1.) Read the series batch in from an `.mta` file:
 
 ``` r
-my_series <- X13BatchFromMTA(mta_path)
+mta_path <- "~/Network-Shares/corp-nas/seasadj/hlfs/hlfs.mta"
+hlfs <- X13BatchFromMTA(mta_path)
 ```
 
-2.) Seasonally adjust the
-series:
+2.) Seasonally adjust the series batch:
 
 ``` r
-adjusted_series <- adjust(my_series)
+hlfs_res <- adjust(hlfs)
+```
+
+3.) View summary information of the result:
+
+``` r
+print(hlfs_res)
+summary(hlfs_res)
+
+# Print T-vals of regressors
+tvals(hlfs_res)
+```
+
+4.) Interrogate specific series from the batch
+
+``` r
+library(magrittr) # for pipes
+
+# Use the snames from print/summary of the batch result to plug into `selectSeries`:
+munemp_res <- hlfs_res %>% selectSeries("munemp")
+
+# Spin up a Shiny to view plots and diagnostics
+munemp_res %>% view()
+
+# View summary diagnostic information
+munemp_res %>% summary()
+
+# View full html diagnostic report
+munemp_res %>% summary(html=TRUE)
+
+# What plots are there?
+?sadj:::plot.X13SeriesResult
+
+# Try a plot
+munemp_res %>% plot(type="D10D8")
+
+# How about an interactive plot?
+munemp_res %>% plot(type="D10D8", interactive = TRUE)
 ```
 
 # Sadj objects Summary
@@ -48,8 +86,8 @@ adjusted_series <- adjust(my_series)
 
 **Note: Empty lines in an MTA file do not mean anything to the X13
 program. They are a Statistics NZ convention and they do mean something
-to the sadj package - The groupings are run as submitted as their own
-batches to X13.**
+to the sadj package - The groupings are submitted to X13 as their own
+batches.**
 
 # Interacting with Objects
 
