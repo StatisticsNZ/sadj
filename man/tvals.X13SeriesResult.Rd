@@ -4,7 +4,7 @@
 \alias{tvals.X13SeriesResult}
 \title{Extract t-vals from regression variables}
 \usage{
-\method{tvals}{X13SeriesResult}(x, variables)
+\method{tvals}{X13SeriesResult}(x, otl_types = c("ao", "tc", "ls", "rp"), include_auto = TRUE)
 }
 \arguments{
 \item{variables}{}

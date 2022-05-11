@@ -368,15 +368,16 @@ correctARIMA.X13Batch <- function(x, force_transform = FALSE){
 #' @export
 #'
 #' @examples
-tvals.X13BatchResult <- function(x, variables) {
-  if(missing(variables)) {
-    variables <- x %>% selectSeries(simplify=FALSE) %>% map(function(x) {
-      x %>% attr("udg") %>% names() %>% grep(rex::rex(start, "Outlier$"),., value=TRUE) %>%
-        stringr::str_remove(rex::rex(start, "Outlier$"))
-    }) %>% purrr::flatten_chr() %>% unique() %>% sort()
-  }
-  res <- x %>% selectSeries(simplify=FALSE) %>% map(tvals, variables)
-  res %>% bind_rows(.id="series")
+tvals.X13BatchResult <- function(x, otl_types = c("ao", "tc", "ls", "rp"), include_auto =TRUE) {
+
+  res <- x %>% selectSeries(simplify=FALSE) %>% map(tvals, otl_types = otl_types, include_auto = include_auto)
+  res <- res %>% bind_rows(.id="series")
+
+  # Sorting columns here would be better
+  # grab outliervarsToDate from outlier project. fix to include month abbrev
+  # col_order <- names(res)
+
+  return(res)
 }
 
 #' Return UDG's of series in a batch.

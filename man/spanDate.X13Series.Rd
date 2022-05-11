@@ -4,7 +4,10 @@
 \alias{spanDate.X13Series}
 \title{Get the start or end date of the span parameter}
 \usage{
-\method{spanDate}{X13Series}(x, value = c("start", "end"))
+\method{spanDate}{X13Series}(x, value = c("start"), spec = "series")
+}
+\arguments{
+\item{value}{Can take "start" or "end"}
 }
 \description{
 Get the start or end date of the span parameter

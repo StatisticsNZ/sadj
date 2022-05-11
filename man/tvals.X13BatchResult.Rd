@@ -4,7 +4,7 @@
 \alias{tvals.X13BatchResult}
 \title{Extract t-vals from regression variables}
 \usage{
-\method{tvals}{X13BatchResult}(x, variables)
+\method{tvals}{X13BatchResult}(x, otl_types = c("ao", "tc", "ls", "rp"), include_auto = TRUE)
 }
 \arguments{
 \item{variables}{}

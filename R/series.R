@@ -960,15 +960,22 @@ X11AddMult.X13Series <- function(x) {
 #' @export
 #'
 #' @examples
-tvals.X13SeriesResult <- function(x, variables) {
+tvals.X13SeriesResult <- function(x, otl_types = c("ao", "tc", "ls", "rp"), include_auto =TRUE) {
   udg <- x %>% attr("udg")
+
+  otl_types %<>% toupper()
+  otl_rex <- ifelse(include_auto, "^(Auto)?Outlier\\$", "^Outlier\\$")
+
+  variables_full <- x %>% attr("udg") %>% names() %>% grep(otl_rex,., value=TRUE)
+  variables_short <- variables_full %>% stringr::str_remove(otl_rex)
+
   # fix case
-  variables %>% purrr::set_names(.,tolower(.)) %>% purrr::map_dbl(function(x){
-    otl <- udg %>% .[[sprintf("Outlier$%s",x)]]
+  variables_full %>% purrr::set_names(tolower(variables_short)) %>% purrr::map_dbl(function(var_full){
+    otl <- udg %>% .[[var_full]]
     if(!rlang::is_empty(otl))
       otl %>% strsplit(split=" ") %>% unlist() %>% .[[3]] %>% as.numeric()
     else
-      NA_real_
+      stop(sprint("%s: %s not found in udg", sname(x), var_full))
   })
 }
 

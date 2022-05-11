@@ -58,8 +58,33 @@ findX13File <- function(fname, rel_dir=getwd()){
 
   }
 
-
-
   stop(sprintf("Unable to find file:\n%s.", fname))
 
+}
+
+#' @export
+outliervarsToDate <- function(otl_vars, pd) {
+  otl_vars %>% map_dbl(function(x){
+    res <- x %>% str_remove("ao") %>% str_remove("ls") %>% str_remove("tc")
+    x13DateToDate(res, pd)
+  }) %>% as_date()
+
+}
+
+#' @export
+x13DateToDate <- function(x, pd) {
+
+  match_res <- x %>% str_match("^(\\d{4})\\.(\\d{1,2}|[:alpha:]{3})$")
+  y <- as.numeric(match_res[2])
+  p <- match_res[3] %>% tolower()
+
+  if(p %in% (m_abb <- tolower(month.abb))) {
+    if( pd == 12 )
+      p <- match(p, m_abb)
+    else
+      stop("X13 does not accept month abbreviations for quarterly series.")
+  }
+
+  p <- as.numeric(p)
+  sprintf("%04d-%02d-01", y, 12/pd * p) %>% as.Date(origin = "1970-01-01")
 }
