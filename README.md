@@ -1,160 +1,12 @@
+The `sadj` package allows for relatively flexible use of the underlying
+`X13-ARIMA-SEATS` program.
+
+\[\[*TOC*\]\]
+
 # Overview
 
-## Introduction
-
-## Goals of sadj
-
-## Function Help pages
-
-### list of functions
-
-## Vignettes
-
-# Basic Use
-
-The first thing you might want to do is run seasonal adjustment on your
-existing `X13-ARIMA-SEATS` file setup and evaluate the results. You
-might do something like the following:
-
-1.) Read the series batch in from an `.mta` file:
-
-``` r
-mta_path <- "~/Network-Shares/corp-nas/seasadj/hlfs/hlfs.mta"
-hlfs <- X13BatchFromMTA(mta_path)
-```
-
-2.) Seasonally adjust the series batch:
-
-``` r
-hlfs_res <- adjust(hlfs)
-```
-
-3.) View summary information of the result:
-
-``` r
-print(hlfs_res)
-summary(hlfs_res)
-
-# Print T-vals of regressors
-tvals(hlfs_res)
-```
-
-## Interrogate
-
-4.) Interrogate specific series from the batch
-
-``` r
-library(magrittr) # for pipes
-
-# Use the snames from print/summary of the batch result to plug into `selectSeries`:
-munemp_res <- hlfs_res %>% selectSeries("munemp")
-
-# Spin up a Shiny to view plots and diagnostics
-munemp_res %>% view()
-
-# View summary diagnostic information
-munemp_res %>% summary()
-
-# View full html diagnostic report
-munemp_res %>% summary(html=TRUE)
-
-# What plots are there?
-?sadj:::plot.X13SeriesResult
-
-# Try a plot
-munemp_res %>% plot(type="D10D8")
-
-# How about an interactive plot?
-munemp_res %>% plot(type="D10D8", interactive = TRUE)
-
-```
-
-5.) Interrogate an entire batch
-
-``` r
-# Query Specs
-
-# getParamVals.X13Batch
-res <- getParamVals(hlfs,"series","span") %>% map( ~.x[[1]])
-
-# getSpecParameter.X13Batch
-# Same as getParamVals but it doesn't try to parse individual values
-# Example of querying documenation
-?sadj:::getSpecParameter.X13Batch 
-```
-
-## Update/Modify
-
-6.) Update/Modify an entire batch
-
-``` r
-# Modify Specs
-
-# Add/remove outliers
-# Add a Level shift to all series in a batch
-# (Try querying to verify this)
-addOutliers(hlfs) <- "LS2020.2"
-
-# Remove the level shift
-removeOutliers(hlfs) <- "LS2020.2"
-# By default, removeOutliers does not clear out the save argument
-# That is something to be fixed, but for now:
-setSpecParameter(hlfs, "regression", "save") <- NULL
-
-# Add outliers to a subset of series:
-setSpecParameter(hlfs
-                 , snames = c("munemp", "funemp")
-                 ,"regression", "variables") <- c("LS1980.3")
-```
-
-# Sadj objects Summary
-
-## Input Objects
-
-| Object         | Structure                        | Comments                                                                                                                                                                                                          |
-| :------------- | :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| X13Batch       | A list of X13SeriesGroup objects | A batch of X13Series objects as specified by an MTA file.                                                                                                                                                         |
-| X13SeriesGroup | A list of X13Series objects      | X13Series object groupings which are delineated by empty spaces inside an MTA file (see note). Either 0 or 1 composites are allowed at the end of a group and nowhere else.                                       |
-| X13Series      | A dataframe of time series data  | Can have several attributes to represent the following X13 files that can be associated with a single series: spc, fac, regression. Read the X13Series section to learn how to access and modify these attributes |
-
-## Output Objects
-
-| Object               | Structure                                           | Comments                                                                                                                                                                          |
-| :------------------- | :-------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| X13SeriesResult      | A dataframe of seasonally adjusted time series data | Has attributes that represent quality diagnostics and calculated modelling parameters                                                                                             |
-| X13SeriesGroupResult | A list of X13SeriesResult objects                   | X13SeriesResult object groupings which are delineated by empty spaces inside an MTA file (see note). Either 0 or 1 composites are allowed at the end of a group and nowhere else. |
-| X13BatchResult       | A list of X13SeriesGroupResult objects              | A batch of X13SeriesResult objects as specified by an MTA file.                                                                                                                   |
-
-**Note: Empty lines in an MTA file do not mean anything to the X13
-program. They are a Statistics NZ convention and they do mean something
-to the sadj package - The groupings are submitted to X13 as their own
-batches.**
-
-# Interacting with Objects
-
-## Modifying Seasonal Adjustment Congfigurations (SPC files)
-
-`X13Series` is a dataframe with time series input data. It has
-attributes that are accessible/mutable with the following
-functions:
-
-| get              | set              | comments                                                                                    |
-| :--------------- | :--------------- | :------------------------------------------------------------------------------------------ |
-| getSpecList      | setSpecList      | Method gets passed to the X13SpecList object which is attached to X13Series as an attribute |
-| getSpec          | setSpec          | Same as comment above                                                                       |
-| getSpecParameter | setSpecParameter | Same as comment above                                                                       |
-| getFacFile       | setFacFile       | get/set the factor file dataframe attached to the the X13Series                             |
-| getRegFile       | setRegFile       | get/set the regression file dataframe attached to the the X13Series                         |
-
-## X13Batch Objects
-
------
-
-# Orginal Documentation
-
-The `sadj` package allows for relatively flexible use of the underlying
-`X13-ARIMA-SEATS` program. But results can be produced quickly and
-easily by accepting default parameters. Consider the following:
+But results can be produced quickly and easily by accepting default
+parameters. Consider the following:
 
 ``` r
 ap <- X13Series(AirPassengers)
@@ -356,3 +208,147 @@ plot(ap.res, type = "d10")
 ```
 
 <img src="README_files/figure-gfm/simpleex.res.plot2-1.png" style="display: block; margin: auto;" />
+
+## Function Help pages
+
+### list of functions
+
+## Vignettes
+
+# Basic Use
+
+The first thing you might want to do is run seasonal adjustment on your
+existing `X13-ARIMA-SEATS` file setup and evaluate the results. You
+might do something like the following:
+
+1.) Read the series batch in from an `.mta` file:
+
+``` r
+mta_path <- "~/Network-Shares/corp-nas/seasadj/hlfs/hlfs.mta"
+hlfs <- X13BatchFromMTA(mta_path)
+```
+
+2.) Seasonally adjust the series batch:
+
+``` r
+hlfs_res <- adjust(hlfs)
+```
+
+3.) View summary information of the result:
+
+``` r
+print(hlfs_res)
+summary(hlfs_res)
+
+# Print T-vals of regressors
+tvals(hlfs_res)
+```
+
+## Interrogate
+
+4.) Interrogate specific series from the batch
+
+``` r
+library(magrittr) # for pipes
+
+# Use the snames from print/summary of the batch result to plug into `selectSeries`:
+munemp_res <- hlfs_res %>% selectSeries("munemp")
+
+# Spin up a Shiny to view plots and diagnostics
+munemp_res %>% view()
+
+# View summary diagnostic information
+munemp_res %>% summary()
+
+# View full html diagnostic report
+munemp_res %>% summary(html=TRUE)
+
+# What plots are there?
+?sadj:::plot.X13SeriesResult
+
+# Try a plot
+munemp_res %>% plot(type="D10D8")
+
+# How about an interactive plot?
+munemp_res %>% plot(type="D10D8", interactive = TRUE)
+
+```
+
+5.) Interrogate an entire batch
+
+``` r
+# Query Specs
+
+# getParamVals.X13Batch
+res <- getParamVals(hlfs,"series","span") %>% map( ~.x[[1]])
+
+# getSpecParameter.X13Batch
+# Same as getParamVals but it doesn't try to parse individual values
+# Example of querying documenation
+?sadj:::getSpecParameter.X13Batch 
+```
+
+## Update/Modify
+
+6.) Update/Modify an entire batch
+
+``` r
+# Modify Specs
+
+# Add/remove outliers
+# Add a Level shift to all series in a batch
+# (Try querying to verify this)
+addOutliers(hlfs) <- "LS2020.2"
+
+# Remove the level shift
+removeOutliers(hlfs) <- "LS2020.2"
+# By default, removeOutliers does not clear out the save argument
+# That is something to be fixed, but for now:
+setSpecParameter(hlfs, "regression", "save") <- NULL
+
+# Add outliers to a subset of series:
+setSpecParameter(hlfs
+                 , snames = c("munemp", "funemp")
+                 ,"regression", "variables") <- c("LS1980.3")
+```
+
+# Sadj objects Summary
+
+## Input Objects
+
+| Object         | Structure                        | Comments                                                                                                                                                                                                          |
+| :------------- | :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| X13Batch       | A list of X13SeriesGroup objects | A batch of X13Series objects as specified by an MTA file.                                                                                                                                                         |
+| X13SeriesGroup | A list of X13Series objects      | X13Series object groupings which are delineated by empty spaces inside an MTA file (see note). Either 0 or 1 composites are allowed at the end of a group and nowhere else.                                       |
+| X13Series      | A dataframe of time series data  | Can have several attributes to represent the following X13 files that can be associated with a single series: spc, fac, regression. Read the X13Series section to learn how to access and modify these attributes |
+
+## Output Objects
+
+| Object               | Structure                                           | Comments                                                                                                                                                                          |
+| :------------------- | :-------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| X13SeriesResult      | A dataframe of seasonally adjusted time series data | Has attributes that represent quality diagnostics and calculated modelling parameters                                                                                             |
+| X13SeriesGroupResult | A list of X13SeriesResult objects                   | X13SeriesResult object groupings which are delineated by empty spaces inside an MTA file (see note). Either 0 or 1 composites are allowed at the end of a group and nowhere else. |
+| X13BatchResult       | A list of X13SeriesGroupResult objects              | A batch of X13SeriesResult objects as specified by an MTA file.                                                                                                                   |
+
+**Note: Empty lines in an MTA file do not mean anything to the X13
+program. They are a Statistics NZ convention and they do mean something
+to the sadj package - The groupings are submitted to X13 as their own
+batches.**
+
+# Interacting with Objects
+
+## Modifying Seasonal Adjustment Congfigurations (SPC files)
+
+`X13Series` is a dataframe with time series input data. It has
+attributes that are accessible/mutable with the following
+functions:
+
+| get              | set              | comments                                                                                    |
+| :--------------- | :--------------- | :------------------------------------------------------------------------------------------ |
+| getSpecList      | setSpecList      | Method gets passed to the X13SpecList object which is attached to X13Series as an attribute |
+| getSpec          | setSpec          | Same as comment above                                                                       |
+| getSpecParameter | setSpecParameter | Same as comment above                                                                       |
+| getFacFile       | setFacFile       | get/set the factor file dataframe attached to the the X13Series                             |
+| getRegFile       | setRegFile       | get/set the regression file dataframe attached to the the X13Series                         |
+
+## X13Batch Objects
