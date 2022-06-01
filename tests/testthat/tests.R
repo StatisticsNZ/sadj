@@ -71,8 +71,8 @@ test_that("testairline.spc is parsed correctly", {
   )
 })
 
-test_that("concrete.spc is parsed correctly", {
-  concrete <- readSPC("../test_spec/concrete.spc")
+test_that("exquarterly.spc is parsed correctly", {
+  concrete <- readSPC("../test_spec/exquarterly.spc")
   expect_equal(
     getSpecParameter(concrete, "regression", "variables")
     , "(td1nolpyear ao2020.2)"
