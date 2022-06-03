@@ -22,15 +22,22 @@ library(sadj)
 library(kableExtra)
 ```
 
-# repository_template
+# sadj
 
 The `sadj` package allows for relatively flexible use of the underlying
 `X13-ARIMA-SEATS` program.  
 
+---
+__Copyright and Licensing__
+
+The package is Crown copyright (c) 2021, Statistics New Zealand on behalf of the New Zealand Government, and is licensed under the MIT License (see LICENSE file).
+
+<br /><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This document is Crown copyright (c) 2021, Statistics New Zealand on behalf of the New Zealand Government, and is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
 [[_TOC_]]
 
 
-# Single Series
+## Single Series
 
 Results can be produced quickly and easily by
 accepting default parameters.  Consider the following:
@@ -158,7 +165,7 @@ plot(ap.res, type = "d10")
 
 
 
-# Batch Series
+## Batch Series
 
 The first thing you might want to do is run seasonal adjustment on your existing `X13-ARIMA-SEATS` file setup and evaluate the results. You might do something like the following:
 
@@ -184,7 +191,7 @@ summary(hlfs_res)
 tvals(hlfs_res)
 
 ```
-## Interrogate  
+### Interrogate  
 
 4.) Interrogate specific series from the batch
 
@@ -230,7 +237,7 @@ res <- getParamVals(hlfs,"series","span") %>% map( ~.x[[1]])
 ```
 
 
-## Update/Modify
+### Update/Modify
 
 6.) Update/Modify an entire batch
 
@@ -256,10 +263,10 @@ setSpecParameter(hlfs
 ```
 
 
-# Sadj objects Summary
+## Sadj objects Summary
  
 
-## Input Objects  
+### Input Objects  
 
 ```{r input_objects, echo = FALSE}
 data.frame(object=c("X13Batch", "X13SeriesGroup", "X13Series"),
@@ -277,7 +284,7 @@ data.frame(object=c("X13Batch", "X13SeriesGroup", "X13Series"),
   knitr::kable(row.names = FALSE, format = "markdown", col.names = c("Object", "Structure", "Comments"))
 ```
 
-## Output Objects  
+### Output Objects  
 
 ```{r output_objects, echo = FALSE}
 data.frame(object=c("X13SeriesResult","X13SeriesGroupResult", "X13BatchResult"),
@@ -296,9 +303,9 @@ data.frame(object=c("X13SeriesResult","X13SeriesGroupResult", "X13BatchResult"),
 
 **Note: Empty lines in an MTA file do not mean anything to the X13 program.  They are a Statistics NZ convention and they do mean something to the sadj package - The groupings are submitted to X13 as their own batches.**
 
-# Interacting with Objects
+## Interacting with Objects
 
-## Modifying Seasonal Adjustment Congfigurations (SPC files)
+### Modifying Seasonal Adjustment Congfigurations (SPC files)
 `X13Series` is a dataframe with time series input data.  It has attributes that are accessible/mutable with the following functions:  
 
 ```{r getsettab, echo = FALSE}
@@ -319,16 +326,7 @@ data.frame(get=c("getSpecList","getSpec","getSpecParameter", "getFacFile", "getR
 ## X13Batch Objects
 
 
-
-
-## Function Help pages
-### list of functions
 ## Vignettes
 
 
----
-__Copyright and Licensing__
 
-The package is Crown copyright (c) 2021, Statistics New Zealand on behalf of the New Zealand Government, and is licensed under the MIT License (see LICENSE file).
-
-<br /><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This document is Crown copyright (c) 2021, Statistics New Zealand on behalf of the New Zealand Government, and is licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.

@@ -1,11 +1,27 @@
-# repository\_template
+# sadj
 
 The `sadj` package allows for relatively flexible use of the underlying
 `X13-ARIMA-SEATS` program.
 
+-----
+
+**Copyright and Licensing**
+
+The package is Crown copyright (c) 2021, Statistics New Zealand on
+behalf of the New Zealand Government, and is licensed under the MIT
+License (see LICENSE
+file).
+
+<br /><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This
+document is Crown copyright (c) 2021, Statistics New Zealand on behalf
+of the New Zealand Government, and is licensed under the Creative
+Commons Attribution 4.0 International License. To view a copy of this
+license, visit <http://creativecommons.org/licenses/by/4.0/> or send a
+letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
+
 \[\[*TOC*\]\]
 
-# Single Series
+## Single Series
 
 Results can be produced quickly and easily by accepting default
 parameters. Consider the following:
@@ -211,7 +227,7 @@ plot(ap.res, type = "d10")
 
 <img src="README_files/figure-gfm/simpleex.res.plot2-1.png" style="display: block; margin: auto;" />
 
-# Batch Series
+## Batch Series
 
 The first thing you might want to do is run seasonal adjustment on your
 existing `X13-ARIMA-SEATS` file setup and evaluate the results. You
@@ -240,7 +256,7 @@ summary(hlfs_res)
 tvals(hlfs_res)
 ```
 
-## Interrogate
+### Interrogate
 
 4.) Interrogate specific series from the batch
 
@@ -284,7 +300,7 @@ res <- getParamVals(hlfs,"series","span") %>% map( ~.x[[1]])
 ?sadj:::getSpecParameter.X13Batch 
 ```
 
-## Update/Modify
+### Update/Modify
 
 6.) Update/Modify an entire batch
 
@@ -308,9 +324,9 @@ setSpecParameter(hlfs
                  ,"regression", "variables") <- c("LS1980.3")
 ```
 
-# Sadj objects Summary
+## Sadj objects Summary
 
-## Input Objects
+### Input Objects
 
 | Object         | Structure                        | Comments                                                                                                                                                                                                          |
 | :------------- | :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -318,7 +334,7 @@ setSpecParameter(hlfs
 | X13SeriesGroup | A list of X13Series objects      | X13Series object groupings which are delineated by empty spaces inside an MTA file (see note). Either 0 or 1 composites are allowed at the end of a group and nowhere else.                                       |
 | X13Series      | A dataframe of time series data  | Can have several attributes to represent the following X13 files that can be associated with a single series: spc, fac, regression. Read the X13Series section to learn how to access and modify these attributes |
 
-## Output Objects
+### Output Objects
 
 | Object               | Structure                                           | Comments                                                                                                                                                                          |
 | :------------------- | :-------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -331,9 +347,9 @@ program. They are a Statistics NZ convention and they do mean something
 to the sadj package - The groupings are submitted to X13 as their own
 batches.**
 
-# Interacting with Objects
+## Interacting with Objects
 
-## Modifying Seasonal Adjustment Congfigurations (SPC files)
+### Modifying Seasonal Adjustment Congfigurations (SPC files)
 
 `X13Series` is a dataframe with time series input data. It has
 attributes that are accessible/mutable with the following
@@ -349,24 +365,4 @@ functions:
 
 ## X13Batch Objects
 
-## Function Help pages
-
-### list of functions
-
 ## Vignettes
-
------
-
-**Copyright and Licensing**
-
-The package is Crown copyright (c) 2021, Statistics New Zealand on
-behalf of the New Zealand Government, and is licensed under the MIT
-License (see LICENSE
-file).
-
-<br /><a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />This
-document is Crown copyright (c) 2021, Statistics New Zealand on behalf
-of the New Zealand Government, and is licensed under the Creative
-Commons Attribution 4.0 International License. To view a copy of this
-license, visit <http://creativecommons.org/licenses/by/4.0/> or send a
-letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
