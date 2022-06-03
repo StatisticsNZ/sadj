@@ -30,9 +30,9 @@ The `sadj` package allows for relatively flexible use of the underlying
 [[_TOC_]]
 
 
-# Overview
+# Single Series
 
-But results can be produced quickly and easily by
+Results can be produced quickly and easily by
 accepting default parameters.  Consider the following:
 
 ```{r simpleex}
@@ -155,12 +155,10 @@ plot(ap.res, type = "d10")
 
 
 
-## Function Help pages
-### list of functions
-## Vignettes
 
 
-# Basic Use  
+
+# Batch Series
 
 The first thing you might want to do is run seasonal adjustment on your existing `X13-ARIMA-SEATS` file setup and evaluate the results. You might do something like the following:
 
@@ -323,4 +321,6 @@ data.frame(get=c("getSpecList","getSpec","getSpecParameter", "getFacFile", "getR
 
 
 
-
+## Function Help pages
+### list of functions
+## Vignettes
