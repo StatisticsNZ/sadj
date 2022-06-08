@@ -27,7 +27,6 @@ library(kableExtra)
 The `sadj` package allows for relatively flexible use of the underlying
 `X13-ARIMA-SEATS` program.  
 
----
 __Copyright and Licensing__
 
 The package is Crown copyright (c) 2021, Statistics New Zealand on behalf of the New Zealand Government, and is licensed under the MIT License (see LICENSE file).
