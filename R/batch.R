@@ -40,17 +40,17 @@
 #' @param mta Path to mta file.
 #'
 #' @export
-X13BatchFromMTA <-function(mta_path, parallel=TRUE) {
+X13BatchFromMTA <-function(mta_path, parallel=TRUE, clean_spec=TRUE) {
   grps <- mtaGroups(mta_path)
   if(parallel)
-    ser_lists <- grps %>% parallel::mclapply(mtaToX13Series,mc.cores = parallel::detectCores() / 2)
+    ser_lists <- grps %>% parallel::mclapply(mtaToX13Series, clean_spec=clean_spec, mc.cores = parallel::detectCores() / 2)
   else
-    ser_lists <- grps %>% lapply(mtaToX13Series)
+    ser_lists <- grps %>% lapply(mtaToX13Series, clean_spec=clean_spec)
 
   res <- ser_lists %>% map2(names(ser_lists),~X13ListToGroup(ser_list = .x,sname = .y))
 
   class(res) <- c("X13Batch", class(res))
-  attr(res, "mta_path") <- mta_path
+  attr(res, "mta_path") <- mta_path %>% normalizePath() %>% dirname() %>% sub(path.expand("~"),"~",.)
   res
 }
 
