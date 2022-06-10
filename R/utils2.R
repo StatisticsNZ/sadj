@@ -1,5 +1,5 @@
 #' @keywords internal
-findX13File <- function(fname, rel_dir=getwd()){
+findX13File <- function(fname, rel_dir=getwd(), return_full = TRUE){
 
   if(file.exists(fname)) return(normalizePath(fname) %>% sub(path.expand("~"),"~",.))
 
@@ -33,11 +33,18 @@ findX13File <- function(fname, rel_dir=getwd()){
 
         if(rlang::is_empty(try_file)) {
           stop(sprintf("Couldn't find file:\n%s.", fname))
-        } else if(file.exists(try_file)){
+        } else if(file.exists(try_file)) {
 
-          warning(sprintf("Couldn't find file:\n%s.\nFound file:\n%s.", fname
-                          , (found_file <- sub(path.expand("~"),"~",normalizePath(try_file)))))
-          return(found_file)
+          found_file <- sub(path.expand("~"),"~",normalizePath(try_file))
+
+          warning(sprintf("Couldn't find file:\n%s.\nFound file:\n%s."
+                          , fname
+                          , found_file)
+                  )
+          if(return_full)
+            return(found_file)
+          else
+            return(end_bit)
         }
 
       }
@@ -47,11 +54,22 @@ findX13File <- function(fname, rel_dir=getwd()){
 
     for(i in seq_along(path_split)) {
       if(path_split[[i]]==rel_base) {
-        try_file <- paste(path_split[(i-1):1],collapse = "/") %>% sprintf("%s/%s",rel_dir,.)
+        rel_file <- paste(path_split[(i-1):1],collapse = "/")
+        try_file <- rel_file %>% sprintf("%s/%s",rel_dir,.)
         if(file.exists(try_file)){
-          warning(sprintf("Couldn't find file:\n%s.\nFound file:\n%s.", fname
-                          , (found_file <- sub(path.expand("~"),"~",normalizePath(try_file)))))
-          return(found_file)
+          found_file <- sub(path.expand("~")
+                            ,"~",normalizePath(try_file))
+
+          warning(
+            sprintf("Couldn't find file:\n%s.\nFound file:\n%s."
+                    , fname
+                    , found_file
+                    )
+            )
+          if(return_full)
+            return(found_file)
+          else
+            return(rel_file)
         }
       }
     }
